@@ -1,0 +1,3 @@
+[submodule "lib/hxmocha"]
+	path = lib/hxmocha
+	url = https://github.com/DenkiYagi/hxmocha.git

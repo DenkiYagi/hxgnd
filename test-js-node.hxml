@@ -1,0 +1,5 @@
+-main Main
+-cp src/main
+-cp src/test/js
+-cp lib/hxmocha/src
+-js bin/js/node/test/hxgnd-test.js
