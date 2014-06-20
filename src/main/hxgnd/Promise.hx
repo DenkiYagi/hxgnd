@@ -1,29 +1,26 @@
 package hxgnd;
+import haxe.Timer;
 
 class Promise<A> {
-    @:allow(haxearth) @:noCompletion
-    var _state: _PromiseState<A>;
-    @:allow(haxearth) @:noCompletion
-    var _resolvedHandlers: Array<A -> Void>;
-    @:allow(haxearth) @:noCompletion
-    var _rejectedHandlers: Array<Dynamic -> Void>;
-    @:allow(haxearth) @:noCompletion
-    var _finallyHandlers: Array<Void -> Void>;
-    @:allow(haxearth) @:noCompletion
-    var _abort: Void -> Void;
+    @:allow(hxgnd) @:noCompletion var _state: _PromiseState<A>;
+    @:allow(hxgnd) @:noCompletion var _resolvedHandlers: Array<A -> Void>;
+    @:allow(hxgnd) @:noCompletion var _rejectedHandlers: Array<Error -> Void>;
+    @:allow(hxgnd) @:noCompletion var _finallyHandlers: Array<Void -> Void>;
+    @:allow(hxgnd) @:noCompletion var _abort: Void -> Void;
 
-    public function new(executor: (A -> Void) -> (Dynamic -> Void) -> (Void -> Void)) {
+    public var isPending(get, never): Bool;
+
+    public function new(executor: (A -> Void) -> (Error -> Void) -> (Void -> Void)) {
         _clear();
         _state = Pending;
-
         try {
             _abort = executor(resolve, reject);
         } catch (e: Dynamic) {
-            _state = Rejected(e);
+            _state = Rejected(Std.is(e, Error) ? e : new Error(Std.string(e)));
         }
     }
 
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     inline function _clear(): Void {
         _resolvedHandlers = [];
         _rejectedHandlers = [];
@@ -31,23 +28,32 @@ class Promise<A> {
         _abort = function () { };
     }
 
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
+    function _invokeAsync(fn: Void -> Void): Void {
+        #if js
+        hxgnd.js.JsTools.setImmediate(fn);
+        #else
+        haxe.Timer.delay(fn, 0);
+        #end
+    }
+
+    @:allow(hxgnd) @:noCompletion
     function _invokeResolved(value: A): Void {
-        JsTools.setImmediate(function () {
+        _invokeAsync(function () {
             try {
                 for (f in _resolvedHandlers) f(value);
                 _invokeFinally();
                 _clear();
                 _state = Resolved(value);
             } catch (e: Dynamic) {
-                _invokeRejected(e);
+                _invokeRejected(Std.is(e, Error) ? e : new Error(Std.string(e)));
             }
         });
     }
 
-    @:allow(haxearth) @:noCompletion
-    function _invokeRejected(error: Dynamic): Void {
-        JsTools.setImmediate(function () {
+    @:allow(hxgnd) @:noCompletion
+    function _invokeRejected(error: Error): Void {
+        _invokeAsync(function () {
             for (f in _rejectedHandlers) {
                 try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
             }
@@ -57,10 +63,18 @@ class Promise<A> {
         });
     }
 
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     function _invokeFinally(): Void {
         for (f in _finallyHandlers) {
             try f() catch (e: Dynamic) trace(e); //TODO エラーダンプ
+        }
+    }
+
+    @:allow(hxgnd) @:noCompletion
+    function get_isPending() {
+        return switch (_state) {
+            case Pending: true;
+            case _: false;
         }
     }
 
@@ -71,11 +85,39 @@ class Promise<A> {
         }
     }
 
-    function reject(x: Dynamic): Void {
+    function reject(?x: Error): Void {
         if (Type.enumEq(_state, Pending)) {
             _state = Sealed;
             _invokeRejected((x == null) ? new Error("Rejected") : x);
         }
+    }
+
+    public function then(resolved: A -> Void, ?rejected: Error -> Void, ?finally: Void -> Void): Promise<A> {
+        switch (_state) {
+            case Pending, Sealed:
+                if (resolved != null) _resolvedHandlers.push(resolved);
+                if (rejected != null) _rejectedHandlers.push(rejected);
+                if (finally != null) _finallyHandlers.push(finally);
+            case Resolved(v):
+                _invokeAsync(function thenResolved() {
+                    if (resolved != null) try resolved(v) catch (e: Dynamic) trace(e);
+                    if (finally != null) try finally() catch (e: Dynamic) trace(e);
+                });
+            case Rejected(e):
+                _invokeAsync(function thenRejected() {
+                    if (rejected != null) try rejected(e) catch (_e: Dynamic) trace(_e);
+                    if (finally != null) try finally() catch (e: Dynamic) trace(e);
+                });
+        }
+        return this;
+    }
+
+    public function thenError(rejected: Error -> Void): Promise<A> {
+        return then(null, rejected);
+    }
+
+    public function thenFinally(finally: Void -> Void): Promise<A> {
+        return then(null, null, finally);
     }
 
     public function cancel(): Promise<A> {
@@ -87,56 +129,21 @@ class Promise<A> {
         return this;
     }
 
-    public function state(): PromiseState {
-        return switch (_state) {
-            case Pending, Sealed: Pending;
-            case Resolved(v): Resolved;
-            case Rejected(e): Rejected;
-        }
-    }
-
-    public function then(resolved: A -> Void, ?rejected: Dynamic -> Void, ?finally: Void -> Void): Promise<A> {
-        switch (_state) {
-            case Pending, Sealed:
-                if (resolved != null) _resolvedHandlers.push(resolved);
-                if (rejected != null) _rejectedHandlers.push(rejected);
-                if (finally != null) _finallyHandlers.push(finally);
-            case Resolved(v):
-                JsTools.setImmediate(function () {
-                    if (resolved != null) try resolved(v) catch (e: Dynamic) trace(e);
-                    if (finally != null) try finally() catch (e: Dynamic) trace(e);
-                });
-            case Rejected(e):
-                JsTools.setImmediate(function () {
-                    if (rejected != null) try rejected(e) catch (_e: Dynamic) trace(_e);
-                    if (finally != null) try finally() catch (e: Dynamic) trace(e);
-                });
-        }
-        return this;
-    }
-
-    public function thenError(rejected: Dynamic -> Void): Promise<A> {
-        return then(null, rejected);
-    }
-
-    public function thenFinally(finally: Void -> Void): Promise<A> {
-        return then(null, null, finally);
-    }
-
-    public function map<B>(f: A -> B): Promise<B> {
+    public function map<B>(fn: A -> B): Promise<B> {
         return new Promise(function mapExecutor(resolve, reject) {
-            then(function (a) resolve(f(a)), reject);
+            then(function (a) resolve(fn(a)), reject);
             return function () { };
         });
     }
 
-    public function bind<B>(f: A -> Promise<B>): Promise<B> {
+    public function flatMap<B>(fn: A -> Promise<B>): Promise<B> {
         return new Promise(function bindExecutor(resolve, reject) {
-            then(function (a) f(a).then(resolve, reject), reject);
+            then(function (a) fn(a).then(resolve, reject), reject);
             return function () { };
         });
     }
 
+    // static ---------------
 
     public static function resolved<A>(value: A): Promise<A> {
         return new Promise(function (resolve, _) {
@@ -145,7 +152,7 @@ class Promise<A> {
         });
     }
 
-    public static function rejected<A>(error: Dynamic): Promise<A> {
+    public static function rejected<A>(?error: Error): Promise<A> {
         return new Promise(function (_, reject) {
             reject(error);
             return function () { };
@@ -153,49 +160,43 @@ class Promise<A> {
     }
 
     public static function all<A>(promises: Array<Promise<A>>): Promise<Array<A>> {
-        return new Promise(function (resolve, reject) {
-            function cancelAll() {
-                for (p in promises) p.cancel();
-            }
+        return if (promises.length <= 0) {
+            return Promise.resolved([]);
+        } else {
+            new Promise(function (resolve, reject) {
+                function cancelAll() {
+                    for (p in promises) p.cancel();
+                }
 
-            var length = promises.length;
-            var results = [];
-            var unrejected = true;
-            for (p in promises) {
-                p.then(function (x) {
-                    results.push(x);
-                    if (results.length >= length) resolve(results);
-                }, function (e) {
-                    if (!unrejected) {
-                        unrejected = false;
-                        reject(e);
-                        cancelAll();
-                    }
-                });
-            }
-
-            return cancelAll;
-        });
-
-        throw new Error("not implemented");
+                var length = promises.length;
+                var results = [];
+                var rejectFlag = true;
+                for (p in promises) {
+                    p.then(function (x) {
+                        results.push(x);
+                        if (results.length >= length) resolve(results);
+                    }, function (e) {
+                        if (rejectFlag) {
+                            rejectFlag = false;
+                            reject(e);
+                            cancelAll();
+                        }
+                    });
+                }
+                return cancelAll;
+            });
+        }
     }
 
     //public static function when<T>(iter: Iterable<Promise<T>>): Promise<T> {
-//
-//
         //return null;
     //}
 }
 
-enum PromiseState {
-    Pending;
-    Resolved;
-    Rejected;
-}
-
+@:noCompletion
 private enum _PromiseState<T> {
     Pending;
     Sealed;
     Resolved(value: T);
-    Rejected(error: Dynamic);
+    Rejected(error: Error);
 }

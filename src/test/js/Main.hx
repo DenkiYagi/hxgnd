@@ -3,10 +3,16 @@ package;
 import hxmocha.Mocha;
 import specs.OptionSpec;
 import specs.ResultSpec;
+import specs.ArrayToolsSpec;
+import specs.PromiseSpec;
+import specs.StreamSpec;
 
 class Main {
-    static function main() : Void {
+    static function main() {
         Mocha.addSpec(OptionSpec);
         Mocha.addSpec(ResultSpec);
+        //Mocha.addSpec(ArrayToolsSpec);
+        Mocha.addSpec(PromiseSpec);
+        Mocha.addSpec(StreamSpec);
     }
 }

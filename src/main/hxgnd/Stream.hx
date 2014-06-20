@@ -1,15 +1,15 @@
 package hxgnd;
 
 class Stream<A> {
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     var _state: _StreamState<A>;
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     var _updatedHandlers: Array<{f: A -> Void, ?loop: Bool}>;
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     var _closedHandlers: Array<Void -> Void>;
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     var _failedHandlers: Array<Dynamic -> Void>;
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     var _abort: Void -> Void;
 
     public function new(executor: (A -> Void) -> (Void -> Void) -> (Dynamic -> Void) -> (Void -> Void)) {
@@ -22,7 +22,7 @@ class Stream<A> {
         }
     }
 
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     inline function _clear(): Void {
         _updatedHandlers = [];
         _closedHandlers = [];
@@ -30,7 +30,7 @@ class Stream<A> {
         _abort = function () {};
     }
 
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     function _invokeUpdated(value: A): Void {
         function filter() {
             var array = [];
@@ -50,7 +50,7 @@ class Stream<A> {
         });
     }
 
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     function _invokeClosed(): Void {
         JsTools.setImmediate(function () {
             try {
@@ -63,7 +63,7 @@ class Stream<A> {
         });
     }
 
-    @:allow(haxearth) @:noCompletion
+    @:allow(hxgnd) @:noCompletion
     function _invokeFailed(error: Dynamic): Void {
         JsTools.setImmediate(function () {
             for (f in _failedHandlers)
