@@ -6,6 +6,7 @@ import specs.ResultSpec;
 import specs.ArrayToolsSpec;
 import specs.PromiseSpec;
 import specs.StreamSpec;
+import specs.JqHtmlSpec;
 
 class Main {
     static function main() {
@@ -14,5 +15,6 @@ class Main {
         Mocha.addSpec(PromiseSpec);
         Mocha.addSpec(StreamSpec);
         Mocha.addSpec(ArrayToolsSpec);
+        Mocha.addSpec(JqHtmlSpec);
     }
 }

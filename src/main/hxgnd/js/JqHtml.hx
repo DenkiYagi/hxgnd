@@ -11,9 +11,14 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (element: EventTarget): Void{})
     @:overload(function (elements: Array<Element>): Void{})
     function new(element: Element);
+    
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (selection: JqHtml): JqHtml{})
+    @:overload(function (selector: String, element: Element): JqHtml{})
 
-    //function add(): JqHtml;
-    //function addBack(): JqHtml;
+    function add(selector: String): JqHtml;
+    function addBack(?selector: String): JqHtml;
 
     @:overload(function (f: Int -> String -> String): JqHtml{})
     function addClass(className: String): JqHtml;
