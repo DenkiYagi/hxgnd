@@ -39,7 +39,10 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (f: Int -> String -> JqHtml): JqHtml{})
     function append(content: String): JqHtml;
 
-    //function appendTo(): JqHtml;
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (content: JqHtml): JqHtml{})
+    function appendTo(selector :String): JqHtml;
+
     //function attr(): JqHtml;
 
     @:overload(function (key: String, value: String): JqHtml{})
@@ -53,16 +56,17 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function before(): JqHtml;
     //function blur(): JqHtml;
     //function change(): JqHtml;
-    //function children(): JqHtml;
+    
+    function children(?selector: String): JqHtml;
+    
     //function clearQueue(): JqHtml;
     //function click(): JqHtml;
     //function clone(): JqHtml;
 
     @:overload(function (selection: JqHtml): JqHtml{})
     @:overload(function (context: Element): JqHtml{})
-    function closest(selector: String, ?context: Element): JqHtml;
-
-    //function contents(): JqHtml;
+    function closest(selector: String, ?context: Element): JqHtml;  
+    function contents(): JqHtml;
 
     @:overload(function (key: Array<String>): Array<String>{})
     @:overload(function (key: String, value: String): JqHtml{})
@@ -76,10 +80,14 @@ extern class JqHtml implements ArrayAccess<Element> {
     function data(?key: String): Dynamic;
 
     //function dblclick(): JqHtml;
-    //function delay(): JqHtml;
+    
+    function delay(duration: Int, ?queueName: String): JqHtml;
+
     //function delegate(): JqHtml;
-    //function dequeue(): JqHtml;
-    //function detach(): JqHtml;
+    
+    function dequeue(?queueName: String): JqHtml;
+    function detach(?selector: String): JqHtml;
+    
     //function each(): JqHtml;
 
     function empty(): JqHtml;
