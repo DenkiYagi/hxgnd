@@ -17,4 +17,29 @@ class ArrayTools {
         }
         return result;
     }
+
+    public static function findOption<A>(array: Array<A>, f: A -> Bool): Option<A> {
+        return OptionTools.toOption(Lambda.find(array, f));
+    }
+
+    public static function headOption<A>(array: Array<A>): Option<A> {
+        return if(array.length == 0) None else Some(array[0]);
+    }
+
+    public static function lastOption<A>(array: Array<A>): Option<A> {
+        return if(array.length == 0) None else Some(array[array.length - 1]);
+    }
+
+    public static function flatten<A>(array: Array<Array<A>>): Array<A> {
+        function concat<A>(a1: Array<A>, a2: Array<A>){ return a2.concat(a1); }
+        return Lambda.array(Lambda.fold(array, concat, []));
+    }
+
+    public static function span<A>(array: Array<A>, cond: A -> Bool): {first: Array<A>, rest: Array<A>} {
+        var i = 0;
+        while(i < array.length && !cond(array[i])){
+            i ++;
+        }
+        return {first: array.slice(0, i), rest: array.slice(i, array.length)};
+    }
 }

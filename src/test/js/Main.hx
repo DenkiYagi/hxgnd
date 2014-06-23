@@ -11,8 +11,8 @@ class Main {
     static function main() {
         Mocha.addSpec(OptionSpec);
         Mocha.addSpec(ResultSpec);
-        //Mocha.addSpec(ArrayToolsSpec);
         Mocha.addSpec(PromiseSpec);
         Mocha.addSpec(StreamSpec);
+        Mocha.addSpec(ArrayToolsSpec);
     }
 }
