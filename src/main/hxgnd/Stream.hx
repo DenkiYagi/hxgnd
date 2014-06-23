@@ -1,24 +1,25 @@
 package hxgnd;
 
 class Stream<A> {
-    @:allow(hxgnd) @:noCompletion
-    var _state: _StreamState<A>;
-    @:allow(hxgnd) @:noCompletion
-    var _updatedHandlers: Array<{f: A -> Void, ?loop: Bool}>;
-    @:allow(hxgnd) @:noCompletion
-    var _closedHandlers: Array<Void -> Void>;
-    @:allow(hxgnd) @:noCompletion
-    var _failedHandlers: Array<Dynamic -> Void>;
-    @:allow(hxgnd) @:noCompletion
-    var _abort: Void -> Void;
+    @:allow(hxgnd) @:noCompletion var _state: _StreamState<A>;
+    @:allow(hxgnd) @:noCompletion var _updatedHandlers: Array<{f: A -> Void, ?loop: Bool}>;
+    @:allow(hxgnd) @:noCompletion var _closedHandlers: Array<Void -> Void>;
+    @:allow(hxgnd) @:noCompletion var _failedHandlers: Array<Error -> Void>;
+    @:allow(hxgnd) @:noCompletion var _finallyHandlers: Array<Void -> Void>;
+    @:allow(hxgnd) @:noCompletion var _abort: Void -> Void;
 
-    public function new(executor: (A -> Void) -> (Void -> Void) -> (Dynamic -> Void) -> (Void -> Void)) {
+    public var isPending(get, null): Bool;
+    public var isClosed(get, null): Bool;
+
+    public function new(executor: (A -> Void) -> (Void -> Void) -> (Error -> Void) -> (Void -> Void)) {
         _state = Pending;
         _clear();
         try {
             _abort = executor(update, close, fail);
-        } catch (e: Dynamic) {
+        } catch (e: Error) {
             _state = Failed(e);
+        } catch (e: Dynamic) {
+            _state = Failed(new Error(Std.string(e)));
         }
     }
 
@@ -27,7 +28,17 @@ class Stream<A> {
         _updatedHandlers = [];
         _closedHandlers = [];
         _failedHandlers = [];
+        _finallyHandlers = [];
         _abort = function () {};
+    }
+
+    @:allow(hxgnd) @:noCompletion
+    function _invokeAsync(fn: Void -> Void): Void {
+        #if js
+        hxgnd.js.JsTools.setImmediate(fn);
+        #else
+        haxe.Timer.delay(fn, 0);
+        #end
     }
 
     @:allow(hxgnd) @:noCompletion
@@ -39,38 +50,66 @@ class Stream<A> {
             return array;
         }
 
-        JsTools.setImmediate(function () {
+        _invokeAsync(function () {
             try {
                 for (handler in _updatedHandlers) handler.f(value);
                 _updatedHandlers = filter();
                 _state = Opened;
-            } catch (e: Dynamic) {
+            } catch (e: Error) {
                 _invokeFailed(e);
+            } catch (e: Dynamic) {
+                _invokeFailed(new Error(Std.string(e)));
             }
         });
     }
 
     @:allow(hxgnd) @:noCompletion
     function _invokeClosed(): Void {
-        JsTools.setImmediate(function () {
+        _invokeAsync(function () {
             try {
                 for (f in _closedHandlers) f();
+                _invokeFinally();
                 _clear();
                 _state = Closed;
-            } catch (e: Dynamic) {
+            } catch (e: Error) {
                 _invokeFailed(e);
+            } catch (e: Dynamic) {
+                _invokeFailed(new Error(Std.string(e)));
             }
         });
     }
 
     @:allow(hxgnd) @:noCompletion
-    function _invokeFailed(error: Dynamic): Void {
-        JsTools.setImmediate(function () {
-            for (f in _failedHandlers)
+    function _invokeFailed(error: Error): Void {
+        _invokeAsync(function () {
+            for (f in _failedHandlers) {
                 try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
+            }
+            _invokeFinally();
             _clear();
             _state = Failed(error);
         });
+    }
+
+    @:allow(hxgnd) @:noCompletion
+    inline function _invokeFinally(): Void {
+        for (f in _finallyHandlers) {
+            try f() catch (e: Dynamic) trace(e); //TODO エラーダンプ
+        }
+    }
+
+    function get_isPending() {
+        return switch (_state) {
+            case Pending: true;
+            case _: false;
+        }
+    }
+
+    function get_isClosed() {
+        return switch (_state) {
+            case Closed, Failed(_): true;
+            case _: false;
+        }
     }
 
     function update(value: A): Void {
@@ -91,7 +130,7 @@ class Stream<A> {
         }
     }
 
-    function fail(x: Dynamic): Void {
+    function fail(x: Error): Void {
         switch (_state) {
             case Pending, Opened:
                 _state = Sealed;
@@ -110,26 +149,33 @@ class Stream<A> {
         }
     }
 
-    public function then(updated: A -> Void, ?closed: Void -> Void, ?failed: Dynamic -> Void): Stream<A> {
+    public function then(updated: A -> Void, ?closed: Void -> Void, ?failed: Error -> Void, ?finally: Void -> Void): Stream<A> {
         switch (_state) {
             case Pending, Opened, Sealed:
                 if (updated != null) _updatedHandlers.push({f: updated, loop: true});
                 if (closed != null) _closedHandlers.push(closed);
                 if (failed != null) _failedHandlers.push(failed);
+                if (finally != null) _finallyHandlers.push(finally);
             case Closed:
-                if (closed != null) JsTools.setImmediate(closed);
+                if (closed != null) _invokeAsync(closed);
+                if (finally != null) _invokeAsync(finally);
             case Failed(e):
-                if (failed != null) JsTools.setImmediate(failed.bind(e));
+                if (failed != null) _invokeAsync(failed.bind(e));
+                if (finally != null) _invokeAsync(finally);
         }
         return this;
     }
 
-    public function thenClose(closed: Void -> Void): Stream<A> {
+    public function thenClosed(closed: Void -> Void): Stream<A> {
         return then(null, closed);
     }
 
-    public function thenError(failed: Dynamic -> Void): Stream<A> {
+    public function thenError(failed: Error -> Void): Stream<A> {
         return then(null, null, failed);
+    }
+
+    public function thenFinally(finally: Void -> Void): Stream<A> {
+        return then(null, null, null, finally);
     }
 
     public function await(updated: A -> Void): Stream<A> {
@@ -140,25 +186,6 @@ class Stream<A> {
         }
         return this;
     }
-
-    //public function head(): Promise<A> {
-        //return switch (_state) {
-            //case Pending:
-                //new Promise(function (resolve, reject) {
-                    //await(resolve);
-                    //then(null, function () reject(new Error("Closed")), reject);
-                    //return function () {};
-                //});
-            //case Opened:
-                //Promise.rejected(new Error("Opened"));
-            //case Sealed:
-                //Promise.rejected(new Error("Opened"));
-            //case Closed:
-                //Promise.rejected(new Error("Closed"));
-            //case Failed(e):
-                //Promise.rejected(e);
-        //}
-    //}
 
     public function next(): Promise<A> {
         return switch (_state) {
@@ -201,9 +228,9 @@ class Stream<A> {
         });
     }
 
-    public function chain<B>(f: A -> Promise<B>, ?resume: Dynamic -> Option<B>): Stream<B> {
+    public function chain<B>(f: A -> Promise<B>, ?resume: Error -> Option<B>): Stream<B> {
         return new Stream(function (update, close, fail) {
-            var promise;
+            var promise = null;
             this.then(function (a) {
                 promise = if (resume == null) {
                     f(a).then(function (b) update(b), fail);
@@ -229,5 +256,5 @@ private enum _StreamState<T> {
     Opened;
     Sealed;
     Closed;
-    Failed(error: Dynamic);
+    Failed(error: Error);
 }

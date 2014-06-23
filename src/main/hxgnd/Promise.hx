@@ -15,8 +15,10 @@ class Promise<A> {
         _state = Pending;
         try {
             _abort = executor(resolve, reject);
+        } catch (e: Error) {
+            _state = Rejected(e);
         } catch (e: Dynamic) {
-            _state = Rejected(Std.is(e, Error) ? e : new Error(Std.string(e)));
+            _state = Rejected(new Error(Std.string(e)));
         }
     }
 
@@ -45,8 +47,10 @@ class Promise<A> {
                 _invokeFinally();
                 _clear();
                 _state = Resolved(value);
+            } catch (e: Error) {
+                _invokeRejected(e);
             } catch (e: Dynamic) {
-                _invokeRejected(Std.is(e, Error) ? e : new Error(Std.string(e)));
+                _invokeRejected(new Error(Std.string(e)));
             }
         });
     }
@@ -64,7 +68,7 @@ class Promise<A> {
     }
 
     @:allow(hxgnd) @:noCompletion
-    function _invokeFinally(): Void {
+    inline function _invokeFinally(): Void {
         for (f in _finallyHandlers) {
             try f() catch (e: Dynamic) trace(e); //TODO エラーダンプ
         }
