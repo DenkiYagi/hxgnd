@@ -1,5 +1,4 @@
 package hxgnd;
-import haxe.Timer;
 
 class Promise<A> {
     @:allow(hxgnd) @:noCompletion var _state: _PromiseState<A>;
