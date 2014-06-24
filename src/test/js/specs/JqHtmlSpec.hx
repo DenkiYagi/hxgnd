@@ -8,31 +8,42 @@ using hxgnd.js.JqHtml;
 class JqHtmlSpec {    
     @:describe
     public static function add(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("element", function() {
-            jq.add(Browser.document.body);
+            var jq = new JqHtml(Browser.document.body);
+            var div = Browser.document.createElement("div");
+            jq.add(div);
         });
         Mocha.it("elements", function() {
-            jq.add([Browser.document.body]);
+            var jq = new JqHtml(Browser.document.body);
+            var div = Browser.document.createElement("div");
+            jq.add([div]);
         });
-        // selection or content?
         Mocha.it("selection", function() {
-            jq.add(jq);
+            var jq = new JqHtml(Browser.document.body);
+            var div = new JqHtml(Browser.document.createElement("div"));
+            jq.add(div);
         });
         Mocha.it("string", function() {
-            jq.add("str");
+            var jq = new JqHtml(Browser.document.body);
+            jq.add("div");
         });
         Mocha.it("selector, element", function() {
-            jq.add("str", Browser.document.body);
+            var jq = new JqHtml(Browser.document.body);
+            jq.add("div", Browser.document.body);
+        });
+        Mocha.it("nodeList", function() {
+            var jq = new JqHtml(Browser.document.body);
+            var nodeList = Browser.document.getElementsByTagName("div");
+            jq.add(nodeList);
         });
     }
     
     @:describe
     public static function addBack(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("selector", function() {
-            jq.addBack();
-            //jq.addBack("body");
+            var jq = new JqHtml(Browser.document.body);
+            jq.next().addBack();
+            jq.next().addBack("div");
         });
     }
     
@@ -85,10 +96,20 @@ class JqHtmlSpec {
         });
     }
     
+    @:describe
     public static function detach(): Void {
         var jq = new JqHtml(Browser.document.body);
         Mocha.it("selector", function() {
             jq.detach("selector");
+        });
+    }
+    
+    @:describe
+    public static function next(): Void {
+        Mocha.it("selector", function() {
+            var jq = new JqHtml(Browser.document.body);
+            jq.next();
+            jq.next("div");
         });
     }
 }

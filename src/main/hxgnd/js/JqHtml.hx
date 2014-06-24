@@ -3,6 +3,7 @@ package hxgnd.js;
 import js.html.Element;
 import js.html.Event;
 import js.html.EventTarget;
+import js.html.NodeList;
 
 @:native("jQuery")
 extern class JqHtml implements ArrayAccess<Element> {
@@ -15,9 +16,10 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (element: Element): JqHtml{})
     @:overload(function (elements: Array<Element>): JqHtml{})
     @:overload(function (selection: JqHtml): JqHtml{})
-    @:overload(function (selector: String, element: Element): JqHtml{})
-
+    @:overload(function (selector: String, element: Element): JqHtml { } )
+    @:overload(function (nodeList: NodeList): JqHtml{})
     function add(selector: String): JqHtml;
+    
     function addBack(?selector: String): JqHtml;
 
     @:overload(function (fn: Int -> String -> String): JqHtml{})
@@ -155,7 +157,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function mouseout(): JqHtml;
     //function mouseover(): JqHtml;
     //function mouseup(): JqHtml;
-    //function next(): JqHtml;
+    function next(?selector: String): JqHtml;
     //function nextAll(): JqHtml;
     //function nextUntil(): JqHtml;
     //function not(): JqHtml;
