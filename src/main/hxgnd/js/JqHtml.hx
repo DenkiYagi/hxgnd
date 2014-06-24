@@ -20,7 +20,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     function add(selector: String): JqHtml;
     function addBack(?selector: String): JqHtml;
 
-    @:overload(function (f: Int -> String -> String): JqHtml{})
+    @:overload(function (fn: Int -> String -> String): JqHtml{})
     function addClass(className: String): JqHtml;
 
     //function after(): JqHtml;
@@ -34,9 +34,9 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     @:overload(function (content: Element): JqHtml{})
     @:overload(function (content: JqHtml): JqHtml{})
-    @:overload(function (f: Int -> String -> String): JqHtml{})
-    @:overload(function (f: Int -> String -> Element): JqHtml{})
-    @:overload(function (f: Int -> String -> JqHtml): JqHtml{})
+    @:overload(function (fn: Int -> String -> String): JqHtml{})
+    @:overload(function (fn: Int -> String -> Element): JqHtml{})
+    @:overload(function (fn: Int -> String -> JqHtml): JqHtml{})
     function append(content: String): JqHtml;
 
     @:overload(function (element: Element): JqHtml{})
@@ -48,7 +48,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (key: String, value: String): JqHtml{})
     @:overload(function (key: String, value: Float): JqHtml{})
     @:overload(function (key: String, value: Bool): JqHtml{})
-    @:overload(function (key: String, f: Int -> String -> String): JqHtml{})
+    @:overload(function (key: String, fn: Int -> String -> String): JqHtml{})
     @:overload(function (obj: Dynamic<String>): JqHtml{})
     @:overload(function (obj: {}): JqHtml{})
     function attr(key: String): String;
@@ -70,7 +70,7 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     @:overload(function (key: Array<String>): Array<String>{})
     @:overload(function (key: String, value: String): JqHtml{})
-    @:overload(function (key: String, f: Int -> String -> String): JqHtml{})
+    @:overload(function (key: String, fn: Int -> String -> String): JqHtml{})
     @:overload(function (obj: Dynamic<String>): JqHtml{})
     function css(key: String): String;
 
@@ -133,7 +133,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function hover(): JqHtml;
 
     @:overload(function (): String{})
-    @:overload(function (f: Int -> String -> String): JqHtml{})
+    @:overload(function (fn: Int -> String -> String): JqHtml{})
     function html(htmlString: String): JqHtml;
 
     //function index(): JqHtml;
@@ -193,7 +193,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function prevAll(): JqHtml;
     //function prevUntil(): JqHtml;
 
-    @:overload(function (key: String, f: Int -> String -> Dynamic): JqHtml{})
+    @:overload(function (key: String, fn: Int -> String -> Dynamic): JqHtml{})
     @:overload(function (key: String, value: Dynamic): JqHtml{})
     @:overload(function (obj: Dynamic<Dynamic>): JqHtml{})
     @:overload(function (obj: {}): JqHtml{})
@@ -206,7 +206,7 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     function removeAttr(key: String): JqHtml;
 
-    @:overload(function (f: Int -> String -> Void): JqHtml{})
+    @:overload(function (fn: Int -> String -> Void): JqHtml{})
     function removeClass(className: String): JqHtml;
 
     @:overload(function (list: Array<String>): JqHtml{})
@@ -246,7 +246,7 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     //function val(): JqHtml;
     @:overload(function (value: Dynamic): JqHtml{})
-    @:overload(function (f: Int -> String -> String): JqHtml{})
+    @:overload(function (fn: Int -> String -> String): JqHtml{})
     function val(): Dynamic;
 
     //function width(): JqHtml;
