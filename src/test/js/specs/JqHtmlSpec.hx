@@ -49,39 +49,43 @@ class JqHtmlSpec {
     
     @:describe
     public static function appendTo(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("selector", function() {
-            jq.appendTo("str");
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.appendTo("div");
         });
         Mocha.it("element", function() {
-            jq.appendTo(Browser.document.body);
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.appendTo(elm);
         });
         Mocha.it("selection", function() {
-            jq.appendTo(jq);
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.appendTo(div2);
         });
     }
     
     @:describe
     public static function children(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("selector", function() {
+           var jq = new JqHtml(Browser.document.body);
            jq.children();
-           jq.children("str");
+           jq.children("div");
         });
     }
     
     @:describe
     public static function contents(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("call", function() {
+            var jq = new JqHtml(Browser.document.body);
             jq.contents();
         });
     }
     
     @:describe
     public static function delay(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("duration", function() {
+            var jq = new JqHtml(Browser.document.body);
             jq.delay(100);
             jq.delay(200, "queue");
         });
@@ -89,8 +93,8 @@ class JqHtmlSpec {
     
     @:describe
     public static function dequeue(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("dequeue", function() {
+            var jq = new JqHtml(Browser.document.body);
             jq.dequeue();
             jq.dequeue("queue");
         });
@@ -98,9 +102,10 @@ class JqHtmlSpec {
     
     @:describe
     public static function detach(): Void {
-        var jq = new JqHtml(Browser.document.body);
         Mocha.it("selector", function() {
-            jq.detach("selector");
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.detach();
+            div.detach("div");
         });
     }
     
