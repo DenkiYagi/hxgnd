@@ -3,6 +3,7 @@ package hxgnd.js;
 import js.html.Element;
 import js.html.Event;
 import js.html.EventTarget;
+import js.html.idb.Index;
 import js.html.NodeList;
 
 @:native("jQuery")
@@ -173,15 +174,31 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (fn: Int -> Int -> Int): JqHtml{})
     function innerWidth(): Int;
     
-    //function insertAfter(): JqHtml;
-    //function insertBefore(): JqHtml;
-    //function is(): JqHtml;
+    @:overload(function (target: Element): JqHtml{})
+    @:overload(function (target: JqHtml): JqHtml{})
+    function insertAfter(target: String): JqHtml;
+    
+    @:overload(function (target: Element): JqHtml{})
+    @:overload(function (target: JqHtml): JqHtml{})
+    function insertBefore(target: String): JqHtml;
+
+    @:overload(function (element: Element): Bool{})
+    @:overload(function (elements: Array<Element>): Bool{})
+    @:overload(function (nodeList: NodeList): Bool{})
+    @:overload(function (fn: Int -> Element -> Bool): Bool { } )
+    @:overload(function (selection: JqHtml): Bool{})
+    function is(selector: String): Bool;
+    
     //function keydown(): JqHtml;
     //function keypress(): JqHtml;
     //function keyup(): JqHtml;
-    //function last(): JqHtml;
+
+    function last(): JqHtml;
+    
     //function load(): JqHtml;
-    //function map(): JqHtml;
+    
+    function map(fn: Int -> Element -> Dynamic): JqHtml;
+    
     //function mousedown(): JqHtml;
     //function mouseenter(): JqHtml;
     //function mouseleave(): JqHtml;
@@ -189,11 +206,23 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function mouseout(): JqHtml;
     //function mouseover(): JqHtml;
     //function mouseup(): JqHtml;
+    
     function next(?selector: String): JqHtml;
-    //function nextAll(): JqHtml;
-    //function nextUntil(): JqHtml;
-    //function not(): JqHtml;
-    //function offset(): JqHtml;
+    
+    function nextAll(?selector: String): JqHtml;
+    
+    @:overload(function (?element: Element, ?filter: String): JqHtml{})
+    @:overload(function (?content: JqHtml, ?filter: String): JqHtml{})
+    function nextUntil(?selector: String, ?filter: String): JqHtml;
+    
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (nodeList: NodeList): JqHtml{})
+    @:overload(function (fn: Int -> Element -> Bool): JqHtml{})
+    @:overload(function (selection: JqHtml): JqHtml{})
+    function not(?selector: String): JqHtml;
+    
+    //function offset(): Dynamic;
 
     function offsetParent(): JqHtml;
 
@@ -212,20 +241,39 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (): JqHtml{})
     function unbind(eventType: String, ?selector: String, ?handler: Event -> Void): JqHtml;
 
-    //function outerHeight(): JqHtml;
-    //function outerWidth(): JqHtml;
+    function outerHeight(?includeMargin: Bool): Int;
+    
+    function outerWidth(?includeMargin: Bool): Int;
 
     function parent(?selector: String): JqHtml;
 
     function parents(?selector: String): JqHtml;
 
-    //function parentsUntil(): JqHtml;
-    //function position(): JqHtml;
-    //function prepend(): JqHtml;
-    //function prependTo(): JqHtml;
-    //function prev(): JqHtml;
-    //function prevAll(): JqHtml;
-    //function prevUntil(): JqHtml;
+    @:overload(function (?element: Element, ?filter: String): JqHtml{})
+    @:overload(function (?content: JqHtml, ?filter: String): JqHtml{})
+    function parentsUntil(?selector: String, ?filter: String): JqHtml;
+    
+    function position(): Dynamic;
+    
+    // FIXME 第2引数以降の指定方法について確認(appendも同様)
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (selection: JqHtml): JqHtml{})
+    @:overload(function (fn: Int -> String -> String): JqHtml{})
+    @:overload(function (fn: Int -> String -> Element): JqHtml{})
+    @:overload(function (fn: Int -> String -> JqHtml): JqHtml{})
+    function prepend(content: String): JqHtml;
+    
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (content: JqHtml): JqHtml{})
+    function prependTo(selector: String): JqHtml;
+    
+    function prev(?selector: String): JqHtml;
+    
+    function prevAll(?selector: String): JqHtml;
+    
+    @:overload(function (?element: Element, ?filter: String): JqHtml{})
+    @:overload(function (?content: JqHtml, ?filter: String): JqHtml{})
+    function prevUntil(?selector: String, ?filter: String): JqHtml;
 
     @:overload(function (key: String, fn: Int -> String -> Dynamic): JqHtml{})
     @:overload(function (key: String, value: Dynamic): JqHtml{})

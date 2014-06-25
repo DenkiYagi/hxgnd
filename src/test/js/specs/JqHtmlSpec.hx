@@ -274,11 +274,275 @@ class JqHtmlSpec {
     }
     
     @:describe
+    public static function insertAfter(): Void {
+        Mocha.it("target string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.insertAfter("div");
+        });
+        Mocha.it("target element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.insertAfter(elm);
+        });
+        Mocha.it("target jQuery", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.insertAfter(div2);
+        });
+    }
+    
+    @:describe
+    public static function insertBefore(): Void {
+        Mocha.it("target string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.insertBefore("div");
+        });
+        Mocha.it("target element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.insertBefore(elm);
+        });
+        Mocha.it("target jQuery", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.insertBefore(div2);
+        });
+    }
+    
+    @:describe
+    public static function is(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.is("div");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.is(elm);
+        });
+        Mocha.it("elements", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.is([elm]);
+        });
+        Mocha.it("nodeList", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var nodeList = Browser.document.getElementsByTagName("div");
+            div.is(nodeList);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.is(function (index: Int, elm: Element) { return true; } );
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.is(div);
+        });
+    }
+    
+    @:describe
+    public static function last(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.last();
+        });
+    }
+    
+    @:describe
+    public static function map(): Void {
+        Mocha.it("callback", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.map(function (index: Int, elm: Element) { return elm; } );
+        });
+    }
+    
+    @:describe
     public static function next(): Void {
         Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.next();
+            div.next("div");
+        });
+    }
+    
+    @:describe
+    public static function nextAll(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.nextAll();
+            div.nextAll("div");
+        });
+    }
+
+    @:describe
+    public static function nextUntil(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.nextUntil();
+            div.nextUntil("div");
+            div.nextUntil("div", "span");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.nextUntil(elm);
+            div.nextUntil(elm, "div");
+        });
+    }
+    
+    @:describe
+    public static function not(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.not("div");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.not(elm);
+        });
+        Mocha.it("elements", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.not([elm]);
+        });
+        Mocha.it("nodeList", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var nodeList = Browser.document.getElementsByTagName("div");
+            div.not(nodeList);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.not(function (index: Int, elm: Element) { return true; } );
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.not(div);
+        });
+    }
+    
+    @:describe
+    public static function outerHeight(): Void {
+        Mocha.it("includeMargin", function() {
             var jq = new JqHtml(Browser.document.body);
-            jq.next();
-            jq.next("div");
+            jq.outerHeight();
+            jq.outerHeight(true);
+        });
+    }
+    
+    @:describe
+    public static function outerWidth(): Void {
+        Mocha.it("includeMargin", function() {
+            var jq = new JqHtml(Browser.document.body);
+            jq.outerWidth();
+            jq.outerWidth(true);
+        });
+    }
+    
+    @:describe
+    public static function parentsUntil(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parentsUntil();
+            div.parentsUntil("div");
+            div.parentsUntil("div", "span");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.parentsUntil(elm);
+            div.parentsUntil(elm, "div");
+        });
+    }
+    
+    @:describe
+    public static function position(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.position();
+        });
+    }
+    
+    @:describe
+    public static function prepend(): Void {
+        Mocha.it("content", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prepend("div");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.prepend(elm);
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.prepend(div2);
+        });
+        Mocha.it("function return string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prepend(function (index: Int, html: String) { return "div"; } );
+        });
+        Mocha.it("function return element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            // FIXME テストの書き方
+        });
+        Mocha.it("function return jQuery", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            // FIXME テストの書き方
+        });
+    }
+    
+    @:describe
+    public static function prependTo(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prependTo("div");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.prependTo(elm);
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.prependTo(div2);
+        });
+    }
+    
+    @:describe
+    public static function prev(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prev();
+            div.prev("div");
+        });
+    }
+    
+    @:describe
+    public static function prevAll(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prevAll();
+            div.prevAll("div");
+        });
+    }
+    
+    @:describe
+    public static function prevUntil(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prevUntil();
+            div.prevUntil("div");
+            div.prevUntil("div", "span");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.prevUntil(elm);
+            div.prevUntil(elm, "div");
         });
     }
 }
