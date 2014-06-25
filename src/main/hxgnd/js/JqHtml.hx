@@ -19,7 +19,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (selector: String, element: Element): JqHtml { } )
     @:overload(function (nodeList: NodeList): JqHtml{})
     function add(selector: String): JqHtml;
-    
+
     function addBack(?selector: String): JqHtml;
 
     @:overload(function (fn: Int -> String -> String): JqHtml{})
@@ -61,9 +61,12 @@ extern class JqHtml implements ArrayAccess<Element> {
     
     function children(?selector: String): JqHtml;
     
-    //function clearQueue(): JqHtml;
+    function clearQueue(?queueName: String): JqHtml;
+    
     //function click(): JqHtml;
-    //function clone(): JqHtml;
+    
+    @:overload(function (?withDataAndEvents: Bool): JqHtml{})
+    function clone(?withDataAndEvents: Bool, ?deepWithDataAndEvents: Bool): JqHtml;
 
     @:overload(function (selection: JqHtml): JqHtml{})
     @:overload(function (context: Element): JqHtml{})
@@ -101,14 +104,22 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function fadeOut(): JqHtml;
     //function fadeTo(): JqHtml;
     //function fadeToggle(): JqHtml;
-    //function filter(): JqHtml;
+    
+    @:overload(function (fn: Int -> Element -> Bool): JqHtml{})
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (nodeList: NodeList): JqHtml{})
+    @:overload(function (selection: JqHtml): JqHtml{})
+    function filter(selector :String): JqHtml;
 
     @:overload(function (jqhtml: JqHtml): JqHtml{})
     @:overload(function (element: Element): JqHtml{})
     function find(selector: String): JqHtml;
 
-    //function finish(): JqHtml;
-    //function first(): JqHtml;
+    function finish(?queue: String): JqHtml;
+    
+    function first(): JqHtml;
+    
     //function focus(): JqHtml;
     //function focusin(): JqHtml;
     //function focusout(): JqHtml;
@@ -116,9 +127,17 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (): Array<Element>{})
     function get(index: Int): Element;
 
-    //function has(): JqHtml;
-    //function hasClass(): JqHtml;
-    //function height(): JqHtml;
+    @:overload(function (contained: Element): JqHtml{})
+    function has(selector :String): JqHtml;
+    
+    function hasClass(className: String): Bool;
+    
+    // FIXME return string & number
+    @:overload(function (value: String): JqHtml{})
+    @:overload(function (value: Int): JqHtml{})
+    @:overload(function (value: Float): JqHtml{})
+    @:overload(function (fn: Int -> Int -> Dynamic): JqHtml {})
+    function height(): Int;
 
     @:overload(function (?duration: Int, ?easing: String, hander: Void -> Void): JqHtml{})
     @:overload(function (options: EffectOptions): JqHtml{})
@@ -138,9 +157,22 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (fn: Int -> String -> String): JqHtml{})
     function html(htmlString: String): JqHtml;
 
-    //function index(): JqHtml;
-    //function innerHeight(): JqHtml;
-    //function innerWidth(): JqHtml;
+    // FIXME return Number
+    @:overload(function (selector: String): Int{})
+    @:overload(function (element: Element): Int{})
+    @:overload(function (content: JqHtml): Int{})
+    function index(): Int;
+    
+    // FIXME return Number
+    function innerHeight(): Int;
+    
+    // FIXME function extern あっているか不明(動きはする)
+    @:overload(function (value: Int): JqHtml{})
+    @:overload(function (value: Float): JqHtml{})
+    @:overload(function (value: String): JqHtml{})
+    @:overload(function (fn: Int -> Int -> Int): JqHtml{})
+    function innerWidth(): Int;
+    
     //function insertAfter(): JqHtml;
     //function insertBefore(): JqHtml;
     //function is(): JqHtml;
