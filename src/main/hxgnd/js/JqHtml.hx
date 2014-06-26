@@ -35,18 +35,24 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function ajaxSuccess(): JqHtml;
     //function animate(): JqHtml;
 
-    @:overload(function (content: Element): JqHtml{})
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (nodeList: NodeList): JqHtml{})
     @:overload(function (content: JqHtml): JqHtml{})
+    @:overload(function (contents: Array<JqHtml>): JqHtml { } )
+    // TODO 戻り値が異なるfunctionのexternを利用するとコンパイルが通らない 原因不明
     @:overload(function (fn: Int -> String -> String): JqHtml{})
     @:overload(function (fn: Int -> String -> Element): JqHtml{})
     @:overload(function (fn: Int -> String -> JqHtml): JqHtml{})
+    @:overload(function (contents: Array<String>): JqHtml{})
     function append(content: String): JqHtml;
 
     @:overload(function (element: Element): JqHtml{})
     @:overload(function (content: JqHtml): JqHtml{})
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (contents: Array<JqHtml>): JqHtml { } )
+    @:overload(function (selectors: Array<String>): JqHtml{})
     function appendTo(selector :String): JqHtml;
-
-    //function attr(): JqHtml;
 
     @:overload(function (key: String, value: String): JqHtml{})
     @:overload(function (key: String, value: Float): JqHtml{})
@@ -71,7 +77,8 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     @:overload(function (selection: JqHtml): JqHtml{})
     @:overload(function (context: Element): JqHtml{})
-    function closest(selector: String, ?context: Element): JqHtml;  
+    function closest(selector: String, ?context: Element): JqHtml;
+    
     function contents(): JqHtml;
 
     @:overload(function (key: Array<String>): Array<String>{})
@@ -92,6 +99,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     //function delegate(): JqHtml;
     
     function dequeue(?queueName: String): JqHtml;
+    
     function detach(?selector: String): JqHtml;
     
     //function each(): JqHtml;
@@ -133,11 +141,11 @@ extern class JqHtml implements ArrayAccess<Element> {
     
     function hasClass(className: String): Bool;
     
-    // FIXME return string & number
     @:overload(function (value: String): JqHtml{})
     @:overload(function (value: Int): JqHtml{})
-    @:overload(function (value: Float): JqHtml{})
-    @:overload(function (fn: Int -> Int -> Dynamic): JqHtml {})
+    // TODO 戻り値が異なるfunctionのexternを利用するとコンパイルが通らない 原因不明
+    @:overload(function (fn: Int -> Int -> String): JqHtml{})
+    @:overload(function (fn: Int -> Int -> Int): JqHtml {})
     function height(): Int;
 
     @:overload(function (?duration: Int, ?easing: String, hander: Void -> Void): JqHtml{})
@@ -158,28 +166,32 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (fn: Int -> String -> String): JqHtml{})
     function html(htmlString: String): JqHtml;
 
-    // FIXME return Number
     @:overload(function (selector: String): Int{})
     @:overload(function (element: Element): Int{})
     @:overload(function (content: JqHtml): Int{})
     function index(): Int;
     
-    // FIXME return Number
     function innerHeight(): Int;
-    
-    // FIXME function extern あっているか不明(動きはする)
+
     @:overload(function (value: Int): JqHtml{})
-    @:overload(function (value: Float): JqHtml{})
     @:overload(function (value: String): JqHtml{})
     @:overload(function (fn: Int -> Int -> Int): JqHtml{})
     function innerWidth(): Int;
     
     @:overload(function (target: Element): JqHtml{})
+    @:overload(function (targets: Array<Element>): JqHtml{})
+    @:overload(function (target: NodeList): JqHtml{})
     @:overload(function (target: JqHtml): JqHtml{})
+    @:overload(function (targets: Array<JqHtml>): JqHtml{})
+    @:overload(function (targets: Array<String>): JqHtml{})
     function insertAfter(target: String): JqHtml;
     
     @:overload(function (target: Element): JqHtml{})
+    @:overload(function (targets: Array<Element>): JqHtml{})
+    @:overload(function (target: NodeList): JqHtml{})
     @:overload(function (target: JqHtml): JqHtml{})
+    @:overload(function (targets: Array<JqHtml>): JqHtml{})
+    @:overload(function (targets: Array<String>): JqHtml{})
     function insertBefore(target: String): JqHtml;
 
     @:overload(function (element: Element): Bool{})
@@ -197,7 +209,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     
     //function load(): JqHtml;
     
-    function map(fn: Int -> Element -> Dynamic): JqHtml;
+    function map<T>(fn: Int -> Element -> T): JqHtml;
     
     //function mousedown(): JqHtml;
     //function mouseenter(): JqHtml;
@@ -253,18 +265,26 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (?content: JqHtml, ?filter: String): JqHtml{})
     function parentsUntil(?selector: String, ?filter: String): JqHtml;
     
-    function position(): Dynamic;
+    function position(): { left: Int, top: Int };
     
-    // FIXME 第2引数以降の指定方法について確認(appendも同様)
     @:overload(function (element: Element): JqHtml{})
-    @:overload(function (selection: JqHtml): JqHtml{})
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (nodeList: NodeList): JqHtml{})
+    @:overload(function (content: JqHtml): JqHtml{})
+    @:overload(function (contents: Array<JqHtml>): JqHtml{})
     @:overload(function (fn: Int -> String -> String): JqHtml{})
+    // TODO 戻り値が異なるfunctionのexternを利用するとコンパイルが通らない 原因不明
     @:overload(function (fn: Int -> String -> Element): JqHtml{})
     @:overload(function (fn: Int -> String -> JqHtml): JqHtml{})
+    @:overload(function (selectors: Array<String>): JqHtml{})
     function prepend(content: String): JqHtml;
-    
+
     @:overload(function (element: Element): JqHtml{})
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (nodeList: NodeList): JqHtml{})
     @:overload(function (content: JqHtml): JqHtml{})
+    @:overload(function (contents: Array<JqHtml>): JqHtml{})
+    @:overload(function (selectors: Array<String>): JqHtml{})
     function prependTo(selector: String): JqHtml;
     
     function prev(?selector: String): JqHtml;
@@ -297,27 +317,26 @@ extern class JqHtml implements ArrayAccess<Element> {
     function removeProp(key: String): JqHtml;
 
     @:overload(function (element: Element): JqHtml{})
-    @:overload(function (content: JqHtml): JqHtml{})
-    function replaceAll(?selector: String): JqHtml;
+    @:overload(function (elements: Array<Element>): JqHtml{})
+    @:overload(function (nodeList: NodeList): JqHtml{})
+    @:overload(function (contents: JqHtml): JqHtml{})
+    @:overload(function (contents: Array<JqHtml>): JqHtml{})
+    @:overload(function (selectors: Array<String>): JqHtml{})
+    function replaceAll(selector: String): JqHtml;
     
     //function replaceWith(): JqHtml;
     //function resize(): JqHtml;
     //function scroll(): JqHtml;
     
     @:overload(function (value: Int): JqHtml{})
-    @:overload(function (value: Float): JqHtml{})
     function scrollLeft(): Int;
     
     @:overload(function (value: Int): JqHtml{})
-    @:overload(function (value: Float): JqHtml{})
     function scrollTop(): Int;
     
     //function select(): JqHtml;
     
     function siblings(?selector: String): JqHtml;
-    
-    // 1.8 deprecated
-    //function size(): JqHtml;
     
     function slice(start: Int, ?end: Int): JqHtml;
     
@@ -336,9 +355,9 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     function toArray(): Array<Element>;
 
-    @:overload(function (className: String, ?flag: Bool): JqHtml{})
+    @:overload(function (?flag: Bool): JqHtml{})
     @:overload(function (fn: Int -> String -> Bool -> String, ?flag: Bool): JqHtml{})
-    function toggleClass(?flag: Bool): JqHtml;
+    function toggleClass(className: String, ?flag: Bool): JqHtml;
 
     @:overload(function (event: Event, ?extraParameter: Dynamic): JqHtml{})
     function trigger(eventType: String, ?extraParameter: Dynamic): JqHtml;
