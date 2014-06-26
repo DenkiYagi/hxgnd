@@ -545,4 +545,113 @@ class JqHtmlSpec {
             div.prevUntil(elm, "div");
         });
     }
+    
+    @:describe
+    public static function replaceAll(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.replaceAll("str");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("span");
+            div.replaceAll(elm);
+        });
+        Mocha.it("content", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("span"));
+            div.replaceAll(div2);
+        });
+    }
+    
+    @:describe
+    public static function scroollLeft(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.scrollLeft();
+        });
+        Mocha.it("value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.scrollLeft(100);
+            div.scrollLeft(200.0);
+        });
+    }
+    
+    @:describe
+    public static function scrollTop(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.scrollTop();
+        });
+        Mocha.it("value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.scrollTop(300);
+            div.scrollTop(400.0);
+        });
+    }
+    
+    @:describe
+    public static function siblings(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.siblings();
+            div.siblings("div");
+        });
+    }
+    
+    @:describe
+    public static function slice(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slice(0);
+            div.slice(1, 2);
+        });
+    }
+    
+    @:describe
+    public static function text(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.text();
+        });
+        Mocha.it("text", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.text("string");
+            div.text(10);
+            div.text(20.1);
+            div.text(true);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.text(function(index: Int, text: String) { return "new text"; } );
+        });
+    }
+
+    @:describe
+    public static function toggleClass(): Void {
+        Mocha.it("class", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggleClass("className");
+            div.toggleClass("className", true);
+        });
+        Mocha.it("switch", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggleClass();
+            div.toggleClass(true);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggleClass(function (index: Int, className: String, flag: Bool) { return "className"; } );
+            div.toggleClass(function (index: Int, className: String, flag: Bool) { return "className"; }, true);
+        });
+    }
+    
+        
+    @:describe
+    public static function unwrap(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.unwrap();
+        });
+    }
 }

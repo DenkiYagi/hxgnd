@@ -296,26 +296,49 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     function removeProp(key: String): JqHtml;
 
-    //function replaceAll(): JqHtml;
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (content: JqHtml): JqHtml{})
+    function replaceAll(?selector: String): JqHtml;
+    
     //function replaceWith(): JqHtml;
     //function resize(): JqHtml;
     //function scroll(): JqHtml;
-    //function scrollLeft(): JqHtml;
-    //function scrollTop(): JqHtml;
+    
+    @:overload(function (value: Int): JqHtml{})
+    @:overload(function (value: Float): JqHtml{})
+    function scrollLeft(): Int;
+    
+    @:overload(function (value: Int): JqHtml{})
+    @:overload(function (value: Float): JqHtml{})
+    function scrollTop(): Int;
+    
     //function select(): JqHtml;
-    //function siblings(): JqHtml;
+    
+    function siblings(?selector: String): JqHtml;
+    
+    // 1.8 deprecated
     //function size(): JqHtml;
-    //function slice(): JqHtml;
+    
+    function slice(start: Int, ?end: Int): JqHtml;
+    
     //function slideDown(): JqHtml;
     //function slideToggle(): JqHtml;
     //function slideUp(): JqHtml;
     //function stop(): JqHtml;
     //function submit(): JqHtml;
-    //function text(): JqHtml;
+    
+    @:overload(function (text: String): JqHtml{})
+    @:overload(function (text: Int): JqHtml{})
+    @:overload(function (text: Float): JqHtml{})
+    @:overload(function (text: Bool): JqHtml{})
+    @:overload(function (fn: Int -> String -> String): JqHtml{})
+    function text(): String;
 
     function toArray(): Array<Element>;
 
-    //function toggleClass(): JqHtml;
+    @:overload(function (className: String, ?flag: Bool): JqHtml{})
+    @:overload(function (fn: Int -> String -> Bool -> String, ?flag: Bool): JqHtml{})
+    function toggleClass(?flag: Bool): JqHtml;
 
     @:overload(function (event: Event, ?extraParameter: Dynamic): JqHtml{})
     function trigger(eventType: String, ?extraParameter: Dynamic): JqHtml;
@@ -324,7 +347,8 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     //function undelegate(): JqHtml;
     //function unload(): JqHtml;
-    //function unwrap(): JqHtml;
+    
+    function unwrap(): JqHtml;
 
     //function val(): JqHtml;
     @:overload(function (value: Dynamic): JqHtml{})
