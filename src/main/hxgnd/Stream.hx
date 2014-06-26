@@ -1,4 +1,5 @@
 package hxgnd;
+import haxe.remoting.Proxy;
 
 class Stream<A> {
     @:allow(hxgnd) @:noCompletion var _state: _StreamState<A>;
@@ -10,6 +11,7 @@ class Stream<A> {
 
     public var isPending(get, null): Bool;
     public var isClosed(get, null): Bool;
+    public var isCanceled(get, null): Bool;
 
     public function new(executor: (A -> Void) -> (Void -> Void) -> (Error -> Void) -> (Void -> Void)) {
         _state = Pending;
@@ -52,9 +54,9 @@ class Stream<A> {
 
         _invokeAsync(function () {
             try {
+                _state = Opened;
                 for (handler in _updatedHandlers) handler.f(value);
                 _updatedHandlers = filter();
-                _state = Opened;
             } catch (e: Error) {
                 _invokeFailed(e);
             } catch (e: Dynamic) {
@@ -64,13 +66,13 @@ class Stream<A> {
     }
 
     @:allow(hxgnd) @:noCompletion
-    function _invokeClosed(): Void {
+    function _invokeClosed(isCancel = false): Void {
         _invokeAsync(function () {
             try {
+                _state = isCancel ? Canceled : Closed;
                 for (f in _closedHandlers) f();
                 _invokeFinally();
                 _clear();
-                _state = Closed;
             } catch (e: Error) {
                 _invokeFailed(e);
             } catch (e: Dynamic) {
@@ -80,14 +82,14 @@ class Stream<A> {
     }
 
     @:allow(hxgnd) @:noCompletion
-    function _invokeFailed(error: Error): Void {
+    function _invokeFailed(error: Error, isCancel = false): Void {
         _invokeAsync(function () {
+            _state = Failed(error);
             for (f in _failedHandlers) {
                 try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
             }
             _invokeFinally();
             _clear();
-            _state = Failed(error);
         });
     }
 
@@ -112,6 +114,13 @@ class Stream<A> {
         }
     }
 
+    function get_isCanceled() {
+        return switch (_state) {
+            case Canceling, Canceled: true;
+            case _: false;
+        }
+    }
+
     function update(value: A): Void {
         switch (_state) {
             case Pending, Opened:
@@ -124,7 +133,7 @@ class Stream<A> {
     function close(): Void {
         switch (_state) {
             case Pending, Opened:
-                _state = Sealed;
+                _state = Closing;
                 _invokeClosed();
             default:
         }
@@ -133,7 +142,7 @@ class Stream<A> {
     function fail(x: Error): Void {
         switch (_state) {
             case Pending, Opened:
-                _state = Sealed;
+                _state = Failing;
                 _invokeFailed((x == null) ? new Error("Rejected") : x);
             default:
         }
@@ -142,21 +151,21 @@ class Stream<A> {
     public function cancel(): Void {
         switch (_state) {
             case Pending, Opened:
-                _state = Sealed;
+                _state = Canceling;
                 _abort();
-                _invokeFailed(new Error("Canceled"));
+                _invokeFailed(new Error("Canceled"), true);
             default:
         }
     }
 
     public function then(updated: A -> Void, ?closed: Void -> Void, ?failed: Error -> Void, ?finally: Void -> Void): Stream<A> {
         switch (_state) {
-            case Pending, Opened, Sealed:
+            case Pending, Opened, Closing, Canceling, Failing:
                 if (updated != null) _updatedHandlers.push({f: updated, loop: true});
                 if (closed != null) _closedHandlers.push(closed);
                 if (failed != null) _failedHandlers.push(failed);
                 if (finally != null) _finallyHandlers.push(finally);
-            case Closed:
+            case Closed, Canceled:
                 if (closed != null) _invokeAsync(closed);
                 if (finally != null) _invokeAsync(finally);
             case Failed(e):
@@ -180,7 +189,7 @@ class Stream<A> {
 
     public function await(updated: A -> Void): Stream<A> {
         switch (_state) {
-            case Pending, Opened, Sealed:
+            case Pending, Opened, Closing:
                 _updatedHandlers.push({f: updated});
             default:
         }
@@ -195,13 +204,20 @@ class Stream<A> {
                     then(null, function () reject(new Error("Closed")), reject);
                     return function () {};
                 });
-            case Sealed:
+            case Closing:
                 new Promise(function (resolve, reject) {
                     then(null, function () reject(new Error("Closed")), reject);
                     return function () {};
                 });
             case Closed:
                 Promise.rejected(new Error("Closed"));
+            case Canceling, Canceled:
+                Promise.rejected(new Error("Canceled"));
+            case Failing:
+                new Promise(function (_, reject) {
+                    this.thenError(reject);
+                    return function () { };
+                });
             case Failed(e):
                 Promise.rejected(e);
         }
@@ -209,15 +225,22 @@ class Stream<A> {
 
     public function tail(): Promise<Unit> {
         return switch (_state) {
-            case Pending, Opened, Sealed:
+            case Pending, Opened, Closing, Canceling:
                 new Promise(function (resolve, reject) {
                     then(null, function () resolve(Unit._), reject);
                     return function () {};
                 });
             case Closed:
                 Promise.resolved(Unit._);
+            case Failing:
+                new Promise(function (_, reject) {
+                    this.thenError(reject);
+                    return function () { };
+                });
             case Failed(e):
                 Promise.rejected(e);
+            case Canceled:
+                Promise.rejected(new Error("Canceled"));
         }
     }
 
@@ -228,23 +251,43 @@ class Stream<A> {
         });
     }
 
-    public function chain<B>(f: A -> Promise<B>, ?resume: Error -> Option<B>): Stream<B> {
+    public function chain<B>(f: A -> Promise<B>): Stream<B> {
         return new Stream(function (update, close, fail) {
-            var promise = null;
+            var promises = [];
             this.then(function (a) {
-                promise = if (resume == null) {
-                    f(a).then(function (b) update(b), fail);
-                } else {
-                    f(a).then(update, function (e) {
-                        switch (resume(e)) {
-                            case Some(b): update(b);
-                            case None:
+                var p = f(a);
+                promises.push(p);
+                p.then(function (b) {
+                    Promise.all(promises.slice(0, promises.indexOf(p))).then(function (_) {
+                        update(b);
+                        promises.remove(p);
+
+                        if (Lambda.empty(promises)) {
+                            switch (this._state) {
+                                case Closing: this.thenClosed(close);
+                                case Closed: close();
+                                case Canceling: this.thenError(fail);
+                                case Canceled: fail(new Error("Canceled"));
+                                case Failing: this.thenError(fail);
+                                case Failed(e): fail(e);
+                                case _:
+                            }
                         }
                     });
-                }
-            }, close, fail);
+                }, function (e) {
+                    fail(e);
+                    Lambda.iter(promises, function (p) p.cancel());
+                    promises = [];
+                });
+            }, function () {
+                if (Lambda.empty(promises)) close();
+            }, function (e) {
+                if (Lambda.empty(promises)) fail(e);
+            });
+
             return function () {
-                if (promise != null) promise.cancel();
+                Lambda.iter(promises, function (p) p.cancel());
+                promises = [];
                 this.cancel();
             }
         });
@@ -254,7 +297,10 @@ class Stream<A> {
 private enum _StreamState<T> {
     Pending;
     Opened;
-    Sealed;
+    Closing;
     Closed;
+    Canceling;
+    Canceled;
+    Failing;
     Failed(error: Error);
 }
