@@ -1,5 +1,4 @@
 package hxgnd;
-import haxe.remoting.Proxy;
 
 class Stream<A> {
     @:allow(hxgnd) @:noCompletion var _state: _StreamState<A>;
