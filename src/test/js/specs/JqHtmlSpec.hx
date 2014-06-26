@@ -138,6 +138,46 @@ class JqHtmlSpec {
     }
     
     @:describe
+    public static function blur(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.blur();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.blur(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.blur( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.blur(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
+    public static function change(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.change();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.change(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.change( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.change(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
     public static function children(): Void {
         Mocha.it("call", function() {
            var jq = new JqHtml(Browser.document.body);
@@ -162,6 +202,26 @@ class JqHtmlSpec {
     }
     
     @:describe
+    public static function click(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.click();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.click(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.click( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.click(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
     public static function clone(): Void {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -182,6 +242,26 @@ class JqHtmlSpec {
         Mocha.it("call", function() {
             var jq = new JqHtml(Browser.document.body);
             jq.contents();
+        });
+    }
+    
+    @:describe
+    public static function dblclick(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.dblclick();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.dblclick(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.dblclick( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.dblclick(function (event: Event) { } );
         });
     }
     
@@ -218,6 +298,26 @@ class JqHtmlSpec {
         Mocha.it("selector", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.detach("div");
+        });
+    }
+    
+    @:describe
+    public static function each(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.each(function (index: Int, elm: Element) { } );
+        });
+    }
+    
+    @:describe
+    public static function eq(): Void {
+        Mocha.it("index", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.eq(1);
+        });
+        Mocha.it("indexFromEnd", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.eq(-5);
         });
     }
 
@@ -274,6 +374,58 @@ class JqHtmlSpec {
     }
     
     @:describe
+    public static function focus(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.click();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focus(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focus( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focus(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
+    public static function focusin(): Void {
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focusin(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focusin( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focusin(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
+    public static function focusout(): Void {
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focusout(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focusout( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.focusout(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
     public static function has(): Void {
         Mocha.it("selector", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -316,6 +468,14 @@ class JqHtmlSpec {
         Mocha.it("callback function string", function() {
             var jq = new JqHtml(Browser.document.body);
             jq.height(function(i: Int, j: Int): String { return "800"; } );
+        });
+    }
+    
+    @:describe
+    public static function hover(): Void {
+        Mocha.it("call", function() {
+            var jq = new JqHtml(Browser.document.body);
+            jq.hover(function (event: Event) { }, function (event: Event) { } );
         });
     }
     
@@ -471,6 +631,66 @@ class JqHtmlSpec {
         Mocha.it("selection", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.is(div);
+        });
+    }
+    
+    @:describe
+    public static function keydown(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keydown();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keydown(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keydown( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keydown(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
+    public static function keypress(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keypress();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keypress(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keypress( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keypress(function (event: Event) { } );
+        });
+    }
+    
+    @:describe
+    public static function keyup(): Void {
+        Mocha.it("call", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keyup();
+        });
+        Mocha.it("handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keyup(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keyup( { test: 10 }, function (event: Event) { } );
+        });
+        Mocha.it("handler only", function() {
+           var div = new JqHtml(Browser.document.createElement("div"));
+           div.keyup(function (event: Event) { } );
         });
     }
     
@@ -786,6 +1006,14 @@ class JqHtmlSpec {
     }
     
     @:describe
+    public static function ready(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.ready(function () { } );
+        });
+    }
+    
+    @:describe
     public static function replaceAll(): Void {
         Mocha.it("selector", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -932,6 +1160,89 @@ class JqHtmlSpec {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.unwrap();
+        });
+    }
+    
+    @:describe
+    public static function width(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.width();
+        });
+        Mocha.it("value int", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.width(100);
+        });
+        Mocha.it("value string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.width("200");
+        });
+        Mocha.it("function int", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            // TODO 戻り値が異なるfunctionのexternを利用するとコンパイルが通らない 原因不明
+            //div.width(function (index: Int, value: Int) { return 300; } );
+        });
+        Mocha.it("function string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.width(function (index: Int, value: Int) { return "400"; } );
+        });
+    }
+    
+    @:describe
+    public static function wrap(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.wrap("div");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.wrap(elm);
+        });
+        Mocha.it("content", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.wrap(div2);
+        });
+        Mocha.it("function string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.wrap(function (index: Int) { return "div"; } );
+        });
+        Mocha.it("function jQuery", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            // TODO 戻り値が異なるfunctionのexternを利用するとコンパイルが通らない 原因不明
+            //div.wrap(function (index: Int) { return div2; } );
+        });
+    }
+    
+    @:describe
+    public static function wrapAll(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.wrapAll("div");
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.wrapAll(elm);
+        });
+        Mocha.it("content", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.wrapAll(div2);
+        });
+    }
+    
+    @:describe
+    public static function wrapInner(): Void {
+        Mocha.it("wrappingElement", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.wrapInner("div");
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.wrapInner(function (index: Int) { return "div"; } );
         });
     }
 }

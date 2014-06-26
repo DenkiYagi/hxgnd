@@ -63,14 +63,22 @@ extern class JqHtml implements ArrayAccess<Element> {
     function attr(key: String): String;
 
     //function before(): JqHtml;
-    //function blur(): JqHtml;
-    //function change(): JqHtml;
+    
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function blur(fn: Event -> Void): JqHtml;
+    
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function change(fn: Event -> Void): JqHtml;
     
     function children(?selector: String): JqHtml;
     
     function clearQueue(?queueName: String): JqHtml;
-    
-    //function click(): JqHtml;
+
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function click(fn: Event -> Void): JqHtml;
     
     @:overload(function (?withDataAndEvents: Bool): JqHtml{})
     function clone(?withDataAndEvents: Bool, ?deepWithDataAndEvents: Bool): JqHtml;
@@ -92,7 +100,9 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (obj: {}): JqHtml{})
     function data(?key: String): Dynamic;
 
-    //function dblclick(): JqHtml;
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function dblclick(fn: Event -> Void): JqHtml;
     
     function delay(duration: Int, ?queueName: String): JqHtml;
 
@@ -102,13 +112,14 @@ extern class JqHtml implements ArrayAccess<Element> {
     
     function detach(?selector: String): JqHtml;
     
-    //function each(): JqHtml;
+    function each(fn: Int -> Element -> Void): JqHtml;
 
     function empty(): JqHtml;
 
     function end(): JqHtml;
 
-    //function eq(): JqHtml;
+    function eq(index: Int): JqHtml;
+    
     //function fadeIn(): JqHtml;
     //function fadeOut(): JqHtml;
     //function fadeTo(): JqHtml;
@@ -129,9 +140,15 @@ extern class JqHtml implements ArrayAccess<Element> {
     
     function first(): JqHtml;
     
-    //function focus(): JqHtml;
-    //function focusin(): JqHtml;
-    //function focusout(): JqHtml;
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function focus(fn: Event -> Void): JqHtml;
+    
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    function focusin(fn: Event -> Void): JqHtml;
+    
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    function focusout(fn: Event -> Void): JqHtml;
 
     @:overload(function (): Array<Element>{})
     function get(index: Int): Element;
@@ -160,7 +177,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (options: EffectOptions): JqHtml{})
     function toggle(): JqHtml;
 
-    //function hover(): JqHtml;
+    function hover(handlerIn: Event -> Void, handlerOut: Event -> Void): JqHtml;
 
     @:overload(function (): String{})
     @:overload(function (fn: Int -> String -> String): JqHtml{})
@@ -201,9 +218,17 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (selection: JqHtml): Bool{})
     function is(selector: String): Bool;
     
-    //function keydown(): JqHtml;
-    //function keypress(): JqHtml;
-    //function keyup(): JqHtml;
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function keydown(fn: Event -> Void): JqHtml;
+    
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function keypress(fn: Event -> Void): JqHtml;
+    
+    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (): JqHtml{})
+    function keyup(fn: Event -> Void): JqHtml;
 
     function last(): JqHtml;
     
@@ -302,7 +327,8 @@ extern class JqHtml implements ArrayAccess<Element> {
     function prop(key: String): Dynamic;
 
     //function queue(): JqHtml;
-    //function ready(): JqHtml;
+    
+    function ready(fn:  Void -> Void): JqHtml;
 
     function remove(?selector: String): JqHtml;
 
@@ -374,10 +400,26 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (fn: Int -> String -> String): JqHtml{})
     function val(): Dynamic;
 
-    //function width(): JqHtml;
-    //function wrap(): JqHtml;
-    //function wrapAll(): JqHtml;
-    //function wrapInner(): JqHtml;
+    @:overload(function (value: String): JqHtml{})
+    @:overload(function (value: Int): JqHtml{})
+    // TODO 戻り値が異なるfunctionのexternを利用するとコンパイルが通らない 原因不明
+    @:overload(function (fn: Int -> Int -> String): JqHtml{})
+    @:overload(function (fn: Int -> Int -> Int): JqHtml{})
+    function width(): Int;
+    
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (content: JqHtml): JqHtml{})
+    // TODO 戻り値が異なるfunctionのexternを利用するとコンパイルが通らない 原因不明
+    @:overload(function (fn: Int -> String): JqHtml{})
+    @:overload(function (fn: Int -> JqHtml): JqHtml{})
+    function wrap(selector: String): JqHtml;
+    
+    @:overload(function (element: Element): JqHtml{})
+    @:overload(function (content: JqHtml): JqHtml{})
+    function wrapAll(selector: String): JqHtml;
+    
+    @:overload(function (fn: Int -> String): JqHtml{})
+    function wrapInner(wrappingElement: String): JqHtml;
 }
 
 typedef EffectOptions = {
