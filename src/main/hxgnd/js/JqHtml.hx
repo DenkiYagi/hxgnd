@@ -445,9 +445,17 @@ extern class JqHtml implements ArrayAccess<Element> {
     
     function slice(start: Int, ?end: Int): JqHtml;
     
-    //function slideDown(): JqHtml;
-    //function slideToggle(): JqHtml;
-    //function slideUp(): JqHtml;
+    @:overload(function (options: EffectOptions): JqHtml{})
+    @:overload(function (?duration: Int, ?easing: String, ?fn: Void -> Void): JqHtml{})
+    function slideDown(?duration: Int, ?fn: Void -> Void): JqHtml;
+    
+    @:overload(function (options: EffectOptions): JqHtml{})
+    @:overload(function (?duration: Int, ?easing: String, ?fn: Void -> Void): JqHtml{})
+    function slideToggle(?duration: Int, ?fn: Void -> Void): JqHtml;
+    
+    @:overload(function (options: EffectOptions): JqHtml{})
+    @:overload(function (?duration: Int, ?easing: String, ?fn: Void -> Void): JqHtml{})
+    function slideUp(?duration: Int, ?fn: Void -> Void): JqHtml;
     
     @:overload(function (?queueName: String, ?clearQueue: Bool, ?jumpToEnd: Bool): JqHtml{})
     function stop(?clearQueue: Bool, ?jumpToEnd: Bool): JqHtml;

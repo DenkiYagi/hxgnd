@@ -1742,6 +1742,126 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function slideDown(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown(300);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown(function () { } );
+        });
+        Mocha.it("easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown("swing");
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown(500, "swing");
+        });
+        Mocha.it("easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown("swing", function () { } );
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown(600, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideDown( { } );
+        });
+    }
+
+    @:describe
+    public static function slideToggle(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle(300);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle(function () { } );
+        });
+        Mocha.it("easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle("swing");
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle(500, "swing");
+        });
+        Mocha.it("easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle("swing", function () { } );
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle(600, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideToggle( { } );
+        });
+    }
+
+    @:describe
+    public static function slideUp(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp(300);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp(function () { } );
+        });
+        Mocha.it("easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp("swing");
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp(500, "swing");
+        });
+        Mocha.it("easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp("swing", function () { } );
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp(600, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.slideUp( { } );
+        });
+    }
+
+    @:describe
     public static function stop(): Void {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
