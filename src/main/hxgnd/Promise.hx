@@ -88,10 +88,10 @@ class Promise<A> {
         }
     }
 
-    function reject(?x: Error): Void {
+    function reject(err: Error): Void {
         if (Type.enumEq(_state, Pending)) {
             _state = Sealed;
-            _invokeRejected((x == null) ? new Error("Rejected") : x);
+            _invokeRejected((err == null) ? new Error("Rejected") : err);
         }
     }
 

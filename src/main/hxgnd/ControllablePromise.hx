@@ -11,7 +11,7 @@ class ControllablePromise<A> extends Promise<A> {
         super.resolve(x);
     }
 
-    override public function reject(x: Dynamic): Void {
-        super.reject(x);
+    override public function reject(err: Error): Void {
+        super.reject(err);
     }
 }
