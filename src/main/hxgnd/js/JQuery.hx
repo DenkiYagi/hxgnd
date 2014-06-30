@@ -1,4 +1,4 @@
-package haxearth.js;
+package hxgnd.js;
 
 import js.html.Element;
 
