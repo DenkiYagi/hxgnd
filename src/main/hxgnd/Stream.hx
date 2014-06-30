@@ -138,7 +138,7 @@ class Stream<A> {
         }
     }
 
-    function fail(?x: Error): Void {
+    function fail(x: Error): Void {
         switch (_state) {
             case Pending, Opened:
                 _state = Failing;
