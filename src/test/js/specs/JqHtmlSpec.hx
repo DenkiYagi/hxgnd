@@ -1065,7 +1065,7 @@ class JqHtmlSpec {
         });
         Mocha.it("url data PlainObject", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.load("test.txt", { test: 10 } );
+            div.load("test.txt", { test: "10" } );
         });
         Mocha.it("url function", function() {
             var div = new JqHtml(Browser.document.createElement("div"));

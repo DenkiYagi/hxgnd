@@ -40,18 +40,23 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (contents: Array<String>): JqHtml{})
     function after(content: String): JqHtml;
     
+    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
     function ajaxComplete(fn: Event -> XMLHttpRequest -> Dynamic -> Void): JqHtml;
     
+    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
     function ajaxError(fn: Event -> XMLHttpRequest -> Dynamic -> String -> Void): JqHtml;
     
+    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
     function ajaxSend(fn: Event -> XMLHttpRequest -> Dynamic -> Void): JqHtml;
     
     function ajaxStart(fn: Void -> Void): JqHtml;
     
     function ajaxStop(fn: Void -> Void): JqHtml;
     
+    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
     function ajaxSuccess(fn: Event -> XMLHttpRequest -> Dynamic -> Dynamic -> Void): JqHtml;
 
+    // TODO PlainObjectとして何が指定できるか詳しくドキュメントを参照する必要がある(現状Dynamic)
     @:overload(function (properties: Dynamic, options: EffectOptions): JqHtml{})
     function animate(properties: Dynamic, ?duration: Int, ?easing: String, ?fn: Void -> Void): JqHtml;
 
@@ -137,6 +142,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     function delay(duration: Int, ?queueName: String): JqHtml;
 
     @:overload(function (selector: String, eventType: String, eventData: Dynamic, handler: Event -> Void): JqHtml{})
+    // TODO PlainObjectとして何が指定できるか詳しくドキュメントを参照する必要がある(現状Dynamic)
     @:overload(function (selector: String, events: Dynamic): JqHtml{})
     function delegate(selector: String, eventType: String, handler: Event -> Void): JqHtml;
     
@@ -259,50 +265,50 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (selection: JqHtml): Bool{})
     function is(selector: String): Bool;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function keydown(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function keypress(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function keyup(fn: Event -> Void): JqHtml;
 
     function last(): JqHtml;
 
-    @:overload(function (url: String, ?data: Dynamic, ?fn: String -> String -> XMLHttpRequest -> Void): JqHtml{})
+    @:overload(function (url: String, ?data: Dynamic<String>, ?fn: String -> String -> XMLHttpRequest -> Void): JqHtml{})
     function load(url: String, ?data: String, ?fn: String -> String -> XMLHttpRequest -> Void): JqHtml;
     
     function map<T>(fn: Int -> Element -> T): JqHtml;
 
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function mousedown(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function mouseenter(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function mouseleave(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function mousemove(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function mouseout(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function mouseover(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function mouseup(fn: Event -> Void): JqHtml;
     
@@ -423,11 +429,11 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (htmls: Array<String>): JqHtml{})
     function replaceWith(html: String): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function resize(fn: Event -> Void): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function scroll(fn: Event -> Void): JqHtml;
     
@@ -437,7 +443,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (value: Int): JqHtml{})
     function scrollTop(): Int;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function select(fn: Event -> Void): JqHtml;
     
@@ -460,7 +466,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (?queueName: String, ?clearQueue: Bool, ?jumpToEnd: Bool): JqHtml{})
     function stop(?clearQueue: Bool, ?jumpToEnd: Bool): JqHtml;
     
-    @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
+    @:overload(function (?eventData: {}, fn: Event -> Void): JqHtml{})
     @:overload(function (): JqHtml{})
     function submit(fn: Event -> Void): JqHtml;
     
@@ -484,8 +490,9 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     @:overload(function (namespace: String): JqHtml{})
     @:overload(function (selector: String, eventType: String): JqHtml{})
-    @:overload(function (selector: String, eventType: String, handler: Event -> Void): JqHtml{})
-    @:overload(function (Selector: String, events: Dynamic): JqHtml { } )
+    @:overload(function (selector: String, eventType: String, handler: Event -> Void): JqHtml { } )
+    // TODO PlainObjectとして何が指定できるか詳しくドキュメントを参照する必要がある(現状Dynamic)
+    @:overload(function (Selector: String, events: Dynamic): JqHtml{})
     function undelegate(): JqHtml;
     
     @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
@@ -493,7 +500,6 @@ extern class JqHtml implements ArrayAccess<Element> {
     
     function unwrap(): JqHtml;
 
-    //function val(): JqHtml;
     @:overload(function (value: Dynamic): JqHtml{})
     @:overload(function (fn: Int -> String -> String): JqHtml{})
     function val(): Dynamic;
