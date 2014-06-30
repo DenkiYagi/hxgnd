@@ -15,7 +15,7 @@ class ControllableStream<A> extends Stream<A> {
         super.close();
     }
 
-    override public function fail(x: Dynamic): Void {
-        super.fail(x);
+    override public function fail(err: Error): Void {
+        super.fail(err);
     }
 }

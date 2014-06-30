@@ -3,6 +3,7 @@ package specs;
 import hxmocha.Mocha;
 import hxgnd.Option;
 import hxgnd.Result;
+import hxgnd.Error;
 
 using hxgnd.OptionTools;
 
@@ -105,7 +106,7 @@ class OptionSpec {
 
     @:describe
     public static function toResult() {
-        var error = new hxgnd.Error("test error");
+        var error = new Error("test error");
         Mocha.it("to Success", function () {
             Mocha.expect(Some(3).toResult(error)).to.enumEqual(Success(3));
         });

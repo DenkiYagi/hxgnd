@@ -1,5 +1,4 @@
 package hxgnd;
-import haxe.Timer;
 
 class Promise<A> {
     @:allow(hxgnd) @:noCompletion var _state: _PromiseState<A>;
@@ -43,10 +42,10 @@ class Promise<A> {
     function _invokeResolved(value: A): Void {
         _invokeAsync(function () {
             try {
+                _state = Resolved(value);
                 for (f in _resolvedHandlers) f(value);
                 _invokeFinally();
                 _clear();
-                _state = Resolved(value);
             } catch (e: Error) {
                 _invokeRejected(e);
             } catch (e: Dynamic) {
@@ -58,12 +57,12 @@ class Promise<A> {
     @:allow(hxgnd) @:noCompletion
     function _invokeRejected(error: Error): Void {
         _invokeAsync(function () {
+            _state = Rejected(error);
             for (f in _rejectedHandlers) {
                 try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
             }
             _invokeFinally();
             _clear();
-            _state = Rejected(error);
         });
     }
 
@@ -89,10 +88,10 @@ class Promise<A> {
         }
     }
 
-    function reject(?x: Error): Void {
+    function reject(err: Error): Void {
         if (Type.enumEq(_state, Pending)) {
             _state = Sealed;
-            _invokeRejected((x == null) ? new Error("Rejected") : x);
+            _invokeRejected((err == null) ? new Error("Rejected") : err);
         }
     }
 
