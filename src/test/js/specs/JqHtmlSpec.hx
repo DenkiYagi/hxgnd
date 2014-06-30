@@ -5,6 +5,7 @@ import js.Browser;
 import js.html.Element;
 import js.html.Event;
 import js.html.XMLHttpRequest;
+import hxgnd.js.JQuery.JqAjaxOption;
 
 using hxgnd.js.JqHtml;
 
@@ -110,7 +111,7 @@ class JqHtmlSpec {
     public static function ajaxComplete(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxComplete(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: Dynamic) { } );
+            document.ajaxComplete(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxOption) { } );
         });
     }
     
@@ -118,7 +119,7 @@ class JqHtmlSpec {
     public static function ajaxError(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxError(function (event: Event, xhr: XMLHttpRequest, ajaxSettings: Dynamic, thrownError: String) { } );
+            document.ajaxError(function (event: Event, xhr: XMLHttpRequest, ajaxSettings: JqAjaxOption, thrownError: String) { } );
         });
     }
     
@@ -126,7 +127,7 @@ class JqHtmlSpec {
     public static function ajaxSend(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxSend(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: Dynamic) { } );
+            document.ajaxSend(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxOption) { } );
         });
     }
 
@@ -150,7 +151,7 @@ class JqHtmlSpec {
     public static function ajaxSuccess(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxSuccess(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: Dynamic, data: Dynamic) { } );
+            document.ajaxSuccess(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxOption, data: Dynamic) { } );
         });
     }
 
@@ -158,7 +159,7 @@ class JqHtmlSpec {
     public static function animate(): Void {
         Mocha.it("properties", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.animate( { width : 200 } );
+            div.animate( { width : 200, height: "200px"} );
         });
         Mocha.it("properties duration", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -483,7 +484,7 @@ class JqHtmlSpec {
         });
         Mocha.it("multi events", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", { } );
+            div.delegate("div", { "click" : function (event: Event) {} } );
         });
     }
     
@@ -1981,7 +1982,7 @@ class JqHtmlSpec {
         });
         Mocha.it("events", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate("div", { } );
+            div.delegate("div", { "click" : function (event: Event) {} } );
         });
         Mocha.it("namespace", function() {
             var div = new JqHtml(Browser.document.createElement("div"));

@@ -7,6 +7,7 @@ import js.html.EventTarget;
 import js.html.idb.Index;
 import js.html.NodeList;
 import js.html.XMLHttpRequest;
+import hxgnd.js.JQuery.JqAjaxOption;
 
 @:native("jQuery")
 extern class JqHtml implements ArrayAccess<Element> {
@@ -40,25 +41,22 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (contents: Array<String>): JqHtml{})
     function after(content: String): JqHtml;
     
-    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
-    function ajaxComplete(fn: Event -> XMLHttpRequest -> Dynamic -> Void): JqHtml;
+    function ajaxComplete(fn: Event -> XMLHttpRequest -> JqAjaxOption -> Void): JqHtml;
     
-    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
-    function ajaxError(fn: Event -> XMLHttpRequest -> Dynamic -> String -> Void): JqHtml;
+    function ajaxError(fn: Event -> XMLHttpRequest -> JqAjaxOption -> String -> Void): JqHtml;
     
-    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
-    function ajaxSend(fn: Event -> XMLHttpRequest -> Dynamic -> Void): JqHtml;
+    function ajaxSend(fn: Event -> XMLHttpRequest -> JqAjaxOption -> Void): JqHtml;
     
     function ajaxStart(fn: Void -> Void): JqHtml;
     
     function ajaxStop(fn: Void -> Void): JqHtml;
     
-    // TODO PlainObjectとして何が指定されるか詳しくドキュメントを参照する必要がある(現状Dynamic)
-    function ajaxSuccess(fn: Event -> XMLHttpRequest -> Dynamic -> Dynamic -> Void): JqHtml;
+    function ajaxSuccess(fn: Event -> XMLHttpRequest -> JqAjaxOption -> Dynamic -> Void): JqHtml;
 
-    // TODO PlainObjectとして何が指定できるか詳しくドキュメントを参照する必要がある(現状Dynamic)
-    @:overload(function (properties: Dynamic, options: EffectOptions): JqHtml{})
-    function animate(properties: Dynamic, ?duration: Int, ?easing: String, ?fn: Void -> Void): JqHtml;
+    @:overload(function (properties: Dynamic<Dynamic>, options: EffectOptions): JqHtml{})
+    @:overload(function (properties: {}, options: EffectOptions): JqHtml{})
+    @:overload(function (properties: {}, ?duration: Int, ?easing: String, ?fn: Void -> Void): JqHtml{})
+    function animate(properties: Dynamic<Dynamic>, ?duration: Int, ?easing: String, ?fn: Void -> Void): JqHtml;
 
     @:overload(function (element: Element): JqHtml{})
     @:overload(function (elements: Array<Element>): JqHtml{})
@@ -142,8 +140,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     function delay(duration: Int, ?queueName: String): JqHtml;
 
     @:overload(function (selector: String, eventType: String, eventData: Dynamic, handler: Event -> Void): JqHtml{})
-    // TODO PlainObjectとして何が指定できるか詳しくドキュメントを参照する必要がある(現状Dynamic)
-    @:overload(function (selector: String, events: Dynamic): JqHtml{})
+    @:overload(function (selector: String, events: Dynamic<Event -> Void>): JqHtml{})
     function delegate(selector: String, eventType: String, handler: Event -> Void): JqHtml;
     
     function dequeue(?queueName: String): JqHtml;
@@ -491,8 +488,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (namespace: String): JqHtml{})
     @:overload(function (selector: String, eventType: String): JqHtml{})
     @:overload(function (selector: String, eventType: String, handler: Event -> Void): JqHtml { } )
-    // TODO PlainObjectとして何が指定できるか詳しくドキュメントを参照する必要がある(現状Dynamic)
-    @:overload(function (Selector: String, events: Dynamic): JqHtml{})
+    @:overload(function (Selector: String, events: Dynamic<Event -> Void>): JqHtml{})
     function undelegate(): JqHtml;
     
     @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
