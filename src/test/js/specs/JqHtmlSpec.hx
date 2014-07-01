@@ -9,6 +9,24 @@ import hxgnd.js.JQuery.JqAjaxOption;
 import hxgnd.js.JqHtml;
 
 class JqHtmlSpec {
+
+    @:describe
+    public static function _new(): Void {
+        Mocha.it("element", function() {
+            var div = Browser.document.createElement("div");
+            var jq = new JqHtml(div);
+        });
+        Mocha.it("array element", function() {
+            var div = Browser.document.createElement("div");
+            var div2 = Browser.document.createElement("div");
+            var jq = new JqHtml([div, div2]);
+        });
+        Mocha.it("event target", function() {
+            var event = Browser.document.createEvent("Event");
+            var jq = new JqHtml(event.target);
+        });
+    }
+
     @:describe
     public static function add(): Void {
         Mocha.it("element", function() {
@@ -981,6 +999,10 @@ class JqHtmlSpec {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.hide();
         });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(400);
+        });
         Mocha.it("function", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.hide(function () { } );
@@ -989,9 +1011,13 @@ class JqHtmlSpec {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.hide(400, function () { } );
         });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(400, "swing");
+        });
         Mocha.it("duration easing function", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.hide(600, "swing", function () { } );
+            div.hide(400, "swing", function () { } );
         });
         Mocha.it("option", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -1545,6 +1571,62 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function one(): Void {
+        Mocha.it("events selector handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one("click", "div", function (event: Event) { } );
+        });
+        Mocha.it("events selector data handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one("click", "div", { } , function (event: Event) { } );
+        });
+        Mocha.it("events(PlainObject)", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } } );
+        });
+        Mocha.it("events(PlainObject) selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } }, "div" );
+        });
+        Mocha.it("events(PlainObject) data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } }, { } );
+        });
+        Mocha.it("events(PlainObject) selector data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } }, "div", { } );
+        });
+    }
+
+    @:describe
+    public static function on(): Void {
+        Mocha.it("events selector handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on("click", "div", function (event: Event) { } );
+        });
+        Mocha.it("events selector data handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on("click", "div", { } , function (event: Event) { } );
+        });
+        Mocha.it("events(PlainObject)", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } } );
+        });
+        Mocha.it("events(PlainObject) selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } }, "div" );
+        });
+        Mocha.it("events(PlainObject) data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } }, { } );
+        });
+        Mocha.it("events(PlainObject) selector data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } }, "div", { } );
+        });
+    }
+
+    @:describe
     public static function outerHeight(): Void {
         Mocha.it("call", function() {
             var jq = new JqHtml(Browser.document.body);
@@ -2040,6 +2122,38 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function show(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(function () { } );
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400, "swing");
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show( { } );
+        });
+    }
+
+    @:describe
     public static function siblings(): Void {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -2264,6 +2378,42 @@ class JqHtmlSpec {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.toArray();
+        });
+    }
+
+    @:describe
+    public static function toggle(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(function () { } );
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400, "swing");
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle( { } );
+        });
+        Mocha.it("showOrHide", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(true);
         });
     }
 

@@ -122,7 +122,7 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     function contents(): JqHtml;
 
-    @:overload(function (key: Array<String>): Array<String>{})
+    @:overload(function (key: Array<String>): Dynamic<String>{})
     @:overload(function (key: String, value: String): JqHtml{})
     @:overload(function (key: String, fn: Int -> String -> String): JqHtml{})
     @:overload(function (obj: Dynamic<String>): JqHtml{})
@@ -209,16 +209,20 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (fn: Int -> Int -> Int): JqHtml {})
     function height(): Int;
 
-    @:overload(function (?duration: Int, ?easing: String, hander: Void -> Void): JqHtml{})
+    @:overload(function (?duration: Int, ?handler: Void -> Void): JqHtml{})
+    @:overload(function (duration: Int, ?easing: String, ?handler: Void -> Void): JqHtml{})
     @:overload(function (options: EffectOptions): JqHtml{})
     function show(): JqHtml;
 
-    @:overload(function (?duration: Int, ?easing: String, hander: Void -> Void): JqHtml{})
+    @:overload(function (?duration: Int, ?handler: Void -> Void): JqHtml{})
+    @:overload(function (duration: Int, ?easing: String, ?handler: Void -> Void): JqHtml{})
     @:overload(function (options: EffectOptions): JqHtml{})
     function hide(): JqHtml;
 
-    @:overload(function (?duration: Int, ?easing: String, hander: Void -> Void): JqHtml{})
-    @:overload(function (options: EffectOptions): JqHtml{})
+    @:overload(function (?duration: Int, ?handler: Void -> Void): JqHtml{})
+    @:overload(function (duration: Int, ?easing: String, ?handler: Void -> Void): JqHtml{})
+    @:overload(function (options: EffectOptions): JqHtml { } )
+    @:overload(function (showOrHide: Bool): JqHtml { } )
     function toggle(): JqHtml;
 
     function hover(handlerIn: Event -> Void, handlerOut: Event -> Void): JqHtml;
@@ -330,9 +334,11 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     function offsetParent(): JqHtml;
 
+    @:overload(function (events: Dynamic<Event -> Void>, ?selector: String, ?data: Dynamic): JqHtml{})
     @:overload(function (events: String, selector: String, data: Dynamic, handler: Event -> Void): JqHtml{})
     function one(events: String, ?selector: String, handler: Event -> Void): JqHtml;
 
+    @:overload(function (events: Dynamic<Event -> Void>, ?selector: String, ?data: Dynamic): JqHtml{})
     @:overload(function (events: String, selector: String, data: Dynamic, handler: Event -> Void): JqHtml{})
     function on(events: String, ?selector: String, handler: Event -> Void): JqHtml;
 
