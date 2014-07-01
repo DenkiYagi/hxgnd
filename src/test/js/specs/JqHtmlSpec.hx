@@ -6,8 +6,7 @@ import js.html.Element;
 import js.html.Event;
 import js.html.XMLHttpRequest;
 import hxgnd.js.JQuery.JqAjaxOption;
-
-using hxgnd.js.JqHtml;
+import hxgnd.js.JqHtml;
 
 class JqHtmlSpec {
     @:describe
@@ -41,7 +40,7 @@ class JqHtmlSpec {
             jq.add(nodeList);
         });
     }
-    
+
     @:describe
     public static function addBack(): Void {
         Mocha.it("call", function() {
@@ -51,6 +50,18 @@ class JqHtmlSpec {
         Mocha.it("selector", function() {
             var jq = new JqHtml(Browser.document.body);
             jq.next().addBack("div");
+        });
+    }
+
+    @:describe
+    public static function addClass(): Void {
+        Mocha.it("className", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.after("div");
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.after(function (index: Int, className: String) { return "div"; } );
         });
     }
 
@@ -106,7 +117,7 @@ class JqHtmlSpec {
             //div.after(function (index: Int, value: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function ajaxComplete(): Void {
         Mocha.it("function", function() {
@@ -114,7 +125,7 @@ class JqHtmlSpec {
             document.ajaxComplete(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxOption) { } );
         });
     }
-    
+
     @:describe
     public static function ajaxError(): Void {
         Mocha.it("function", function() {
@@ -122,7 +133,7 @@ class JqHtmlSpec {
             document.ajaxError(function (event: Event, xhr: XMLHttpRequest, ajaxSettings: JqAjaxOption, thrownError: String) { } );
         });
     }
-    
+
     @:describe
     public static function ajaxSend(): Void {
         Mocha.it("function", function() {
@@ -138,7 +149,7 @@ class JqHtmlSpec {
             document.ajaxStart(function () { } );
         });
     }
-    
+
     @:describe
     public static function ajaxStop(): Void {
         Mocha.it("function", function() {
@@ -146,7 +157,7 @@ class JqHtmlSpec {
             document.ajaxStop(function () { } );
         });
     }
-    
+
     @:describe
     public static function ajaxSuccess(): Void {
         Mocha.it("function", function() {
@@ -194,7 +205,7 @@ class JqHtmlSpec {
             div.animate( { width : 200 }, { } );
         });
     }
-    
+
     @:describe
     public static function append(): Void {
         Mocha.it("element", function() {
@@ -247,7 +258,7 @@ class JqHtmlSpec {
             //div.append(function (index: Int, value: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function appendTo(): Void {
         Mocha.it("selector", function() {
@@ -277,6 +288,34 @@ class JqHtmlSpec {
             var div = new JqHtml(Browser.document.createElement("div"));
             var div2 = new JqHtml(Browser.document.createElement("div"));
             div.appendTo([div2]);
+        });
+    }
+
+    @:describe
+    public static function attr(): Void {
+        Mocha.it("attributeName", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class");
+        });
+        Mocha.it("attribute value string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", "test");
+        });
+        Mocha.it("attribute value int", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", 10);
+        });
+        Mocha.it("attribute value float", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", 3.5);
+        });
+        Mocha.it("attributes", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr( { "class" : "test" } );
+        });
+        Mocha.it("attribute function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", function (index: Int, attr: String) { return "test"; } );
         });
     }
 
@@ -332,7 +371,7 @@ class JqHtmlSpec {
             //div.before(function (index: Int, value: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function blur(): Void {
         Mocha.it("call", function() {
@@ -352,7 +391,7 @@ class JqHtmlSpec {
            div.blur(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function change(): Void {
         Mocha.it("call", function() {
@@ -372,7 +411,7 @@ class JqHtmlSpec {
            div.change(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function children(): Void {
         Mocha.it("call", function() {
@@ -384,7 +423,7 @@ class JqHtmlSpec {
            jq.children("div");
         });
     }
-    
+
     @:describe
     public static function clearQueue(): Void {
         Mocha.it("clearQueue", function() {
@@ -396,7 +435,7 @@ class JqHtmlSpec {
             div.clearQueue("queueName");
         });
     }
-    
+
     @:describe
     public static function click(): Void {
         Mocha.it("call", function() {
@@ -416,7 +455,7 @@ class JqHtmlSpec {
            div.click(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function clone(): Void {
         Mocha.it("call", function() {
@@ -432,7 +471,30 @@ class JqHtmlSpec {
             div.clone(true, true);
         });
     }
-    
+
+    @:describe
+    public static function closest (): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.closest("div");
+        });
+        Mocha.it("selector context", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.closest("div", elm);
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.closest(div2);
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.closest(elm);
+        });
+    }
+
     @:describe
     public static function contents(): Void {
         Mocha.it("call", function() {
@@ -440,7 +502,51 @@ class JqHtmlSpec {
             jq.contents();
         });
     }
-    
+
+    @:describe
+    public static function css(): Void {
+        Mocha.it("property", function() {
+            var jq = new JqHtml(Browser.document.body);
+            jq.css("width");
+        });
+        Mocha.it("properties", function() {
+            var jq = new JqHtml(Browser.document.body);
+            jq.css(["width", "height"]);
+        });
+        Mocha.it("property set", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.css("width", "300");
+        });
+        Mocha.it("property set function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.css("height", function (index: Int, value: String) { return "200"; } );
+        });
+        Mocha.it("property set PlainObject", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.css( { "width" : "300" } );
+        });
+    }
+
+    @:describe
+    public static function data(): Void {
+        Mocha.it("key value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data("test", 35);
+        });
+        Mocha.it("object", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data( { "foo" : 45 } );
+        });
+        Mocha.it("get data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data("test");
+        });
+        Mocha.it("get all data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data();
+        });
+    }
+
     @:describe
     public static function dblclick(): Void {
         Mocha.it("call", function() {
@@ -460,7 +566,7 @@ class JqHtmlSpec {
            div.dblclick(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function delay(): Void {
         Mocha.it("duration", function() {
@@ -472,7 +578,7 @@ class JqHtmlSpec {
             jq.delay(200, "queue");
         });
     }
-    
+
     public static function delegate(): Void {
         Mocha.it("event delegate", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -487,7 +593,7 @@ class JqHtmlSpec {
             div.delegate("div", { "click" : function (event: Event) {} } );
         });
     }
-    
+
     @:describe
     public static function dequeue(): Void {
         Mocha.it("call", function() {
@@ -499,7 +605,7 @@ class JqHtmlSpec {
             jq.dequeue("queue");
         });
     }
-    
+
     @:describe
     public static function detach(): Void {
         Mocha.it("call", function() {
@@ -511,7 +617,7 @@ class JqHtmlSpec {
             div.detach("div");
         });
     }
-    
+
     @:describe
     public static function each(): Void {
         Mocha.it("call", function() {
@@ -519,7 +625,23 @@ class JqHtmlSpec {
             div.each(function (index: Int, elm: Element) { } );
         });
     }
-    
+
+    @:describe
+    public static function empty(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.empty();
+        });
+    }
+
+    @:describe
+    public static function end(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.end();
+        });
+    }
+
     @:describe
     public static function eq(): Void {
         Mocha.it("index", function() {
@@ -571,7 +693,7 @@ class JqHtmlSpec {
             div.fadeIn( { } );
         });
     }
-    
+
     @:describe
     public static function fadeOut(): Void {
         Mocha.it("call", function() {
@@ -631,7 +753,7 @@ class JqHtmlSpec {
             div.fadeTo(100, 0.5, "swing", function () { } );
         });
     }
-    
+
     @:describe
     public static function fadeToggle(): Void {
         Mocha.it("call", function() {
@@ -704,6 +826,25 @@ class JqHtmlSpec {
         });
     }
 
+    // find
+    @:describe
+    public static function find(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.find("div");
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.find(div2);
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.find(elm);
+        });
+    }
+
     @:describe
     public static function finish(): Void {
         Mocha.it("call", function() {
@@ -715,7 +856,7 @@ class JqHtmlSpec {
             div.finish("queueName");
         });
     }
-    
+
     @:describe
     public static function first(): Void {
         Mocha.it("call", function() {
@@ -723,7 +864,7 @@ class JqHtmlSpec {
             div.first();
         });
     }
-    
+
     @:describe
     public static function focus(): Void {
         Mocha.it("call", function() {
@@ -743,7 +884,7 @@ class JqHtmlSpec {
            div.focus(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function focusin(): Void {
         Mocha.it("handler", function() {
@@ -759,7 +900,7 @@ class JqHtmlSpec {
            div.focusin(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function focusout(): Void {
         Mocha.it("handler", function() {
@@ -775,7 +916,19 @@ class JqHtmlSpec {
            div.focusout(function (event: Event) { } );
         });
     }
-    
+
+    @:describe
+    public static function get(): Void {
+        Mocha.it("get index", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.get(0);
+        });
+        Mocha.it("get all", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.get();
+        });
+    }
+
     @:describe
     public static function has(): Void {
         Mocha.it("selector", function() {
@@ -788,7 +941,7 @@ class JqHtmlSpec {
             div.has(elm);
         });
     }
-    
+
     @:describe
     public static function hasClass(): Void {
         Mocha.it("className", function() {
@@ -796,7 +949,7 @@ class JqHtmlSpec {
             div.hasClass("className");
         });
     }
-    
+
     @:describe
     public static function height(): Void {
         Mocha.it("call", function() {
@@ -821,7 +974,31 @@ class JqHtmlSpec {
             jq.height(function(i: Int, j: Int): String { return "800"; } );
         });
     }
-    
+
+    @:describe
+    public static function hide(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide();
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(function () { } );
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(400, function () { } );
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(600, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide( { } );
+        });
+    }
+
     @:describe
     public static function hover(): Void {
         Mocha.it("call", function() {
@@ -829,7 +1006,23 @@ class JqHtmlSpec {
             jq.hover(function (event: Event) { }, function (event: Event) { } );
         });
     }
-    
+
+    @:describe
+    public static function html(): Void {
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.html();
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.html("<div></div>");
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.html(function (index: Int, html: String) { return "<div></div>"; } );
+        });
+    }
+
     @:describe
     public static function index(): Void {
         Mocha.it("call", function() {
@@ -851,7 +1044,7 @@ class JqHtmlSpec {
             div.index(div2);
         });
     }
-    
+
     @:describe
     public static function innerHeight(): Void {
         Mocha.it("call", function() {
@@ -879,7 +1072,7 @@ class JqHtmlSpec {
             div.innerWidth(function (index: Int, width: Int) { return 400; });
         });
     }
-    
+
     @:describe
     public static function insertAfter(): Void {
         Mocha.it("target string", function() {
@@ -916,7 +1109,7 @@ class JqHtmlSpec {
             div.insertAfter([div2]);
         });
     }
-    
+
     @:describe
     public static function insertBefore(): Void {
         Mocha.it("target string", function() {
@@ -953,7 +1146,7 @@ class JqHtmlSpec {
             div.insertBefore([div2]);
         });
     }
-    
+
     @:describe
     public static function is(): Void {
         Mocha.it("selector", function() {
@@ -984,7 +1177,7 @@ class JqHtmlSpec {
             div.is(div);
         });
     }
-    
+
     @:describe
     public static function keydown(): Void {
         Mocha.it("call", function() {
@@ -1004,7 +1197,7 @@ class JqHtmlSpec {
            div.keydown(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function keypress(): Void {
         Mocha.it("call", function() {
@@ -1024,7 +1217,7 @@ class JqHtmlSpec {
            div.keypress(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function keyup(): Void {
         Mocha.it("call", function() {
@@ -1044,7 +1237,7 @@ class JqHtmlSpec {
            div.keyup(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function last(): Void {
         Mocha.it("call", function() {
@@ -1073,7 +1266,7 @@ class JqHtmlSpec {
             div.load("test.txt", "div", function (response: String, status: String, xhr: XMLHttpRequest) { } );
         });
     }
-    
+
     @:describe
     public static function map(): Void {
         Mocha.it("callback", function() {
@@ -1101,7 +1294,7 @@ class JqHtmlSpec {
            div.mousedown(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseenter(): Void {
         Mocha.it("call", function() {
@@ -1121,7 +1314,7 @@ class JqHtmlSpec {
            div.mouseenter(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseleave(): Void {
         Mocha.it("call", function() {
@@ -1141,7 +1334,7 @@ class JqHtmlSpec {
            div.mouseleave(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mousemove(): Void {
         Mocha.it("call", function() {
@@ -1161,7 +1354,7 @@ class JqHtmlSpec {
            div.mousemove(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseout(): Void {
         Mocha.it("call", function() {
@@ -1181,7 +1374,7 @@ class JqHtmlSpec {
            div.mouseout(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseover(): Void {
         Mocha.it("call", function() {
@@ -1201,7 +1394,7 @@ class JqHtmlSpec {
            div.mouseover(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseup(): Void {
         Mocha.it("call", function() {
@@ -1221,7 +1414,7 @@ class JqHtmlSpec {
            div.mouseup(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function next(): Void {
         Mocha.it("call", function() {
@@ -1233,7 +1426,7 @@ class JqHtmlSpec {
             div.next("div");
         });
     }
-    
+
     @:describe
     public static function nextAll(): Void {
         Mocha.it("call", function() {
@@ -1275,7 +1468,7 @@ class JqHtmlSpec {
             div.nextUntil(elm, "div");
         });
     }
-    
+
     @:describe
     public static function not(): Void {
         Mocha.it("selector", function() {
@@ -1306,7 +1499,27 @@ class JqHtmlSpec {
             div.not(div);
         });
     }
-    
+
+    @:describe
+    public static function off(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off();
+        });
+        Mocha.it("event", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off("click");
+        });
+        Mocha.it("event selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off("click", "div");
+        });
+        Mocha.it("event selector handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off("click", "div", function (event: Event) { } );
+        });
+    }
+
     @:describe
     public static function offset(): Void {
         Mocha.it("call", function() {
@@ -1322,7 +1535,15 @@ class JqHtmlSpec {
             div.offset(function (index: Int, coodinate: { top: Int, left: Int } ) { return { top:100, left:100 }; } );
         });
     }
-    
+
+    @:describe
+    public static function offsetParent(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.offsetParent();
+        });
+    }
+
     @:describe
     public static function outerHeight(): Void {
         Mocha.it("call", function() {
@@ -1334,7 +1555,7 @@ class JqHtmlSpec {
             jq.outerHeight(true);
         });
     }
-    
+
     @:describe
     public static function outerWidth(): Void {
         Mocha.it("call", function() {
@@ -1346,7 +1567,31 @@ class JqHtmlSpec {
             jq.outerWidth(true);
         });
     }
-    
+
+    @:describe
+    public static function parent(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parent();
+        });
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parent("div");
+        });
+    }
+
+    @:describe
+    public static function parents(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parents();
+        });
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parents("div");
+        });
+    }
+
     @:describe
     public static function parentsUntil(): Void {
         Mocha.it("call", function() {
@@ -1380,7 +1625,7 @@ class JqHtmlSpec {
             div.parentsUntil(elm, "div");
         });
     }
-    
+
     @:describe
     public static function position(): Void {
         Mocha.it("call", function() {
@@ -1388,7 +1633,7 @@ class JqHtmlSpec {
             div.position();
         });
     }
-    
+
     @:describe
     public static function prepend(): Void {
         Mocha.it("content", function() {
@@ -1441,7 +1686,7 @@ class JqHtmlSpec {
             //div.prepend(function (index: Int, html: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function prependTo(): Void {
         Mocha.it("selector", function() {
@@ -1478,7 +1723,7 @@ class JqHtmlSpec {
             div.prependTo([div2]);
         });
     }
-    
+
     @:describe
     public static function prev(): Void {
         Mocha.it("call", function() {
@@ -1490,7 +1735,7 @@ class JqHtmlSpec {
             div.prev("div");
         });
     }
-    
+
     @:describe
     public static function prevAll(): Void {
         Mocha.it("call", function() {
@@ -1502,7 +1747,7 @@ class JqHtmlSpec {
             div.prevAll("div");
         });
     }
-    
+
     @:describe
     public static function prevUntil(): Void {
         Mocha.it("call", function() {
@@ -1532,7 +1777,27 @@ class JqHtmlSpec {
             div.prevUntil(elm, "div");
         });
     }
-    
+
+    @:descrive
+    public static function prop(): Void {
+        Mocha.it("get property", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop("disabled");
+        });
+        Mocha.it("property name value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop("disabled", false);
+        });
+        Mocha.it("properties", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop( { disabled: false } );
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop("disabled", function (index: Int, value: String) { return false; } );
+        });
+    }
+
     @:descrive
     public static function queue(): Void {
         Mocha.it("queueName newQueue", function() {
@@ -1552,7 +1817,7 @@ class JqHtmlSpec {
             div.queue("queueName", function () { } );
         });
     }
-    
+
     @:describe
     public static function ready(): Void {
         Mocha.it("selector", function() {
@@ -1560,7 +1825,63 @@ class JqHtmlSpec {
             div.ready(function () { } );
         });
     }
-    
+
+    @:describe
+    public static function remove(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.remove();
+        });
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.remove("div");
+        });
+    }
+
+    @:describe
+    public static function removeAttr(): Void {
+        Mocha.it("attribute", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeAttr("title");
+        });
+    }
+
+    @:describe
+    public static function removeClass(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeClass();
+        });
+        Mocha.it("className", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeClass("className");
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeClass(function (index: Int, className: String) { return "className"; } );
+        });
+    }
+
+    @:describe
+    public static function removeData(): Void {
+        Mocha.it("name", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeData("name");
+        });
+        Mocha.it("array", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeData(["name", "title"]);
+        });
+    }
+
+    @:describe
+    public static function removeProp(): Void {
+        Mocha.it("propertyName", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeProp("disabled");
+        });
+    }
+
     @:describe
     public static function replaceAll(): Void {
         Mocha.it("selector", function() {
@@ -1633,7 +1954,7 @@ class JqHtmlSpec {
            div.replaceWith(function () { } );
         });
     }
-    
+
     @:describe
     public static function resize(): Void {
         Mocha.it("call", function() {
@@ -1653,7 +1974,7 @@ class JqHtmlSpec {
            div.resize(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function scroll(): Void {
         Mocha.it("call", function() {
@@ -1673,7 +1994,7 @@ class JqHtmlSpec {
            div.scroll(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function scrollLeft(): Void {
         Mocha.it("call", function() {
@@ -1685,7 +2006,7 @@ class JqHtmlSpec {
             div.scrollLeft(100);
         });
     }
-    
+
     @:describe
     public static function scrollTop(): Void {
         Mocha.it("call", function() {
@@ -1717,7 +2038,7 @@ class JqHtmlSpec {
            div.select(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function siblings(): Void {
         Mocha.it("call", function() {
@@ -1729,7 +2050,7 @@ class JqHtmlSpec {
             div.siblings("div");
         });
     }
-    
+
     @:describe
     public static function slice(): Void {
         Mocha.it("start", function() {
@@ -1909,7 +2230,7 @@ class JqHtmlSpec {
            div.submit(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function text(): Void {
         Mocha.it("call", function() {
@@ -1935,6 +2256,14 @@ class JqHtmlSpec {
         Mocha.it("function", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.text(function(index: Int, text: String) { return "new text"; } );
+        });
+    }
+
+    @:describe
+    public static function toArray(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toArray();
         });
     }
 
@@ -1967,6 +2296,40 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function trigger(): Void {
+        Mocha.it("eventType", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.trigger("click");
+        });
+        Mocha.it("eventType extraParameters", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.trigger("click", ["custom"]);
+        });
+        Mocha.it("event", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var e = Browser.document.createEvent("Event");
+            div.trigger(e);
+        });
+        Mocha.it("event extraParameters", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var e = Browser.document.createEvent("Event");
+            div.trigger(e, ["custom"]);
+        });
+    }
+
+    @:describe
+    public static function triggerHandler(): Void {
+        Mocha.it("eventType", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.triggerHandler("click");
+        });
+        Mocha.it("eventType extraParameters", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.triggerHandler("click", ["custom"]);
+        });
+    }
+
+    @:describe
     public static function undelegate(): Void {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -1989,6 +2352,18 @@ class JqHtmlSpec {
             div.undelegate("namespace");
         });
     }
+
+    @:describe
+    public static function unload(): Void {
+        Mocha.it("handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.unload(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.unload( {test: 10}, function (event: Event) { } );
+        });
+    }
         
     @:describe
     public static function unwrap(): Void {
@@ -1997,7 +2372,24 @@ class JqHtmlSpec {
             div.unwrap();
         });
     }
-    
+
+    // val
+    @:describe
+    public static function val(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.val();
+        });
+        Mocha.it("value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.val([30, 25]);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.val(function (index: Int, value: String) { return "value"; } );
+        });
+    }
+
     @:describe
     public static function width(): Void {
         Mocha.it("call", function() {
@@ -2022,7 +2414,7 @@ class JqHtmlSpec {
             div.width(function (index: Int, value: Int) { return "400"; } );
         });
     }
-    
+
     @:describe
     public static function wrap(): Void {
         Mocha.it("selector", function() {
@@ -2050,7 +2442,7 @@ class JqHtmlSpec {
             //div.wrap(function (index: Int) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function wrapAll(): Void {
         Mocha.it("selector", function() {
@@ -2068,7 +2460,7 @@ class JqHtmlSpec {
             div.wrapAll(div2);
         });
     }
-    
+
     @:describe
     public static function wrapInner(): Void {
         Mocha.it("wrappingElement", function() {
