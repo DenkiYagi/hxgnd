@@ -13,14 +13,14 @@ extern class JQuery {
         var off: Bool;
     };
 
-    static function ajax(url: String, ?settings: {}): JqXHR;
+    static function ajax(url: String, ?settings: JqAjaxSettings): JqXHR;
 
-    static function ajaxPrefilter(?dataTypes: String, handler: JqAjaxOption -> JqAjaxOption -> JqXHR -> Void): Void;
+    static function ajaxPrefilter(?dataTypes: String, handler: JqAjaxSettings -> JqAjaxSettings -> JqXHR -> Void): Void;
 
     static function ajaxSetup(options: {}): Void;
 
     static function ajaxTransport(?dataType: String,
-            handler: JqAjaxOption -> JqAjaxOption -> JqXHR -> JqAjaxTransport): Void;
+            handler: JqAjaxSettings -> JqAjaxSettings -> JqXHR -> JqAjaxTransport): Void;
 
     static function contains(container: Element, contained: Element): Bool;
 
@@ -105,10 +105,10 @@ extern class JQuery {
     // Callbacks();
 }
 
-typedef JqAjaxOption = {
+typedef JqAjaxSettings = {
     ?accepts: {},
     ?async: Bool,
-    ?beforeSend: JqXHR -> JqAjaxOption -> Void,
+    ?beforeSend: JqXHR -> JqAjaxSettings -> Void,
     ?cache: Bool,
     ?complete: JqXHR -> String -> Void,
     ?contents: Dynamic<EReg>,

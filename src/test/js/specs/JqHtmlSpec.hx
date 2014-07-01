@@ -5,7 +5,7 @@ import js.Browser;
 import js.html.Element;
 import js.html.Event;
 import js.html.XMLHttpRequest;
-import hxgnd.js.JQuery.JqAjaxOption;
+import hxgnd.js.JQuery.JqAjaxSettings;
 
 using hxgnd.js.JqHtml;
 
@@ -41,7 +41,7 @@ class JqHtmlSpec {
             jq.add(nodeList);
         });
     }
-    
+
     @:describe
     public static function addBack(): Void {
         Mocha.it("call", function() {
@@ -106,28 +106,28 @@ class JqHtmlSpec {
             //div.after(function (index: Int, value: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function ajaxComplete(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxComplete(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxOption) { } );
+            document.ajaxComplete(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxSettings) { } );
         });
     }
-    
+
     @:describe
     public static function ajaxError(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxError(function (event: Event, xhr: XMLHttpRequest, ajaxSettings: JqAjaxOption, thrownError: String) { } );
+            document.ajaxError(function (event: Event, xhr: XMLHttpRequest, ajaxSettings: JqAjaxSettings, thrownError: String) { } );
         });
     }
-    
+
     @:describe
     public static function ajaxSend(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxSend(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxOption) { } );
+            document.ajaxSend(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxSettings) { } );
         });
     }
 
@@ -138,7 +138,7 @@ class JqHtmlSpec {
             document.ajaxStart(function () { } );
         });
     }
-    
+
     @:describe
     public static function ajaxStop(): Void {
         Mocha.it("function", function() {
@@ -146,12 +146,12 @@ class JqHtmlSpec {
             document.ajaxStop(function () { } );
         });
     }
-    
+
     @:describe
     public static function ajaxSuccess(): Void {
         Mocha.it("function", function() {
             var document = new JqHtml(Browser.document);
-            document.ajaxSuccess(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxOption, data: Dynamic) { } );
+            document.ajaxSuccess(function (event: Event, xhr: XMLHttpRequest, ajaxOptions: JqAjaxSettings, data: Dynamic) { } );
         });
     }
 
@@ -194,7 +194,7 @@ class JqHtmlSpec {
             div.animate( { width : 200 }, { } );
         });
     }
-    
+
     @:describe
     public static function append(): Void {
         Mocha.it("element", function() {
@@ -247,7 +247,7 @@ class JqHtmlSpec {
             //div.append(function (index: Int, value: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function appendTo(): Void {
         Mocha.it("selector", function() {
@@ -332,7 +332,7 @@ class JqHtmlSpec {
             //div.before(function (index: Int, value: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function blur(): Void {
         Mocha.it("call", function() {
@@ -352,7 +352,7 @@ class JqHtmlSpec {
            div.blur(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function change(): Void {
         Mocha.it("call", function() {
@@ -372,7 +372,7 @@ class JqHtmlSpec {
            div.change(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function children(): Void {
         Mocha.it("call", function() {
@@ -384,7 +384,7 @@ class JqHtmlSpec {
            jq.children("div");
         });
     }
-    
+
     @:describe
     public static function clearQueue(): Void {
         Mocha.it("clearQueue", function() {
@@ -396,7 +396,7 @@ class JqHtmlSpec {
             div.clearQueue("queueName");
         });
     }
-    
+
     @:describe
     public static function click(): Void {
         Mocha.it("call", function() {
@@ -416,7 +416,7 @@ class JqHtmlSpec {
            div.click(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function clone(): Void {
         Mocha.it("call", function() {
@@ -432,7 +432,7 @@ class JqHtmlSpec {
             div.clone(true, true);
         });
     }
-    
+
     @:describe
     public static function contents(): Void {
         Mocha.it("call", function() {
@@ -440,7 +440,7 @@ class JqHtmlSpec {
             jq.contents();
         });
     }
-    
+
     @:describe
     public static function dblclick(): Void {
         Mocha.it("call", function() {
@@ -460,7 +460,7 @@ class JqHtmlSpec {
            div.dblclick(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function delay(): Void {
         Mocha.it("duration", function() {
@@ -472,7 +472,7 @@ class JqHtmlSpec {
             jq.delay(200, "queue");
         });
     }
-    
+
     public static function delegate(): Void {
         Mocha.it("event delegate", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -487,7 +487,7 @@ class JqHtmlSpec {
             div.delegate("div", { "click" : function (event: Event) {} } );
         });
     }
-    
+
     @:describe
     public static function dequeue(): Void {
         Mocha.it("call", function() {
@@ -499,7 +499,7 @@ class JqHtmlSpec {
             jq.dequeue("queue");
         });
     }
-    
+
     @:describe
     public static function detach(): Void {
         Mocha.it("call", function() {
@@ -511,7 +511,7 @@ class JqHtmlSpec {
             div.detach("div");
         });
     }
-    
+
     @:describe
     public static function each(): Void {
         Mocha.it("call", function() {
@@ -519,7 +519,7 @@ class JqHtmlSpec {
             div.each(function (index: Int, elm: Element) { } );
         });
     }
-    
+
     @:describe
     public static function eq(): Void {
         Mocha.it("index", function() {
@@ -571,7 +571,7 @@ class JqHtmlSpec {
             div.fadeIn( { } );
         });
     }
-    
+
     @:describe
     public static function fadeOut(): Void {
         Mocha.it("call", function() {
@@ -631,7 +631,7 @@ class JqHtmlSpec {
             div.fadeTo(100, 0.5, "swing", function () { } );
         });
     }
-    
+
     @:describe
     public static function fadeToggle(): Void {
         Mocha.it("call", function() {
@@ -715,7 +715,7 @@ class JqHtmlSpec {
             div.finish("queueName");
         });
     }
-    
+
     @:describe
     public static function first(): Void {
         Mocha.it("call", function() {
@@ -723,7 +723,7 @@ class JqHtmlSpec {
             div.first();
         });
     }
-    
+
     @:describe
     public static function focus(): Void {
         Mocha.it("call", function() {
@@ -743,7 +743,7 @@ class JqHtmlSpec {
            div.focus(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function focusin(): Void {
         Mocha.it("handler", function() {
@@ -759,7 +759,7 @@ class JqHtmlSpec {
            div.focusin(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function focusout(): Void {
         Mocha.it("handler", function() {
@@ -775,7 +775,7 @@ class JqHtmlSpec {
            div.focusout(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function has(): Void {
         Mocha.it("selector", function() {
@@ -788,7 +788,7 @@ class JqHtmlSpec {
             div.has(elm);
         });
     }
-    
+
     @:describe
     public static function hasClass(): Void {
         Mocha.it("className", function() {
@@ -796,7 +796,7 @@ class JqHtmlSpec {
             div.hasClass("className");
         });
     }
-    
+
     @:describe
     public static function height(): Void {
         Mocha.it("call", function() {
@@ -821,7 +821,7 @@ class JqHtmlSpec {
             jq.height(function(i: Int, j: Int): String { return "800"; } );
         });
     }
-    
+
     @:describe
     public static function hover(): Void {
         Mocha.it("call", function() {
@@ -829,7 +829,7 @@ class JqHtmlSpec {
             jq.hover(function (event: Event) { }, function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function index(): Void {
         Mocha.it("call", function() {
@@ -851,7 +851,7 @@ class JqHtmlSpec {
             div.index(div2);
         });
     }
-    
+
     @:describe
     public static function innerHeight(): Void {
         Mocha.it("call", function() {
@@ -879,7 +879,7 @@ class JqHtmlSpec {
             div.innerWidth(function (index: Int, width: Int) { return 400; });
         });
     }
-    
+
     @:describe
     public static function insertAfter(): Void {
         Mocha.it("target string", function() {
@@ -916,7 +916,7 @@ class JqHtmlSpec {
             div.insertAfter([div2]);
         });
     }
-    
+
     @:describe
     public static function insertBefore(): Void {
         Mocha.it("target string", function() {
@@ -953,7 +953,7 @@ class JqHtmlSpec {
             div.insertBefore([div2]);
         });
     }
-    
+
     @:describe
     public static function is(): Void {
         Mocha.it("selector", function() {
@@ -984,7 +984,7 @@ class JqHtmlSpec {
             div.is(div);
         });
     }
-    
+
     @:describe
     public static function keydown(): Void {
         Mocha.it("call", function() {
@@ -1004,7 +1004,7 @@ class JqHtmlSpec {
            div.keydown(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function keypress(): Void {
         Mocha.it("call", function() {
@@ -1024,7 +1024,7 @@ class JqHtmlSpec {
            div.keypress(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function keyup(): Void {
         Mocha.it("call", function() {
@@ -1044,7 +1044,7 @@ class JqHtmlSpec {
            div.keyup(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function last(): Void {
         Mocha.it("call", function() {
@@ -1073,7 +1073,7 @@ class JqHtmlSpec {
             div.load("test.txt", "div", function (response: String, status: String, xhr: XMLHttpRequest) { } );
         });
     }
-    
+
     @:describe
     public static function map(): Void {
         Mocha.it("callback", function() {
@@ -1101,7 +1101,7 @@ class JqHtmlSpec {
            div.mousedown(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseenter(): Void {
         Mocha.it("call", function() {
@@ -1121,7 +1121,7 @@ class JqHtmlSpec {
            div.mouseenter(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseleave(): Void {
         Mocha.it("call", function() {
@@ -1141,7 +1141,7 @@ class JqHtmlSpec {
            div.mouseleave(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mousemove(): Void {
         Mocha.it("call", function() {
@@ -1161,7 +1161,7 @@ class JqHtmlSpec {
            div.mousemove(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseout(): Void {
         Mocha.it("call", function() {
@@ -1181,7 +1181,7 @@ class JqHtmlSpec {
            div.mouseout(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseover(): Void {
         Mocha.it("call", function() {
@@ -1201,7 +1201,7 @@ class JqHtmlSpec {
            div.mouseover(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function mouseup(): Void {
         Mocha.it("call", function() {
@@ -1221,7 +1221,7 @@ class JqHtmlSpec {
            div.mouseup(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function next(): Void {
         Mocha.it("call", function() {
@@ -1233,7 +1233,7 @@ class JqHtmlSpec {
             div.next("div");
         });
     }
-    
+
     @:describe
     public static function nextAll(): Void {
         Mocha.it("call", function() {
@@ -1275,7 +1275,7 @@ class JqHtmlSpec {
             div.nextUntil(elm, "div");
         });
     }
-    
+
     @:describe
     public static function not(): Void {
         Mocha.it("selector", function() {
@@ -1306,7 +1306,7 @@ class JqHtmlSpec {
             div.not(div);
         });
     }
-    
+
     @:describe
     public static function offset(): Void {
         Mocha.it("call", function() {
@@ -1322,7 +1322,7 @@ class JqHtmlSpec {
             div.offset(function (index: Int, coodinate: { top: Int, left: Int } ) { return { top:100, left:100 }; } );
         });
     }
-    
+
     @:describe
     public static function outerHeight(): Void {
         Mocha.it("call", function() {
@@ -1334,7 +1334,7 @@ class JqHtmlSpec {
             jq.outerHeight(true);
         });
     }
-    
+
     @:describe
     public static function outerWidth(): Void {
         Mocha.it("call", function() {
@@ -1346,28 +1346,28 @@ class JqHtmlSpec {
             jq.outerWidth(true);
         });
     }
-    
+
     @:describe
     public static function parentsUntil(): Void {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.parentsUntil();
-            
+
         });
         Mocha.it("selector", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.parentsUntil("div");
-            
+
         });
         Mocha.it("selector filter", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.parentsUntil("div", "span");
-            
+
         });
         Mocha.it("filter only", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.parentsUntil(null, "span");
-            
+
         });
         Mocha.it("element", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -1380,7 +1380,7 @@ class JqHtmlSpec {
             div.parentsUntil(elm, "div");
         });
     }
-    
+
     @:describe
     public static function position(): Void {
         Mocha.it("call", function() {
@@ -1388,7 +1388,7 @@ class JqHtmlSpec {
             div.position();
         });
     }
-    
+
     @:describe
     public static function prepend(): Void {
         Mocha.it("content", function() {
@@ -1441,7 +1441,7 @@ class JqHtmlSpec {
             //div.prepend(function (index: Int, html: String) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function prependTo(): Void {
         Mocha.it("selector", function() {
@@ -1478,7 +1478,7 @@ class JqHtmlSpec {
             div.prependTo([div2]);
         });
     }
-    
+
     @:describe
     public static function prev(): Void {
         Mocha.it("call", function() {
@@ -1490,7 +1490,7 @@ class JqHtmlSpec {
             div.prev("div");
         });
     }
-    
+
     @:describe
     public static function prevAll(): Void {
         Mocha.it("call", function() {
@@ -1502,7 +1502,7 @@ class JqHtmlSpec {
             div.prevAll("div");
         });
     }
-    
+
     @:describe
     public static function prevUntil(): Void {
         Mocha.it("call", function() {
@@ -1532,7 +1532,7 @@ class JqHtmlSpec {
             div.prevUntil(elm, "div");
         });
     }
-    
+
     @:descrive
     public static function queue(): Void {
         Mocha.it("queueName newQueue", function() {
@@ -1552,7 +1552,7 @@ class JqHtmlSpec {
             div.queue("queueName", function () { } );
         });
     }
-    
+
     @:describe
     public static function ready(): Void {
         Mocha.it("selector", function() {
@@ -1560,7 +1560,7 @@ class JqHtmlSpec {
             div.ready(function () { } );
         });
     }
-    
+
     @:describe
     public static function replaceAll(): Void {
         Mocha.it("selector", function() {
@@ -1633,7 +1633,7 @@ class JqHtmlSpec {
            div.replaceWith(function () { } );
         });
     }
-    
+
     @:describe
     public static function resize(): Void {
         Mocha.it("call", function() {
@@ -1653,7 +1653,7 @@ class JqHtmlSpec {
            div.resize(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function scroll(): Void {
         Mocha.it("call", function() {
@@ -1673,7 +1673,7 @@ class JqHtmlSpec {
            div.scroll(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function scrollLeft(): Void {
         Mocha.it("call", function() {
@@ -1685,7 +1685,7 @@ class JqHtmlSpec {
             div.scrollLeft(100);
         });
     }
-    
+
     @:describe
     public static function scrollTop(): Void {
         Mocha.it("call", function() {
@@ -1717,7 +1717,7 @@ class JqHtmlSpec {
            div.select(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function siblings(): Void {
         Mocha.it("call", function() {
@@ -1729,7 +1729,7 @@ class JqHtmlSpec {
             div.siblings("div");
         });
     }
-    
+
     @:describe
     public static function slice(): Void {
         Mocha.it("start", function() {
@@ -1909,7 +1909,7 @@ class JqHtmlSpec {
            div.submit(function (event: Event) { } );
         });
     }
-    
+
     @:describe
     public static function text(): Void {
         Mocha.it("call", function() {
@@ -1989,7 +1989,7 @@ class JqHtmlSpec {
             div.undelegate("namespace");
         });
     }
-        
+
     @:describe
     public static function unwrap(): Void {
         Mocha.it("call", function() {
@@ -1997,7 +1997,7 @@ class JqHtmlSpec {
             div.unwrap();
         });
     }
-    
+
     @:describe
     public static function width(): Void {
         Mocha.it("call", function() {
@@ -2022,7 +2022,7 @@ class JqHtmlSpec {
             div.width(function (index: Int, value: Int) { return "400"; } );
         });
     }
-    
+
     @:describe
     public static function wrap(): Void {
         Mocha.it("selector", function() {
@@ -2050,7 +2050,7 @@ class JqHtmlSpec {
             //div.wrap(function (index: Int) { return div2; } );
         });
     }
-    
+
     @:describe
     public static function wrapAll(): Void {
         Mocha.it("selector", function() {
@@ -2068,7 +2068,7 @@ class JqHtmlSpec {
             div.wrapAll(div2);
         });
     }
-    
+
     @:describe
     public static function wrapInner(): Void {
         Mocha.it("wrappingElement", function() {
