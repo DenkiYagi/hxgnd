@@ -597,21 +597,6 @@ class JqHtmlSpec {
         });
     }
 
-    public static function delegate(): Void {
-        Mocha.it("event delegate", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", "click", function (event: Event) { } );
-        });
-        Mocha.it("event delegate with data", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", "click", { test: 10 }, function (event: Event) { } );
-        });
-        Mocha.it("multi events", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", { "click" : function (event: Event) {} } );
-        });
-    }
-
     @:describe
     public static function dequeue(): Void {
         Mocha.it("call", function() {
@@ -2476,30 +2461,6 @@ class JqHtmlSpec {
         Mocha.it("eventType extraParameters", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.triggerHandler("click", ["custom"]);
-        });
-    }
-
-    @:describe
-    public static function undelegate(): Void {
-        Mocha.it("call", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate();
-        });
-        Mocha.it("eventType", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate("div", "click");
-        });
-        Mocha.it("event handler", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate("div", "click", function (event: Event) { } );
-        });
-        Mocha.it("events", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", { "click" : function (event: Event) {} } );
-        });
-        Mocha.it("namespace", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate("namespace");
         });
     }
 

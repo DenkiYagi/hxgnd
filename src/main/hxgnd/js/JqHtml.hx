@@ -139,10 +139,6 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     function delay(duration: Int, ?queueName: String): JqHtml;
 
-    @:overload(function (selector: String, eventType: String, eventData: Dynamic, handler: Event -> Void): JqHtml{})
-    @:overload(function (selector: String, events: Dynamic<Event -> Void>): JqHtml{})
-    function delegate(selector: String, eventType: String, handler: Event -> Void): JqHtml;
-
     function dequeue(?queueName: String): JqHtml;
 
     function detach(?selector: String): JqHtml;
@@ -345,12 +341,6 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (): JqHtml{})
     function off(eventType: String, ?selector: String, ?handler: Event -> Void): JqHtml;
 
-    @:overload(function (events: String, selector: String, data: Dynamic, handler: Event -> Void): JqHtml{})
-    function bind(events: String, ?selector: String, handler: Event -> Void): JqHtml;
-
-    @:overload(function (): JqHtml{})
-    function unbind(eventType: String, ?selector: String, ?handler: Event -> Void): JqHtml;
-
     function outerHeight(?includeMargin: Bool): Int;
 
     function outerWidth(?includeMargin: Bool): Int;
@@ -490,12 +480,6 @@ extern class JqHtml implements ArrayAccess<Element> {
     function trigger(eventType: String, ?extraParameter: Dynamic): JqHtml;
 
     function triggerHandler(eventType: String, ?extraParameter: Dynamic): JqHtml;
-
-    @:overload(function (namespace: String): JqHtml{})
-    @:overload(function (selector: String, eventType: String): JqHtml{})
-    @:overload(function (selector: String, eventType: String, handler: Event -> Void): JqHtml { } )
-    @:overload(function (Selector: String, events: Dynamic<Event -> Void>): JqHtml{})
-    function undelegate(): JqHtml;
 
     @:overload(function (?eventData: Dynamic, fn: Event -> Void): JqHtml{})
     function unload(fn: Event -> Void): JqHtml;
