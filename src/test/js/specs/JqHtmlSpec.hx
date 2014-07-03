@@ -5,11 +5,28 @@ import js.Browser;
 import js.html.Element;
 import js.html.Event;
 import js.html.XMLHttpRequest;
-import hxgnd.js.JQuery.JqAjaxSettings;
-
-using hxgnd.js.JqHtml;
+import hxgnd.js.JQuery.JqAjaxOption;
+import hxgnd.js.JqHtml;
 
 class JqHtmlSpec {
+
+    @:describe
+    public static function _new(): Void {
+        Mocha.it("element", function() {
+            var div = Browser.document.createElement("div");
+            var jq = new JqHtml(div);
+        });
+        Mocha.it("array element", function() {
+            var div = Browser.document.createElement("div");
+            var div2 = Browser.document.createElement("div");
+            var jq = new JqHtml([div, div2]);
+        });
+        Mocha.it("event target", function() {
+            var event = Browser.document.createEvent("Event");
+            var jq = new JqHtml(event.target);
+        });
+    }
+
     @:describe
     public static function add(): Void {
         Mocha.it("element", function() {
@@ -51,6 +68,18 @@ class JqHtmlSpec {
         Mocha.it("selector", function() {
             var jq = new JqHtml(Browser.document.body);
             jq.next().addBack("div");
+        });
+    }
+
+    @:describe
+    public static function addClass(): Void {
+        Mocha.it("className", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.after("div");
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.after(function (index: Int, className: String) { return "div"; } );
         });
     }
 
@@ -281,6 +310,34 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function attr(): Void {
+        Mocha.it("attributeName", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class");
+        });
+        Mocha.it("attribute value string", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", "test");
+        });
+        Mocha.it("attribute value int", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", 10);
+        });
+        Mocha.it("attribute value float", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", 3.5);
+        });
+        Mocha.it("attributes", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr( { "class" : "test" } );
+        });
+        Mocha.it("attribute function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.attr("class", function (index: Int, attr: String) { return "test"; } );
+        });
+    }
+
+    @:describe
     public static function before(): Void {
         Mocha.it("element", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -434,10 +491,77 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function closest(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.closest("div");
+        });
+        Mocha.it("selector context", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.closest("div", elm);
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.closest(div2);
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.closest(elm);
+        });
+    }
+
+    @:describe
     public static function contents(): Void {
         Mocha.it("call", function() {
             var jq = new JqHtml(Browser.document.body);
             jq.contents();
+        });
+    }
+
+    @:describe
+    public static function css(): Void {
+        Mocha.it("property", function() {
+            var jq = new JqHtml(Browser.document.body);
+            jq.css("width");
+        });
+        Mocha.it("properties", function() {
+            var jq = new JqHtml(Browser.document.body);
+            jq.css(["width", "height"]);
+        });
+        Mocha.it("property set", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.css("width", "300");
+        });
+        Mocha.it("property set function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.css("height", function (index: Int, value: String) { return "200"; } );
+        });
+        Mocha.it("property set PlainObject", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.css( { "width" : "300" } );
+        });
+    }
+
+    @:describe
+    public static function data(): Void {
+        Mocha.it("key value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data("test", 35);
+        });
+        Mocha.it("object", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data( { "foo" : 45 } );
+        });
+        Mocha.it("get data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data("test");
+        });
+        Mocha.it("get all data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.data();
         });
     }
 
@@ -473,21 +597,6 @@ class JqHtmlSpec {
         });
     }
 
-    public static function delegate(): Void {
-        Mocha.it("event delegate", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", "click", function (event: Event) { } );
-        });
-        Mocha.it("event delegate with data", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", "click", { test: 10 }, function (event: Event) { } );
-        });
-        Mocha.it("multi events", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", { "click" : function (event: Event) {} } );
-        });
-    }
-
     @:describe
     public static function dequeue(): Void {
         Mocha.it("call", function() {
@@ -517,6 +626,22 @@ class JqHtmlSpec {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.each(function (index: Int, elm: Element) { } );
+        });
+    }
+
+    @:describe
+    public static function empty(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.empty();
+        });
+    }
+
+    @:describe
+    public static function end(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.end();
         });
     }
 
@@ -704,6 +829,25 @@ class JqHtmlSpec {
         });
     }
 
+    // find
+    @:describe
+    public static function find(): Void {
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.find("div");
+        });
+        Mocha.it("selection", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var div2 = new JqHtml(Browser.document.createElement("div"));
+            div.find(div2);
+        });
+        Mocha.it("element", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            var elm = Browser.document.createElement("div");
+            div.find(elm);
+        });
+    }
+
     @:describe
     public static function finish(): Void {
         Mocha.it("call", function() {
@@ -777,6 +921,18 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function get(): Void {
+        Mocha.it("get index", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.get(0);
+        });
+        Mocha.it("get all", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.get();
+        });
+    }
+
+    @:describe
     public static function has(): Void {
         Mocha.it("selector", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -823,10 +979,58 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function hide(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(400);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(function () { } );
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(400, "swing");
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide(400, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.hide( { } );
+        });
+    }
+
+    @:describe
     public static function hover(): Void {
         Mocha.it("call", function() {
             var jq = new JqHtml(Browser.document.body);
             jq.hover(function (event: Event) { }, function (event: Event) { } );
+        });
+    }
+
+    @:describe
+    public static function html(): Void {
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.html();
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.html("<div></div>");
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.html(function (index: Int, html: String) { return "<div></div>"; } );
         });
     }
 
@@ -1308,6 +1512,26 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function off(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off();
+        });
+        Mocha.it("event", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off("click");
+        });
+        Mocha.it("event selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off("click", "div");
+        });
+        Mocha.it("event selector handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.off("click", "div", function (event: Event) { } );
+        });
+    }
+
+    @:describe
     public static function offset(): Void {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -1320,6 +1544,70 @@ class JqHtmlSpec {
         Mocha.it("function", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.offset(function (index: Int, coodinate: { top: Int, left: Int } ) { return { top:100, left:100 }; } );
+        });
+    }
+
+    @:describe
+    public static function offsetParent(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.offsetParent();
+        });
+    }
+
+    @:describe
+    public static function one(): Void {
+        Mocha.it("events selector handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one("click", "div", function (event: Event) { } );
+        });
+        Mocha.it("events selector data handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one("click", "div", { } , function (event: Event) { } );
+        });
+        Mocha.it("events(PlainObject)", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } } );
+        });
+        Mocha.it("events(PlainObject) selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } }, "div" );
+        });
+        Mocha.it("events(PlainObject) data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } }, { } );
+        });
+        Mocha.it("events(PlainObject) selector data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.one( { click : function (event: Event) { } }, "div", { } );
+        });
+    }
+
+    @:describe
+    public static function on(): Void {
+        Mocha.it("events selector handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on("click", "div", function (event: Event) { } );
+        });
+        Mocha.it("events selector data handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on("click", "div", { } , function (event: Event) { } );
+        });
+        Mocha.it("events(PlainObject)", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } } );
+        });
+        Mocha.it("events(PlainObject) selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } }, "div" );
+        });
+        Mocha.it("events(PlainObject) data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } }, { } );
+        });
+        Mocha.it("events(PlainObject) selector data", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.on( { click : function (event: Event) { } }, "div", { } );
         });
     }
 
@@ -1344,6 +1632,30 @@ class JqHtmlSpec {
         Mocha.it("includeMargin", function() {
             var jq = new JqHtml(Browser.document.body);
             jq.outerWidth(true);
+        });
+    }
+
+    @:describe
+    public static function parent(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parent();
+        });
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parent("div");
+        });
+    }
+
+    @:describe
+    public static function parents(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parents();
+        });
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.parents("div");
         });
     }
 
@@ -1534,6 +1846,26 @@ class JqHtmlSpec {
     }
 
     @:descrive
+    public static function prop(): Void {
+        Mocha.it("get property", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop("disabled");
+        });
+        Mocha.it("property name value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop("disabled", false);
+        });
+        Mocha.it("properties", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop( { disabled: false } );
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.prop("disabled", function (index: Int, value: String) { return false; } );
+        });
+    }
+
+    @:descrive
     public static function queue(): Void {
         Mocha.it("queueName newQueue", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -1558,6 +1890,62 @@ class JqHtmlSpec {
         Mocha.it("selector", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.ready(function () { } );
+        });
+    }
+
+    @:describe
+    public static function remove(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.remove();
+        });
+        Mocha.it("selector", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.remove("div");
+        });
+    }
+
+    @:describe
+    public static function removeAttr(): Void {
+        Mocha.it("attribute", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeAttr("title");
+        });
+    }
+
+    @:describe
+    public static function removeClass(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeClass();
+        });
+        Mocha.it("className", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeClass("className");
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeClass(function (index: Int, className: String) { return "className"; } );
+        });
+    }
+
+    @:describe
+    public static function removeData(): Void {
+        Mocha.it("name", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeData("name");
+        });
+        Mocha.it("array", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeData(["name", "title"]);
+        });
+    }
+
+    @:describe
+    public static function removeProp(): Void {
+        Mocha.it("propertyName", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.removeProp("disabled");
         });
     }
 
@@ -1715,6 +2103,38 @@ class JqHtmlSpec {
         Mocha.it("handler only", function() {
            var div = new JqHtml(Browser.document.createElement("div"));
            div.select(function (event: Event) { } );
+        });
+    }
+
+    @:describe
+    public static function show(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(function () { } );
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400, "swing");
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show(400, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.show( { } );
         });
     }
 
@@ -1939,6 +2359,50 @@ class JqHtmlSpec {
     }
 
     @:describe
+    public static function toArray(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toArray();
+        });
+    }
+
+    @:describe
+    public static function toggle(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle();
+        });
+        Mocha.it("duration", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(function () { } );
+        });
+        Mocha.it("duration function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400, function () { } );
+        });
+        Mocha.it("duration easing", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400, "swing");
+        });
+        Mocha.it("duration easing function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(400, "swing", function () { } );
+        });
+        Mocha.it("option", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle( { } );
+        });
+        Mocha.it("showOrHide", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.toggle(true);
+        });
+    }
+
+    @:describe
     public static function toggleClass(): Void {
         Mocha.it("className", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -1967,26 +2431,48 @@ class JqHtmlSpec {
     }
 
     @:describe
-    public static function undelegate(): Void {
-        Mocha.it("call", function() {
-            var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate();
-        });
+    public static function trigger(): Void {
         Mocha.it("eventType", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate("div", "click");
+            div.trigger("click");
         });
-        Mocha.it("event handler", function() {
+        Mocha.it("eventType extraParameters", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate("div", "click", function (event: Event) { } );
+            div.trigger("click", ["custom"]);
         });
-        Mocha.it("events", function() {
+        Mocha.it("event", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.delegate("div", { "click" : function (event: Event) {} } );
+            var e = Browser.document.createEvent("Event");
+            div.trigger(e);
         });
-        Mocha.it("namespace", function() {
+        Mocha.it("event extraParameters", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.undelegate("namespace");
+            var e = Browser.document.createEvent("Event");
+            div.trigger(e, ["custom"]);
+        });
+    }
+
+    @:describe
+    public static function triggerHandler(): Void {
+        Mocha.it("eventType", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.triggerHandler("click");
+        });
+        Mocha.it("eventType extraParameters", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.triggerHandler("click", ["custom"]);
+        });
+    }
+
+    @:describe
+    public static function unload(): Void {
+        Mocha.it("handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.unload(function (event: Event) { } );
+        });
+        Mocha.it("eventData, handler", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.unload( {test: 10}, function (event: Event) { } );
         });
     }
 
@@ -1995,6 +2481,23 @@ class JqHtmlSpec {
         Mocha.it("call", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.unwrap();
+        });
+    }
+
+    // val
+    @:describe
+    public static function val(): Void {
+        Mocha.it("call", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.val();
+        });
+        Mocha.it("value", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.val([30, 25]);
+        });
+        Mocha.it("function", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.val(function (index: Int, value: String) { return "value"; } );
         });
     }
 
