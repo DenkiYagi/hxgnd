@@ -5,7 +5,7 @@ import js.Browser;
 import js.html.Element;
 import js.html.Event;
 import js.html.XMLHttpRequest;
-import hxgnd.js.JQuery.JqAjaxOption;
+import hxgnd.js.JQuery.JqAjaxSettings;
 import hxgnd.js.JqHtml;
 
 class JqHtmlSpec {
