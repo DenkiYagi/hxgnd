@@ -10,15 +10,13 @@ class StreamSpec {
     @:describe
     public static function beforeState() {
         Mocha.it("pending", function () {
-            var s = new Stream(function (_, _, _) {
-                return function () { };
+            var s = new Stream(function (_) {
             });
             Mocha.expect(s.isPending).to.equal(true);
         });
 
         Mocha.it("isClosed", function () {
-            var s = new Stream(function (_, _, _) {
-                return function () { };
+            var s = new Stream(function (_) {
             });
             Mocha.expect(s.isClosed).to.equal(false);
         });
@@ -27,9 +25,8 @@ class StreamSpec {
     @:descripbe
     public static function update() {
         Mocha.it("then() - before update", function (done) {
-            var s = new Stream(function (update, _, _) {
-                Timer.delay(update.bind("updated"), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("updated"), 0);
             });
 
             s.then(function (x) {
@@ -53,9 +50,8 @@ class StreamSpec {
         });
 
         Mocha.it("then() - after update", function (done) {
-            var s = new Stream(function (update, _, _) {
-                update("updated");
-                return function () { };
+            var s = new Stream(function (context) {
+                context.update("updated");
             });
 
             // does not call callback
@@ -83,9 +79,8 @@ class StreamSpec {
     @:descripbe
     public static function close() {
         Mocha.it("then(_, closed) - before closed", function (done) {
-            var s = new Stream(function (_, close, _) {
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.close, 0);
             });
 
             var closed = false;
@@ -112,9 +107,8 @@ class StreamSpec {
         });
 
         Mocha.it("thenClosed() - before closed", function (done) {
-            var s = new Stream(function (_, close, _) {
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.close, 0);
             });
 
             var closed = false;
@@ -143,9 +137,8 @@ class StreamSpec {
         });
 
         Mocha.it("then(_, closed) - after closed", function (done) {
-            var s = new Stream(function (_, close, _) {
-                close();
-                return function () { };
+            var s = new Stream(function (context) {
+                context.close();
             });
 
             var closed = false;
@@ -173,9 +166,8 @@ class StreamSpec {
         });
 
         Mocha.it("thenClosed() - after closed", function (done) {
-            var s = new Stream(function (_, close, _) {
-                close();
-                return function () { };
+            var s = new Stream(function (context) {
+                context.close();
             });
 
             var closed = false;
@@ -207,9 +199,8 @@ class StreamSpec {
     @:descripbe
     public static function fail() {
         Mocha.it("then(_, _, error) - before failed", function (done) {
-            var s = new Stream(function (_, _, fail) {
-                Timer.delay(function () fail(new Error("my error")), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(function () context.fail(new Error("my error")), 0);
             });
 
             var hasError = false;
@@ -234,9 +225,8 @@ class StreamSpec {
         });
 
         Mocha.it("thenError() - before failed", function (done) {
-            var s = new Stream(function (_, _, fail) {
-                Timer.delay(function () fail(new Error("my error")), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(function () context.fail(new Error("my error")), 0);
             });
 
             var hasError = false;
@@ -263,9 +253,8 @@ class StreamSpec {
         });
 
         Mocha.it("then(_, _, error) - after failed", function (done) {
-            var s = new Stream(function (_, _, fail) {
-                fail(new Error("my error"));
-                return function () { };
+            var s = new Stream(function (context) {
+                context.fail(new Error("my error"));
             });
             Timer.delay(function () {
                 var hasError = false;
@@ -291,9 +280,8 @@ class StreamSpec {
         });
 
         Mocha.it("thenError() - after failed", function (done) {
-            var s = new Stream(function (_, _, fail) {
-                fail(new Error("my error"));
-                return function () { };
+            var s = new Stream(function (context) {
+                context.fail(new Error("my error"));
             });
             Timer.delay(function () {
                 var hasError = false;
@@ -323,9 +311,8 @@ class StreamSpec {
     @:descripbe
     public static function finally() {
         Mocha.it("then(_, _, _, finally) - before", function (done) {
-            var s = new Stream(function (_, close, _) {
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.close, 0);
             });
             s.then(null, null, null, function () {
                 done();
@@ -333,9 +320,8 @@ class StreamSpec {
         });
 
         Mocha.it("thenFinally() - before", function (done) {
-            var s = new Stream(function (_, close, _) {
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.close, 0);
             });
             s.thenFinally(function () {
                 done();
@@ -343,9 +329,8 @@ class StreamSpec {
         });
 
         Mocha.it("then(_, _, _, finally) - after", function (done) {
-            var s = new Stream(function (_, close, _) {
-                close();
-                return function () { };
+            var s = new Stream(function (context) {
+                context.close();
             });
             Timer.delay(function () {
                 s.then(null, null, null, function () {
@@ -355,9 +340,8 @@ class StreamSpec {
         });
 
         Mocha.it("thenFinally - after", function (done) {
-            var s = new Stream(function (_, close, _) {
-                close();
-                return function () { };
+            var s = new Stream(function (context) {
+                context.close();
             });
             Timer.delay(function () {
                 s.thenFinally(function () {
@@ -370,12 +354,11 @@ class StreamSpec {
     @:descripbe
     public static function updateAndClose() {
         Mocha.it("then() - before", function (done) {
-            var s = new Stream(function (update, close, _) {
+            var s = new Stream(function (context) {
                 Timer.delay(function () {
-                    update("update");
-                    Timer.delay(close, 0);
+                    context.update("update");
+                    Timer.delay(context.close, 0);
                 }, 0);
-                return function () { };
             });
 
             s.then(function (x) {
@@ -389,10 +372,9 @@ class StreamSpec {
         });
 
         Mocha.it("then() - after", function (done) {
-            var s = new Stream(function (update, close, _) {
-                update("update");
-                close();
-                return function () { };
+            var s = new Stream(function (context) {
+                context.update("update");
+                context.close();
             });
 
             Timer.delay(function () {
@@ -413,12 +395,11 @@ class StreamSpec {
     @:descripbe
     public static function updateAndFail() {
         Mocha.it("then() - before", function (done) {
-            var s = new Stream(function (update, _, fail) {
+            var s = new Stream(function (context) {
                 Timer.delay(function () {
-                    update("update");
-                    Timer.delay(fail.bind(new Error("my error")), 0);
+                    context.update("update");
+                    Timer.delay(context.fail.bind(new Error("my error")), 0);
                 }, 0);
-                return function () { };
             });
 
             var isUpdated = false;
@@ -436,10 +417,9 @@ class StreamSpec {
         });
 
         Mocha.it("then() - after", function (done) {
-            var s = new Stream(function (update, _, fail) {
-                update("update");
-                fail(new Error("my error"));
-                return function () { };
+            var s = new Stream(function (context) {
+                context.update("update");
+                context.fail(new Error("my error"));
             });
 
             Timer.delay(function () {
@@ -460,23 +440,118 @@ class StreamSpec {
 
     @:descripbe
     public static function cancel() {
-        Mocha.it("cancel", function () {
-            var s = new Stream(function (_, _, _) {
-                return function () { };
+        Mocha.it("cancel - before", function (done) {
+            var s = new Stream(function (_) {});
+
+            Mocha.expect(s.isPending).to.equal(true);
+            Mocha.expect(s.isCanceled).to.equal(false);
+            Mocha.expect(s.isClosed).to.equal(false);
+            s.then(function (_) {
+                done(new Error());
+            }, function (e) {
+                Mocha.expect(s.isPending).to.equal(false);
+                Mocha.expect(s.isCanceled).to.equal(true);
+                Mocha.expect(s.isClosed).to.equal(true);
+                Mocha.expect(e.message).to.equal("Canceled");
+                done(null);
             });
+            s.cancel();
+        });
+
+        Mocha.it("cancel - after", function (done) {
+            var s = new Stream(function (_) {});
+
             s.cancel();
 
             Mocha.expect(s.isPending).to.equal(false);
             Mocha.expect(s.isCanceled).to.equal(true);
+            Mocha.expect(s.isClosed).to.equal(false);
+            s.then(function (_) {
+                done(new Error());
+            }, function (e) {
+                Mocha.expect(s.isPending).to.equal(false);
+                Mocha.expect(s.isCanceled).to.equal(true);
+                Mocha.expect(s.isClosed).to.equal(true);
+                Mocha.expect(e.message).to.equal("Canceled");
+                done(null);
+            });
+        });
+
+
+        Mocha.it("onCancel update", function (done) {
+            var s = new Stream(function (ctx) {
+                ctx.onCancel = function () {
+                    ctx.update("update");
+                };
+            });
+
+            var called = false;
+            s.then(function (x) {
+                Mocha.expect(x).to.equal("update");
+                Mocha.expect(s.isCanceled).to.equal(true);
+                called = true;
+            });
+            s.thenError(function (e) {
+                Mocha.expect(called).to.ok();
+                done();
+            });
+
+            s.cancel();
+        });
+
+        Mocha.it("onCancel close", function (done) {
+            var s = new Stream(function (ctx) {
+                ctx.onCancel = function () {
+                    ctx.close();
+                };
+            });
+
+            s.thenClosed(function () {
+                Mocha.expect(s.isCanceled).to.equal(true);
+                done();
+            });
+
+            s.cancel();
+        });
+
+        Mocha.it("onCancel reject", function (done) {
+            var s = new Stream(function (ctx) {
+                ctx.onCancel = function () {
+                    ctx.fail(new Error("override"));
+                };
+            });
+
+            s.thenError(function (e) {
+                Mocha.expect(e.message).to.equal("override");
+                Mocha.expect(s.isCanceled).to.equal(true);
+                done();
+            });
+
+            s.cancel();
+        });
+
+        Mocha.it("onCancel cancel", function (done) {
+            var s = new Stream(function (ctx) {
+                // 無限ループにならないこと
+                ctx.onCancel = function () {
+                    ctx.cancel();
+                };
+            });
+
+            s.thenError(function (e) {
+                Mocha.expect(s.isCanceled).to.equal(true);
+                done();
+            });
+
+            s.cancel();
         });
     }
 
     @:descripbe
     public static function next() {
         Mocha.it("next() - update", function (done) {
-            var s = new Stream(function (update, _, _) {
-                Timer.delay(function () update("update"), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(function () context.update("update"), 0);
             });
 
             s.next().then(function (x) {
@@ -489,9 +564,8 @@ class StreamSpec {
         });
 
         Mocha.it("next() - close", function (done) {
-            var s = new Stream(function (_, close, _) {
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.close, 0);
             });
 
             s.next().then(function (x) {
@@ -504,9 +578,8 @@ class StreamSpec {
         });
 
         Mocha.it("next() - fail", function (done) {
-            var s = new Stream(function (_, _, fail) {
-                Timer.delay(function () fail(new Error("my error")), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(function () context.fail(new Error("my error")), 0);
             });
 
             s.next().then(function (x) {
@@ -519,8 +592,7 @@ class StreamSpec {
         });
 
         Mocha.it("next() - cancel", function (done) {
-            var s = new Stream(function (_, _, _) {
-                return function () { };
+            var s = new Stream(function (context) {
             });
             s.cancel();
 
@@ -537,9 +609,8 @@ class StreamSpec {
     @:descripbe
     public static function tail() {
         Mocha.it("tail() - close", function (done) {
-            var s = new Stream(function (_, close, _) {
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.close, 0);
             });
 
             s.tail().then(function (_) {
@@ -551,9 +622,8 @@ class StreamSpec {
         });
 
         Mocha.it("tail() - fail", function (done) {
-            var s = new Stream(function (_, _, fail) {
-                Timer.delay(fail.bind(new Error("my error")), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.fail.bind(new Error("my error")), 0);
             });
 
             s.tail().then(function (_) {
@@ -565,8 +635,7 @@ class StreamSpec {
         });
 
         Mocha.it("tail() - cancel", function (done) {
-            var s = new Stream(function (_, _, _) {
-                return function () { };
+            var s = new Stream(function (_) {
             });
             s.cancel();
 
@@ -583,11 +652,10 @@ class StreamSpec {
     @:descripbe
     public static function map() {
         Mocha.it("map() - close", function (done) {
-            var s = new Stream(function (update, close, _) {
-                Timer.delay(update.bind("1"), 0);
-                Timer.delay(update.bind("2"), 0);
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+                Timer.delay(context.close, 0);
             });
 
             var s2 = s.map(function (x) {
@@ -604,11 +672,10 @@ class StreamSpec {
         });
 
         Mocha.it("map() - fail", function (done) {
-            var s = new Stream(function (update, _, fail) {
-                Timer.delay(update.bind("1"), 0);
-                Timer.delay(update.bind("2"), 0);
-                Timer.delay(fail.bind(new Error()), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+                Timer.delay(context.fail.bind(new Error()), 0);
             });
 
             var s2 = s.map(function (x) {
@@ -628,15 +695,14 @@ class StreamSpec {
     @:descripbe
     public static function chain() {
         Mocha.it("chain() - close", function (done) {
-            var s = new Stream(function (update, close, _) {
-                Timer.delay(update.bind("1"), 0);
-                Timer.delay(update.bind("2"), 0);
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+                Timer.delay(context.close, 0);
             });
 
             var s2 = s.chain(function (x) {
-                return Promise.resolved(x + "_conv");
+                return Promise.fulfilled(x + "_conv");
             });
 
             var count = 0;
@@ -649,15 +715,14 @@ class StreamSpec {
         });
 
         Mocha.it("chain() - fail", function (done) {
-            var s = new Stream(function (update, _, fail) {
-                Timer.delay(update.bind("1"), 0);
-                Timer.delay(update.bind("2"), 0);
-                Timer.delay(fail.bind(new Error()), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+                Timer.delay(context.fail.bind(new Error()), 0);
             });
 
             var s2 = s.chain(function (x) {
-                return Promise.resolved(x + "_conv");
+                return Promise.fulfilled(x + "_conv");
             });
 
             var count = 0;
@@ -670,15 +735,14 @@ class StreamSpec {
         });
 
         Mocha.it("chain() - cancel", function (done) {
-            var s = new Stream(function (update, _, fail) {
-                Timer.delay(update.bind("1"), 0);
-                Timer.delay(update.bind("2"), 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
             });
             Timer.delay(s.cancel, 50);
 
             var s2 = s.chain(function (x) {
-                return Promise.resolved(x + "_conv");
+                return Promise.fulfilled(x + "_conv");
             });
 
             var count = 0;
@@ -691,29 +755,26 @@ class StreamSpec {
         });
 
         Mocha.it("chain() - delay", function (done) {
-            var s = new Stream(function (update, close, _) {
-                Timer.delay(update.bind("1"), 0);
-                Timer.delay(update.bind("2"), 0);
-                Timer.delay(update.bind("3"), 0);
-                Timer.delay(update.bind("4"), 0);
-                Timer.delay(update.bind("5"), 0);
-                Timer.delay(close, 0);
-                return function () { };
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+                Timer.delay(context.update.bind("3"), 0);
+                Timer.delay(context.update.bind("4"), 0);
+                Timer.delay(context.update.bind("5"), 0);
+                Timer.delay(context.close, 0);
             });
 
             var s2 = s.chain(function (x) {
                 return if (x == "1") {
-                    new Promise(function (resolve, _) {
-                        Timer.delay(resolve.bind(x + "_conv"), 50);
-                        return function () { };
+                    new Promise(function (context) {
+                        Timer.delay(context.fulfill.bind(x + "_conv"), 50);
                     });
                 } else if (x == "2") {
-                    new Promise(function (resolve, _) {
-                        Timer.delay(resolve.bind(x + "_conv"), 10);
-                        return function () { };
+                    new Promise(function (context) {
+                        Timer.delay(context.fulfill.bind(x + "_conv"), 10);
                     });
                 } else {
-                    Promise.resolved(x + "_conv");
+                    Promise.fulfilled(x + "_conv");
                 }
             });
 

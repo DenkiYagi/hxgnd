@@ -124,6 +124,7 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     @:overload(function (key: Array<String>): Dynamic<String>{})
     @:overload(function (key: String, value: String): JqHtml{})
+    @:overload(function (key: String, value: Int): JqHtml{})
     @:overload(function (key: String, fn: Int -> String -> String): JqHtml{})
     @:overload(function (obj: Dynamic<String>): JqHtml{})
     function css(key: String): String;
@@ -324,21 +325,28 @@ extern class JqHtml implements ArrayAccess<Element> {
     @:overload(function (selection: JqHtml): JqHtml{})
     function not(?selector: String): JqHtml;
 
-    @:overload(function (coodinates: { top: Int, left: Int}): JqHtml{})
-    @:overload(function (fn: Int -> { top: Int, left: Int} -> { top: Int, left: Int}): JqHtml{})
-    function offset(): { top: Int, left: Int};
+    @:overload(function (coodinates: { top: Float, left: Float }): JqHtml{})
+    @:overload(function (fn: Int -> { top: Float, left: Float } -> { top: Float, left: Float }): JqHtml{})
+    function offset(): { top: Float, left: Float };
 
     function offsetParent(): JqHtml;
 
+    @:overload(function (events: String, ?selector: String, handler: Event -> Dynamic -> Void): JqHtml{})
     @:overload(function (events: Dynamic<Event -> Void>, ?selector: String, ?data: Dynamic): JqHtml{})
+    @:overload(function (events: Dynamic<Event -> Dynamic -> Void>, ?selector: String, ?data: Dynamic): JqHtml{})
     @:overload(function (events: String, selector: String, data: Dynamic, handler: Event -> Void): JqHtml{})
+    @:overload(function (events: String, selector: String, data: Dynamic, handler: Event -> Dynamic -> Void): JqHtml{})
     function one(events: String, ?selector: String, handler: Event -> Void): JqHtml;
 
+    @:overload(function (events: String, ?selector: String, handler: Event -> Dynamic -> Void): JqHtml{})
     @:overload(function (events: Dynamic<Event -> Void>, ?selector: String, ?data: Dynamic): JqHtml{})
+    @:overload(function (events: Dynamic<Event -> Dynamic -> Void>, ?selector: String, ?data: Dynamic): JqHtml{})
     @:overload(function (events: String, selector: String, data: Dynamic, handler: Event -> Void): JqHtml{})
+    @:overload(function (events: String, selector: String, data: Dynamic, handler: Event -> Dynamic -> Void): JqHtml{})
     function on(events: String, ?selector: String, handler: Event -> Void): JqHtml;
 
     @:overload(function (): JqHtml{})
+    @:overload(function (eeventType: String, ?selector: String, ?handler: Event -> Dynamic -> Void): JqHtml{})
     function off(eventType: String, ?selector: String, ?handler: Event -> Void): JqHtml;
 
     function outerHeight(?includeMargin: Bool): Int;

@@ -1,8 +1,32 @@
 package hxgnd;
 
 class ArrayTools {
+    public static function array<T>(x: Iterator<T>): Array<T> {
+        var array = [];
+        while (x.hasNext()) {
+            array.push(x.next());
+        }
+        return array;
+    }
+
     public static inline function iter<A>(array: Array<A>, f: A -> Void): Void {
         for (x in array) f(x);
+    }
+
+    public static function map<A, B>(array: Array<A>, f: A -> B): Array<B> {
+        var result = [];
+        iter(array, function (a) {
+            result.push(f(a));
+        });
+        return result;
+    }
+
+    public static function flatMap<A, B>(array: Array<Array<A>>, f: A -> B): Array<B> {
+        var result = [];
+        iter(array, function (sub) {
+            iter(sub, function (a) result.push(f(a)));
+        });
+        return result;
     }
 
     public static function groupBy<A>(array: Array<A>, f: A -> String): Dynamic<Array<A>> {

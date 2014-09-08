@@ -2,7 +2,7 @@ package specs;
 
 import hxmocha.Mocha;
 using hxgnd.ArrayTools;
-import haxe.ds.Option;
+import hxgnd.Option;
 using hxgnd.OptionTools;
 
 class ArrayToolsSpec {

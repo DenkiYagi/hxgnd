@@ -1,6 +1,9 @@
 package hxgnd.js;
 
 import js.html.Element;
+import js.html.EventTarget;
+import js.html.Node;
+import js.html.NodeList;
 
 @:native("jQuery")
 extern class JQuery {
@@ -66,14 +69,13 @@ extern class JQuery {
     static function Deferred(): JqDeferred;
 
     // helper
+    @:overload(function (node: Node): JqHtml{})
+    @:overload(function (nodes: Array<Node>): JqHtml{})
+    @:overload(function (nodes: NodeList): JqHtml{})
+    @:overload(function (node: EventTarget): JqHtml{})
     @:overload(function (selector: String, ?context: JqHtml): JqHtml{})
-    static inline function find(selector: String, ?context: Element): JqHtml {
+    static inline function _(selector: String, ?context: Element): JqHtml {
         return untyped __js__("jQuery")(selector, context);
-    }
-
-    @:overload(function (nodes: Array<Element>): JqHtml{})
-    static inline function wrap(node: Element): JqHtml {
-        return untyped __js__("jQuery")(node);
     }
 
     // ** unsupported **

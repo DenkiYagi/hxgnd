@@ -9,8 +9,7 @@ class PromiseSpec {
     @:describe
     public static function isPending(): Void {
         Mocha.it("pending", function () {
-            var p = new Promise(function (resolve, reject) {
-                return function () { };
+            var p = new Promise(function (_) {
             });
             Mocha.expect(p.isPending).to.equal(true);
         });
@@ -19,8 +18,8 @@ class PromiseSpec {
     @:describe
     public static function resolve(): Void {
         Mocha.it("then() - before", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                Timer.delay(resolve.bind("test"), 0);
+            var p = new Promise(function (context) {
+                Timer.delay(context.fulfill.bind("test"), 0);
                 return function () { };
             });
 
@@ -36,9 +35,8 @@ class PromiseSpec {
         });
 
         Mocha.it("then() - after", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                resolve("test");
-                return function () { };
+            var p = new Promise(function (context) {
+                context.fulfill("test");
             });
 
             // don't call again
@@ -61,9 +59,8 @@ class PromiseSpec {
         });
 
         Mocha.it("thenError() - before", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                Timer.delay(resolve.bind("test"), 0);
-                return function () { };
+            var p = new Promise(function (context) {
+                Timer.delay(context.fulfill.bind("test"), 0);
             });
 
             var isCalled = false;
@@ -79,9 +76,8 @@ class PromiseSpec {
         });
 
         Mocha.it("thenError() - after", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                resolve("test");
-                return function () { };
+            var p = new Promise(function (context) {
+                context.fulfill("test");
             });
 
             Timer.delay(function () {
@@ -98,9 +94,8 @@ class PromiseSpec {
         });
 
         Mocha.it("finally", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                resolve("test");
-                return function () { };
+            var p = new Promise(function (context) {
+                context.fulfill("test");
             });
 
             // don't call again
@@ -120,9 +115,8 @@ class PromiseSpec {
         });
 
         Mocha.it("thenFinally()", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                resolve("test");
-                return function () { };
+            var p = new Promise(function (context) {
+                context.fulfill("test");
             });
 
             // don't call again
@@ -145,9 +139,8 @@ class PromiseSpec {
     @:describe
     public static function reject(): Void {
         Mocha.it("then() - before", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                Timer.delay(reject.bind(new Error("my error")), 0);
-                return function () { };
+            var p = new Promise(function (context) {
+                Timer.delay(context.reject.bind(new Error("my error")), 0);
             });
 
             p.then(function (x) {
@@ -162,9 +155,8 @@ class PromiseSpec {
         });
 
         Mocha.it("then() - after", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                reject(new Error("my error"));
-                return function () { };
+            var p = new Promise(function (context) {
+                context.reject(new Error("my error"));
             });
 
             // don't call again
@@ -188,9 +180,8 @@ class PromiseSpec {
         });
 
         Mocha.it("thenError() - before", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                Timer.delay(reject.bind(new Error("my error")), 0);
-                return function () { };
+            var p = new Promise(function (context) {
+                Timer.delay(context.reject.bind(new Error("my error")), 0);
             });
 
             p.thenError(function (e) {
@@ -203,9 +194,8 @@ class PromiseSpec {
         });
 
         Mocha.it("thenError() - after", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                reject(new Error("my error"));
-                return function () { };
+            var p = new Promise(function (context) {
+                context.reject(new Error("my error"));
             });
 
             // don't call again
@@ -227,9 +217,8 @@ class PromiseSpec {
         });
 
         Mocha.it("finally", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                reject(new Error("my error"));
-                return function () { };
+            var p = new Promise(function (context) {
+                context.reject(new Error("my error"));
             });
 
             // don't call again
@@ -249,9 +238,8 @@ class PromiseSpec {
         });
 
         Mocha.it("thenFinally()", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                reject(new Error("my error"));
-                return function () { };
+            var p = new Promise(function (context) {
+                context.reject(new Error("my error"));
             });
 
             // don't call again
@@ -274,15 +262,15 @@ class PromiseSpec {
     @:describe
     public static function cancel() {
         Mocha.it("cancel - before", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                return function () { };
-            });
+            var p = new Promise(function (_) {});
 
             Mocha.expect(p.isPending).to.equal(true);
+            Mocha.expect(p.isCanceled).to.equal(false);
             p.then(function (_) {
                 done(new Error());
             }, function (e) {
                 Mocha.expect(p.isPending).to.equal(false);
+                Mocha.expect(p.isCanceled).to.equal(true);
                 Mocha.expect(e.message).to.equal("Canceled");
                 done(null);
             });
@@ -291,27 +279,89 @@ class PromiseSpec {
         });
 
         Mocha.it("cancel - after", function (done) {
-            var p = new Promise(function (resolve, reject) {
-                return function () { };
-            });
+            var p = new Promise(function (_) {});
 
             p.cancel();
 
             Mocha.expect(p.isPending).to.equal(false);
+            Mocha.expect(p.isCanceled).to.equal(true);
             p.then(function (_) {
                 done(new Error());
             }, function (e) {
                 Mocha.expect(p.isPending).to.equal(false);
+                Mocha.expect(p.isCanceled).to.equal(true);
                 Mocha.expect(e.message).to.equal("Canceled");
                 done(null);
             });
         });
+
+        Mocha.it("onCancel", function () {
+            var called = false;
+
+            var p = new Promise(function (ctx) {
+                ctx.onCancel = function () {
+                    called = true;
+                };
+            });
+
+            Mocha.expect(called).to.equal(false);
+            p.cancel();
+            Mocha.expect(called).to.equal(true);
+        });
+
+        Mocha.it("onCancel fulfill", function (done) {
+            var p = new Promise(function (ctx) {
+                ctx.onCancel = function () {
+                    ctx.fulfill("override");
+                };
+            });
+
+            p.then(function (x) {
+                Mocha.expect(x).to.equal("override");
+                Mocha.expect(p.isCanceled).to.equal(true);
+                done();
+            });
+
+            p.cancel();
+        });
+
+        Mocha.it("onCancel reject", function (done) {
+            var p = new Promise(function (ctx) {
+                ctx.onCancel = function () {
+                    ctx.reject(new Error("override"));
+                };
+            });
+
+            p.thenError(function (e) {
+                Mocha.expect(e.message).to.equal("override");
+                Mocha.expect(p.isCanceled).to.equal(true);
+                done();
+            });
+
+            p.cancel();
+        });
+
+        Mocha.it("onCancel cancel", function (done) {
+            var p = new Promise(function (ctx) {
+                // 無限ループにならないこと
+                ctx.onCancel = function () {
+                    ctx.cancel();
+                };
+            });
+
+            p.thenError(function (e) {
+                Mocha.expect(p.isCanceled).to.equal(true);
+                done();
+            });
+
+            p.cancel();
+        });
     }
 
-    @:describe("#resolved")
-    public static function resolved() {
-        Mocha.it("resolved", function (done) {
-            Promise.resolved({hoge: 1}).then(function (x) {
+    @:describe("#fulfilled")
+    public static function fulfilled() {
+        Mocha.it("fulfilled", function (done) {
+            Promise.fulfilled({hoge: 1}).then(function (x) {
                 Mocha.expect(x).to.eql({hoge: 1});
                 done(null);
             }, function (err) {
@@ -341,7 +391,7 @@ class PromiseSpec {
     @:describe
     public static function map() {
         Mocha.it("resolved", function (done) {
-            Promise.resolved("hello").map(function (x) return '$x world').then(function (x) {
+            Promise.fulfilled("hello").map(function (x) return '$x world').then(function (x) {
                 Mocha.expect(x).to.equal("hello world");
                 done();
             });
@@ -365,10 +415,10 @@ class PromiseSpec {
     @:describe
     public static function flatMap() {
         Mocha.it("resolved -> resolved", function (done) {
-            Promise.resolved("hello")
+            Promise.fulfilled("hello")
                 .flatMap(function (x) {
-                    return new Promise(function (r, _) {
-                        r('$x world');
+                    return new Promise(function (context) {
+                        context.fulfill('$x world');
                         return function () { };
                     });
                 })
@@ -379,7 +429,7 @@ class PromiseSpec {
         });
 
         Mocha.it("resolved -> rejected", function (done) {
-            Promise.resolved("hello")
+            Promise.fulfilled("hello")
                 .flatMap(function (x) {
                     return Promise.rejected(new Error("inner error"));
                 })
@@ -395,9 +445,8 @@ class PromiseSpec {
         Mocha.it("rejected", function (done) {
             Promise.rejected(new Error("my error"))
                 .flatMap(function (x) {
-                    return new Promise(function (r, _) {
-                        r('$x world');
-                        return function () { };
+                    return new Promise(function (context) {
+                        context.fulfill('$x world');
                     });
                 })
                 .then(function (x) {
@@ -421,9 +470,8 @@ class PromiseSpec {
 
         Mocha.it("single", function (done) {
             Promise.all([
-                new Promise(function (r, _) {
-                    Timer.delay(r.bind("task1"), 0);
-                    return function () { };
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task1"), 0);
                 })
             ]).then(function (x) {
                 Mocha.expect(x).to.eql(["task1"]);
@@ -431,19 +479,33 @@ class PromiseSpec {
             });
         });
 
-        Mocha.it("any", function (done) {
+        Mocha.it("many", function (done) {
             Promise.all([
-                new Promise(function (r, _) {
-                    Timer.delay(r.bind("task1"), 0);
-                    return function () { };
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task1"), 0);
                 }),
-                new Promise(function (r, _) {
-                    Timer.delay(r.bind("task2"), 0);
-                    return function () { };
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task2"), 0);
                 }),
-                new Promise(function (r, _) {
-                    Timer.delay(r.bind("task3"), 0);
-                    return function () { };
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task3"), 0);
+                })
+            ]).then(function (x) {
+                Mocha.expect(x).to.eql(["task1", "task2", "task3"]);
+                done();
+            });
+        });
+
+        Mocha.it("many order", function (done) {
+            Promise.all([
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task1"), 30);
+                }),
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task2"), 10);
+                }),
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task3"), 0);
                 })
             ]).then(function (x) {
                 Mocha.expect(x).to.eql(["task1", "task2", "task3"]);
@@ -453,17 +515,14 @@ class PromiseSpec {
 
         Mocha.it("rejected", function (done) {
             Promise.all([
-                new Promise(function (r, _) {
-                    Timer.delay(r.bind("task1"), 0);
-                    return function () { };
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task1"), 0);
                 }),
-                new Promise(function (r, _) {
-                    Timer.delay(r.bind("task2"), 0);
-                    return function () { };
+                new Promise(function (context) {
+                    Timer.delay(context.fulfill.bind("task2"), 0);
                 }),
-                new Promise(function (_, r) {
-                    Timer.delay(r.bind(new Error("task3 error")), 0);
-                    return function () { };
+                new Promise(function (context) {
+                    Timer.delay(context.reject.bind(new Error("task3 error")), 0);
                 })
             ]).then(function (x) {
                 Mocha.expectFail();

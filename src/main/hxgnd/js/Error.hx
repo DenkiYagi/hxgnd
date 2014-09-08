@@ -1,9 +1,11 @@
 package hxgnd.js;
 
-@:native("Error")
-extern class Error {
-    public function new(?message: String);
-    public var name: String;
-    public var message: String;
-    public var stack: String;
+typedef Error = js.Error;
+
+class ErrorTools {
+    public static inline function initialize(error: Error, message: String) {
+        error.name = Type.getClassName(Type.getClass(error));
+        error.message = (message != null) ? message : "";
+        cast(error).stack = new js.Error().stack;
+    }
 }

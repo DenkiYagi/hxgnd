@@ -81,4 +81,10 @@ class ResultTools {
         }
     }
 
+    public inline static function toPromise<A>(result:Result<A>):Promise<A> {
+        return switch(result) {
+            case Success(arg): Promise.fulfilled(arg);
+            case Failure(err): Promise.rejected(err);
+        }
+    }
 }

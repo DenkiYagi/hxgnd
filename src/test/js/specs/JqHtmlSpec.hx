@@ -531,9 +531,13 @@ class JqHtmlSpec {
             var jq = new JqHtml(Browser.document.body);
             jq.css(["width", "height"]);
         });
-        Mocha.it("property set", function() {
+        Mocha.it("property set String", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
             div.css("width", "300");
+        });
+        Mocha.it("property set Int", function() {
+            var div = new JqHtml(Browser.document.createElement("div"));
+            div.css("width", 300);
         });
         Mocha.it("property set function", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
@@ -1543,7 +1547,7 @@ class JqHtmlSpec {
         });
         Mocha.it("function", function() {
             var div = new JqHtml(Browser.document.createElement("div"));
-            div.offset(function (index: Int, coodinate: { top: Int, left: Int } ) { return { top:100, left:100 }; } );
+            div.offset(function (index, coodinate) return { top:100, left:100 });
         });
     }
 

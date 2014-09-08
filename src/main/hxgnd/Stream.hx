@@ -6,17 +6,18 @@ class Stream<A> {
     @:allow(hxgnd) @:noCompletion var _closedHandlers: Array<Void -> Void>;
     @:allow(hxgnd) @:noCompletion var _failedHandlers: Array<Error -> Void>;
     @:allow(hxgnd) @:noCompletion var _finallyHandlers: Array<Void -> Void>;
-    @:allow(hxgnd) @:noCompletion var _abort: Void -> Void;
+    @:allow(hxgnd) @:noCompletion var _context: StreamContext<A>;
 
     public var isPending(get, null): Bool;
     public var isClosed(get, null): Bool;
-    public var isCanceled(get, null): Bool;
+    public var isCanceled(default, null): Bool;
 
-    public function new(executor: (A -> Void) -> (Void -> Void) -> (Error -> Void) -> (Void -> Void)) {
+    public function new(executor: StreamContext<A> -> Void) {
         _state = Pending;
+        isCanceled = false;
         _clear();
         try {
-            _abort = executor(update, close, fail);
+            executor(_context);
         } catch (e: Error) {
             _state = Failed(e);
         } catch (e: Dynamic) {
@@ -30,7 +31,13 @@ class Stream<A> {
         _closedHandlers = [];
         _failedHandlers = [];
         _finallyHandlers = [];
-        _abort = function () {};
+        _context = {
+            update: update,
+            close: close,
+            fail: fail,
+            cancel: cancel,
+            onCancel: function () {}
+        };
     }
 
     @:allow(hxgnd) @:noCompletion
@@ -43,7 +50,7 @@ class Stream<A> {
     }
 
     @:allow(hxgnd) @:noCompletion
-    function _invokeUpdated(value: A): Void {
+    function _doUpdated(value: A): Void {
         function filter() {
             var array = [];
             for (x in _updatedHandlers)
@@ -51,71 +58,73 @@ class Stream<A> {
             return array;
         }
 
-        _invokeAsync(function () {
-            try {
-                _state = Opened;
-                for (handler in _updatedHandlers) handler.f(value);
-                _updatedHandlers = filter();
-            } catch (e: Error) {
-                _invokeFailed(e);
-            } catch (e: Dynamic) {
-                _invokeFailed(new Error(Std.string(e)));
-            }
-        });
+        try {
+            _state = Opened;
+            for (handler in _updatedHandlers) handler.f(value);
+            _updatedHandlers = filter();
+        } catch (e: Error) {
+            _doFailed(e);
+        } catch (e: Dynamic) {
+            _doFailed(new Error(Std.string(e)));
+        }
     }
 
     @:allow(hxgnd) @:noCompletion
-    function _invokeClosed(isCancel = false): Void {
-        _invokeAsync(function () {
-            try {
-                _state = isCancel ? Canceled : Closed;
-                for (f in _closedHandlers) f();
-                _invokeFinally();
-                _clear();
-            } catch (e: Error) {
-                _invokeFailed(e);
-            } catch (e: Dynamic) {
-                _invokeFailed(new Error(Std.string(e)));
-            }
-        });
-    }
-
-    @:allow(hxgnd) @:noCompletion
-    function _invokeFailed(error: Error, isCancel = false): Void {
-        _invokeAsync(function () {
-            _state = Failed(error);
-            for (f in _failedHandlers) {
-                try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
-            }
-            _invokeFinally();
+    function _doClosed(): Void {
+        try {
+            _state = Closed;
+            for (f in _closedHandlers) f();
+            _doFinally();
             _clear();
-        });
+        } catch (e: Error) {
+            _doFailed(e);
+        } catch (e: Dynamic) {
+            _doFailed(new Error(Std.string(e)));
+        }
     }
 
     @:allow(hxgnd) @:noCompletion
-    inline function _invokeFinally(): Void {
+    function _doFailed(error: Error): Void {
+        _state = Failed(error);
+        for (f in _failedHandlers) {
+            try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
+        }
+        _doFinally();
+        _clear();
+    }
+
+    @:allow(hxgnd) @:noCompletion
+    function _doCancel(): Void {
+        isCanceled = true;
+        if (_context.onCancel != null) {
+            try {
+                _context.onCancel();
+            } catch (e: Dynamic) {
+                trace(e);
+            }
+        }
+        fail(new Error("Canceled"));
+    }
+
+    @:allow(hxgnd) @:noCompletion
+    inline function _doFinally(): Void {
         for (f in _finallyHandlers) {
             try f() catch (e: Dynamic) trace(e); //TODO エラーダンプ
         }
     }
 
+    @:allow(hxgnd) @:noCompletion
     function get_isPending() {
         return switch (_state) {
-            case Pending: true;
+            case Pending: !isCanceled;
             case _: false;
         }
     }
 
+    @:allow(hxgnd) @:noCompletion
     function get_isClosed() {
         return switch (_state) {
             case Closed, Failed(_): true;
-            case _: false;
-        }
-    }
-
-    function get_isCanceled() {
-        return switch (_state) {
-            case Canceling, Canceled: true;
             case _: false;
         }
     }
@@ -124,7 +133,7 @@ class Stream<A> {
         switch (_state) {
             case Pending, Opened:
                 _state = Opened;
-                _invokeUpdated(value);
+                _invokeAsync(_doUpdated.bind(value));
             default:
         }
     }
@@ -132,8 +141,8 @@ class Stream<A> {
     function close(): Void {
         switch (_state) {
             case Pending, Opened:
-                _state = Closing;
-                _invokeClosed();
+                _state = Sealed;
+                _invokeAsync(_doClosed);
             default:
         }
     }
@@ -141,30 +150,28 @@ class Stream<A> {
     function fail(x: Error): Void {
         switch (_state) {
             case Pending, Opened:
-                _state = Failing;
-                _invokeFailed((x == null) ? new Error("Rejected") : x);
+                _state = Sealed;
+                _invokeAsync(_doFailed.bind((x == null) ? new Error("Rejected") : x));
             default:
         }
     }
 
     public function cancel(): Void {
         switch (_state) {
-            case Pending, Opened:
-                _state = Canceling;
-                _abort();
-                _invokeFailed(new Error("Canceled"), true);
+            case Pending, Opened if (!isCanceled):
+                _doCancel();
             default:
         }
     }
 
     public function then(updated: A -> Void, ?closed: Void -> Void, ?failed: Error -> Void, ?finally: Void -> Void): Stream<A> {
         switch (_state) {
-            case Pending, Opened, Closing, Canceling, Failing:
+            case Pending, Opened, Sealed:
                 if (updated != null) _updatedHandlers.push({f: updated, loop: true});
                 if (closed != null) _closedHandlers.push(closed);
                 if (failed != null) _failedHandlers.push(failed);
                 if (finally != null) _finallyHandlers.push(finally);
-            case Closed, Canceled:
+            case Closed:
                 if (closed != null) _invokeAsync(closed);
                 if (finally != null) _invokeAsync(finally);
             case Failed(e):
@@ -186,37 +193,14 @@ class Stream<A> {
         return then(null, null, null, finally);
     }
 
-    public function await(updated: A -> Void): Stream<A> {
-        switch (_state) {
-            case Pending, Opened, Closing:
-                _updatedHandlers.push({f: updated});
-            default:
-        }
-        return this;
-    }
-
     public function next(): Promise<A> {
         return switch (_state) {
-            case Pending, Opened:
-                new Promise(function (resolve, reject) {
-                    await(resolve);
-                    then(null, function () reject(new Error("Closed")), reject);
-                    return function () {};
-                });
-            case Closing:
-                new Promise(function (resolve, reject) {
-                    then(null, function () reject(new Error("Closed")), reject);
-                    return function () {};
+            case Pending, Opened, Sealed:
+                new Promise(function (context) {
+                    then(context.fulfill, function () context.reject(new Error("Closed")), context.reject);
                 });
             case Closed:
                 Promise.rejected(new Error("Closed"));
-            case Canceling, Canceled:
-                Promise.rejected(new Error("Canceled"));
-            case Failing:
-                new Promise(function (_, reject) {
-                    this.thenError(reject);
-                    return function () { };
-                });
             case Failed(e):
                 Promise.rejected(e);
         }
@@ -224,67 +208,60 @@ class Stream<A> {
 
     public function tail(): Promise<Unit> {
         return switch (_state) {
-            case Pending, Opened, Closing, Canceling:
-                new Promise(function (resolve, reject) {
-                    then(null, function () resolve(Unit._), reject);
-                    return function () {};
+            case Pending, Opened, Sealed:
+                new Promise(function (context) {
+                    then(null, context.fulfill.bind(Unit._), context.reject);
                 });
             case Closed:
-                Promise.resolved(Unit._);
-            case Failing:
-                new Promise(function (_, reject) {
-                    this.thenError(reject);
-                    return function () { };
-                });
+                Promise.fulfilled(Unit._);
             case Failed(e):
                 Promise.rejected(e);
-            case Canceled:
-                Promise.rejected(new Error("Canceled"));
         }
     }
 
     public function map<B>(f: A -> B): Stream<B> {
-        return new Stream(function (update, close, fail) {
-            this.then(function (a) update(f(a)), close, fail);
+        return new Stream(function (context) {
+            this.then(function (a) context.update(f(a)), context.close, context.fail);
             return this.cancel;
         });
     }
 
     public function chain<B>(f: A -> Promise<B>): Stream<B> {
-        return new Stream(function (update, close, fail) {
+        return new Stream(function (context) {
             var promises = [];
             this.then(function (a) {
                 var p = f(a);
                 promises.push(p);
-                p.then(function (b) {
-                    Promise.all(promises.slice(0, promises.indexOf(p))).then(function (_) {
-                        update(b);
-                        promises.remove(p);
-
-                        if (Lambda.empty(promises)) {
-                            switch (this._state) {
-                                case Closing: this.thenClosed(close);
-                                case Closed: close();
-                                case Canceling: this.thenError(fail);
-                                case Canceled: fail(new Error("Canceled"));
-                                case Failing: this.thenError(fail);
-                                case Failed(e): fail(e);
-                                case _:
-                            }
+                var slice = promises.copy();
+                Promise.all(slice).then(function (results) {
+                    var start = results.length - 1;
+                    for (x in promises) {
+                        if (x == p) break;
+                        start--;
+                    }
+                    for (x in results.slice(start)) {
+                        context.update(x);
+                        promises.shift();
+                    }
+                    if (Lambda.empty(promises)) {
+                        switch (this._state) {
+                            case Sealed: this.then(null, context.close, context.fail);
+                            case Closed: context.close();
+                            case Failed(e): context.fail(e);
+                            case _:
                         }
-                    });
+                    }
                 }, function (e) {
-                    fail(e);
+                    context.fail(e);
                     Lambda.iter(promises, function (p) p.cancel());
                     promises = [];
                 });
             }, function () {
-                if (Lambda.empty(promises)) close();
+                if (Lambda.empty(promises)) context.close();
             }, function (e) {
-                if (Lambda.empty(promises)) fail(e);
+                if (Lambda.empty(promises)) context.fail(e);
             });
-
-            return function () {
+            context.onCancel = function () {
                 Lambda.iter(promises, function (p) p.cancel());
                 promises = [];
                 this.cancel();
@@ -293,13 +270,18 @@ class Stream<A> {
     }
 }
 
+typedef StreamContext<A> = {
+    function update(value: A): Void;
+    function close(): Void;
+    function fail(error: Error): Void;
+    function cancel(): Void;
+    dynamic function onCancel(): Void;
+}
+
 private enum _StreamState<T> {
     Pending;
     Opened;
-    Closing;
+    Sealed;
     Closed;
-    Canceling;
-    Canceled;
-    Failing;
     Failed(error: Error);
 }

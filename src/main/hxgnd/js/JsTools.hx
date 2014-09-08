@@ -47,8 +47,8 @@ class JsTools {
         }
     }
 
-    public inline static function orElse<T>(a: Null<T>, b: T): T {
-        return (a != null) ? a : b;
+    public static inline function getThis(): Dynamic {
+        return untyped __js__("this");
     }
 
     public static inline function getArguments(): Dynamic {
@@ -59,6 +59,14 @@ class JsTools {
         return untyped __js__("arguments")[i];
     }
 
+    public static inline function getArgumentsCallee(): Dynamic {
+        return untyped __js__("arguments.callee");
+    }
+
+    public static inline function undefined(): Dynamic {
+        return untyped __js__("void 0");
+    }
+
     public static var setImmediate(default, null): (Void -> Void) -> { function cancel(): Void; };
 
     public static inline function encodeURI(x: String): String {
@@ -66,11 +74,11 @@ class JsTools {
     }
 
     public static inline function confirm(msg: String, noitifyCancel = true): Promise<Unit> {
-        return new Promise(function (resolve, reject) {
+        return new Promise(function (context) {
             if (Browser.window.confirm(msg)) {
-                resolve(Unit._);
+                context.fulfill(Unit._);
             } else {
-                if (noitifyCancel) reject(new Error("Canceled"));
+                if (noitifyCancel) context.reject(new Error("Canceled"));
             }
             return function () { };
         });
