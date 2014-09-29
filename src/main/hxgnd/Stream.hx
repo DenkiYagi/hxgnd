@@ -219,6 +219,21 @@ class Stream<A> {
         }
     }
 
+    //public function filter(f: A -> Bool): Stream<A> {
+        //return null;
+    //}
+//
+    //public function throttle(msec: Int): Stream<A> {
+        //return null;
+    //}
+//
+    //public function debounce(msec: Int): Stream<A> {
+        //return null;
+    //}
+
+    // distinct
+    // skip
+
     public function map<B>(f: A -> B): Stream<B> {
         return new Stream(function (context) {
             this.then(function (a) context.update(f(a)), context.close, context.fail);
@@ -226,7 +241,7 @@ class Stream<A> {
         });
     }
 
-    public function chain<B>(f: A -> Promise<B>): Stream<B> {
+    public function flatMap<B>(f: A -> Promise<B>): Stream<B> {
         return new Stream(function (context) {
             var promises = [];
             this.then(function (a) {
@@ -253,7 +268,7 @@ class Stream<A> {
                     }
                 }, function (e) {
                     context.fail(e);
-                    Lambda.iter(promises, function (p) p.cancel());
+                    Lambda.iter(promises, function (p) p.cancel(false));
                     promises = [];
                 });
             }, function () {
@@ -262,8 +277,35 @@ class Stream<A> {
                 if (Lambda.empty(promises)) context.fail(e);
             });
             context.onCancel = function () {
-                Lambda.iter(promises, function (p) p.cancel());
+                Lambda.iter(promises, function (p) p.cancel(false));
                 promises = [];
+                this.cancel();
+            }
+        });
+    }
+
+    //public function flatMapFirst() : Void {
+//
+    //}
+
+    public function flatMapLastest<B>(f: A -> Promise<B>): Stream<B> {
+        return new Stream(function (context) {
+            var promise = new Promise(function (_) { } );
+            var checker = true;
+
+            this.then(function (a) {
+                promise.cancel(false);
+                promise = f(a);
+                promise.then(context.update, context.fail);
+            }, function () {
+                promise.then(function (_) context.close());
+            }, function (e) {
+                promise.cancel(false);
+                context.fail(e);
+            });
+
+            context.onCancel = function () {
+                promise.cancel(false);
                 this.cancel();
             }
         });

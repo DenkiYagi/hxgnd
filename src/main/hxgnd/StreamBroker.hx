@@ -6,12 +6,13 @@ class StreamBroker<A> {
     var context: Null<StreamContext<A>>;
 
     public var stream(default, null): Stream<A>;
+    public var onCancel(default, default): StreamContext<A> -> Void;
 
-    public function new(?onCancel: StreamContext<A> -> Void) {
+    public function new() {
         stream = new Stream(function (ctx) {
             context = ctx;
-            if (onCancel != null) ctx.onCancel = function () {
-                onCancel(context);
+            ctx.onCancel = function () {
+                if (onCancel != null) onCancel(context);
             }
         }).thenFinally(function () {
             context = null;

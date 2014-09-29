@@ -693,15 +693,15 @@ class StreamSpec {
     }
 
     @:descripbe
-    public static function chain() {
-        Mocha.it("chain() - close", function (done) {
+    public static function flatMap() {
+        Mocha.it("flatMap() - close", function (done) {
             var s = new Stream(function (context) {
                 Timer.delay(context.update.bind("1"), 0);
                 Timer.delay(context.update.bind("2"), 0);
                 Timer.delay(context.close, 0);
             });
 
-            var s2 = s.chain(function (x) {
+            var s2 = s.flatMap(function (x) {
                 return Promise.fulfilled(x + "_conv");
             });
 
@@ -714,14 +714,14 @@ class StreamSpec {
             });
         });
 
-        Mocha.it("chain() - fail", function (done) {
+        Mocha.it("flatMap() - fail", function (done) {
             var s = new Stream(function (context) {
                 Timer.delay(context.update.bind("1"), 0);
                 Timer.delay(context.update.bind("2"), 0);
                 Timer.delay(context.fail.bind(new Error()), 0);
             });
 
-            var s2 = s.chain(function (x) {
+            var s2 = s.flatMap(function (x) {
                 return Promise.fulfilled(x + "_conv");
             });
 
@@ -734,14 +734,14 @@ class StreamSpec {
             });
         });
 
-        Mocha.it("chain() - cancel", function (done) {
+        Mocha.it("flatMap() - cancel", function (done) {
             var s = new Stream(function (context) {
                 Timer.delay(context.update.bind("1"), 0);
                 Timer.delay(context.update.bind("2"), 0);
             });
             Timer.delay(s.cancel, 50);
 
-            var s2 = s.chain(function (x) {
+            var s2 = s.flatMap(function (x) {
                 return Promise.fulfilled(x + "_conv");
             });
 
@@ -754,7 +754,7 @@ class StreamSpec {
             });
         });
 
-        Mocha.it("chain() - delay", function (done) {
+        Mocha.it("flatMap() - delay", function (done) {
             var s = new Stream(function (context) {
                 Timer.delay(context.update.bind("1"), 0);
                 Timer.delay(context.update.bind("2"), 0);
@@ -764,7 +764,7 @@ class StreamSpec {
                 Timer.delay(context.close, 0);
             });
 
-            var s2 = s.chain(function (x) {
+            var s2 = s.flatMap(function (x) {
                 return if (x == "1") {
                     new Promise(function (context) {
                         Timer.delay(context.fulfill.bind(x + "_conv"), 50);
@@ -784,6 +784,89 @@ class StreamSpec {
             }, function () {
                 Mocha.expect(count).to.equal(5);
                 done();
+            });
+        });
+    }
+
+    @:descripbe
+    public static function flatMapLastest() {
+        Mocha.it("flatMapLastest() - close", function (done) {
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+                Timer.delay(context.close, 0);
+            });
+
+            var s2 = s.flatMapLastest(function (x) {
+                return Promise.fulfilled(x + "_conv");
+            });
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal('${++count}_conv');
+            }, function () {
+                Mocha.expect(count).to.equal(2);
+                done();
+            });
+        });
+
+        Mocha.it("flatMapLastest() - fail", function (done) {
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 50);
+                Timer.delay(context.fail.bind(new Error()), 100);
+            });
+
+            var s2 = s.flatMapLastest(function (x) {
+                return Promise.fulfilled(x + "_conv");
+            });
+
+            var count = 0;
+            s2.then(function (x) {
+                count++;
+            }, null, function (e) {
+                Mocha.expect(count).to.equal(2);
+                done();
+            });
+        });
+
+        Mocha.it("flatMapLastest() - cancel", function (done) {
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+            });
+            Timer.delay(s.cancel, 50);
+
+            var s2 = s.flatMapLastest(function (x) {
+                return Promise.fulfilled(x + "_conv");
+            });
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal('${++count}_conv');
+            }, null, function (e) {
+                Mocha.expect(count).to.equal(2);
+                done();
+            });
+        });
+
+        Mocha.it("flatMapLastest() - lastest", function (done) {
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 10);
+            });
+
+            var s2 = s.flatMapLastest(function (x) {
+                return new Promise(function (ctx) {
+                    Timer.delay(ctx.fulfill.bind(x + "_conv"), 100);
+                });
+            });
+
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal("2_conv");
+                done();
+            }, null, function (e) {
+                Mocha.expectFail();
             });
         });
     }

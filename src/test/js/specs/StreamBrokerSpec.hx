@@ -57,9 +57,10 @@ class StreamBrokerSpec {
         Mocha.it("onCancel", function (done) {
             var called = false;
 
-            var brocker = new StreamBroker(function (ctx) {
+            var brocker = new StreamBroker();
+            brocker.onCancel = function (ctx) {
                 called = true;
-            });
+            };
 
             Mocha.expect(brocker.stream.isPending).to.equal(true);
             brocker.cancel();

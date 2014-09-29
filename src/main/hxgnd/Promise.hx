@@ -31,7 +31,7 @@ class Promise<A> {
         _context = {
             fulfill: fulfill,
             reject: reject,
-            cancel: cancel,
+            cancel: function () cancel(),
             onCancel: function () {}
         }
     }
@@ -59,10 +59,12 @@ class Promise<A> {
     }
 
     @:allow(hxgnd) @:noCompletion
-    function _doRejected(error: Error): Void {
+    function _doRejected(?error: Error): Void {
         _state = Rejected(error);
-        for (f in _rejectedHandlers) {
-            try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
+        if (error != null) {
+            for (f in _rejectedHandlers) {
+                try f(error) catch (e: Dynamic) trace(e); //TODO エラーダンプ
+            }
         }
         _doFinally();
     }
@@ -90,10 +92,10 @@ class Promise<A> {
         }
     }
 
-    function reject(err: Error): Void {
+    function reject(?err: Error): Void {
         if (Type.enumEq(_state, Pending)) {
             _state = Sealed;
-            _invokeAsync(_doRejected.bind((err == null) ? new Error("Rejected") : err));
+            _invokeAsync(_doRejected.bind(err));
         }
     }
 
@@ -125,7 +127,7 @@ class Promise<A> {
         return then(null, null, finally);
     }
 
-    public function cancel(): Void {
+    public function cancel(notifiable = true): Void {
         if (Type.enumEq(_state, Pending) && !isCanceled) {
             isCanceled = true;
             if (_context.onCancel != null) {
@@ -135,7 +137,7 @@ class Promise<A> {
                     trace(e);
                 }
             }
-            reject(new Error("Canceled"));
+            reject(notifiable ? new Error("Canceled") : null);
         }
     }
 
@@ -161,7 +163,7 @@ class Promise<A> {
 
     public static function rejected<A>(?error: Error): Promise<A> {
         return new Promise(function (context) {
-            context.reject(error);
+            context.reject((error == null) ? new Error("Rejected") : error);
         });
     }
 
