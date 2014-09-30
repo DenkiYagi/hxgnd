@@ -1,5 +1,8 @@
 package hxgnd;
 
+import haxe.Timer;
+using hxgnd.OptionTools;
+
 class Stream<A> {
     @:allow(hxgnd) @:noCompletion var _state: _StreamState<A>;
     @:allow(hxgnd) @:noCompletion var _updatedHandlers: Array<{f: A -> Void, ?loop: Bool}>;
@@ -223,13 +226,52 @@ class Stream<A> {
         //return null;
     //}
 //
-    //public function throttle(msec: Int): Stream<A> {
-        //return null;
-    //}
-//
-    //public function debounce(msec: Int): Stream<A> {
-        //return null;
-    //}
+    public function throttle(msec: UInt): Stream<A> {
+        return if (msec == 0) {
+            this;
+        } else {
+            new Stream(function (context) {
+                var start: Float = Timer.stamp();
+                var frame: Int = -1;
+                this.then(function (a) {
+                    var t = (Timer.stamp() - start) * 1000;
+                    var f = Math.floor(t / msec);
+                    if (f > frame) {
+                        frame = f;
+                        context.update(a);
+                    }
+                }, context.close, context.fail);
+            });
+        }
+    }
+
+    public function debounce(msec: UInt): Stream<A> {
+        return if (msec == 0) {
+            this;
+        } else {
+            new Stream(function (context) {
+                var lastest: Option<A> = Option.None;
+
+                var timer = new Timer(msec);
+                timer.run = function () {
+                    lastest.iter(function (a) {
+                        lastest = Option.None;
+                        context.update(a);
+                    });
+                }
+
+                this.then(function (a) {
+                    lastest = Option.Some(a);
+                }, function () {
+                    timer.stop();
+                    context.close();
+                }, function (e) {
+                    timer.stop();
+                    context.fail(e);
+                });
+            });
+        }
+    }
 
     // distinct
     // skip

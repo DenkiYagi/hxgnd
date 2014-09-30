@@ -22,7 +22,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function update() {
         Mocha.it("then() - before update", function (done) {
             var s = new Stream(function (context) {
@@ -76,7 +76,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function close() {
         Mocha.it("then(_, closed) - before closed", function (done) {
             var s = new Stream(function (context) {
@@ -196,7 +196,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function fail() {
         Mocha.it("then(_, _, error) - before failed", function (done) {
             var s = new Stream(function (context) {
@@ -308,7 +308,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function finally() {
         Mocha.it("then(_, _, _, finally) - before", function (done) {
             var s = new Stream(function (context) {
@@ -351,7 +351,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function updateAndClose() {
         Mocha.it("then() - before", function (done) {
             var s = new Stream(function (context) {
@@ -392,7 +392,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function updateAndFail() {
         Mocha.it("then() - before", function (done) {
             var s = new Stream(function (context) {
@@ -438,7 +438,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function cancel() {
         Mocha.it("cancel - before", function (done) {
             var s = new Stream(function (_) {});
@@ -547,7 +547,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function next() {
         Mocha.it("next() - update", function (done) {
             var s = new Stream(function (context) {
@@ -606,7 +606,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function tail() {
         Mocha.it("tail() - close", function (done) {
             var s = new Stream(function (context) {
@@ -649,7 +649,136 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
+    public static function throttle() {
+        Mocha.it("throttle() - close", function (done) {
+            var s = new Stream(function (context) {
+                for (i in 0...10) {
+                    Timer.delay(context.update.bind(Std.string(i)), 30 + i * 50);
+                }
+                Timer.delay(context.close, 600);
+            });
+
+            var s2 = s.throttle(100);
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal(Std.string(count * 2));
+                count++;
+            }, function () {
+                Mocha.expect(count).to.equal(5);
+                done();
+            });
+        });
+
+        Mocha.it("throttle() - fail", function (done) {
+            var s = new Stream(function (context) {
+                for (i in 0...10) {
+                    Timer.delay(context.update.bind(Std.string(i)), 30 + i * 50);
+                }
+                Timer.delay(context.fail.bind(new Error()), 600);
+            });
+
+            var s2 = s.throttle(100);
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal(Std.string(count * 2));
+                count++;
+            }, null, function (err) {
+                Mocha.expect(count).to.equal(5);
+                done();
+            });
+        });
+
+        Mocha.it("throttle() - cancel", function (done) {
+            var s = new Stream(function (context) {
+                for (i in 0...10) {
+                    Timer.delay(context.update.bind(Std.string(i)), 30 + i * 50);
+                }
+            });
+
+            var s2 = s.throttle(100);
+            Timer.delay(s2.cancel, 250);
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal(Std.string(count * 2));
+                count++;
+            }, null, function (err) {
+                Mocha.expect(count).to.equal(3);
+                Mocha.expect(err.message).to.equal("Canceled");
+                done();
+            });
+        });
+    }
+
+    @:describe
+    public static function debounce() {
+        Mocha.it("debounce() - close", function (done) {
+            var s = new Stream(function (context) {
+                for (i in 0...10) {
+                    Timer.delay(context.update.bind(Std.string(i)), 30 + i * 50);
+                }
+                Timer.delay(context.close, 600);
+            });
+
+            var s2 = s.debounce(100);
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal(Std.string(count * 2 + 1));
+                count++;
+            }, function () {
+                Mocha.expect(count).to.equal(5);
+                done();
+            });
+        });
+
+        Mocha.it("debounce() - fail", function (done) {
+            var s = new Stream(function (context) {
+                for (i in 0...10) {
+                    Timer.delay(context.update.bind(Std.string(i)), 30 + i * 50);
+                }
+                Timer.delay(context.fail.bind(new Error()), 600);
+            });
+
+            var s2 = s.debounce(100);
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal(Std.string(count * 2 + 1));
+                count++;
+            }, null, function (err) {
+                Mocha.expect(count).to.equal(5);
+                done();
+            });
+        });
+
+        Mocha.it("debounce() - cancel", function (done) {
+            var s = new Stream(function (context) {
+                for (i in 0...10) {
+                    Timer.delay(context.update.bind(Std.string(i)), 30 + i * 50);
+                }
+                Timer.delay(context.close, 600);
+            });
+
+            var s2 = s.debounce(100);
+            Timer.delay(s2.cancel, 250);
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal(Std.string(count * 2 + 1));
+                count++;
+            }, null, function (err) {
+                Mocha.expect(count).to.equal(2);
+                Mocha.expect(err.message).to.equal("Canceled");
+                done();
+            });
+        });
+    }
+
+    @:describe
     public static function map() {
         Mocha.it("map() - close", function (done) {
             var s = new Stream(function (context) {
@@ -690,9 +819,30 @@ class StreamSpec {
                 done();
             });
         });
+
+        Mocha.it("map() - cancel", function (done) {
+            var s = new Stream(function (context) {
+                Timer.delay(context.update.bind("1"), 0);
+                Timer.delay(context.update.bind("2"), 0);
+            });
+            Timer.delay(s.cancel, 100);
+
+            var s2 = s.flatMap(function (x) {
+                return Promise.fulfilled(x + "_conv");
+            });
+
+            var count = 0;
+            s2.then(function (x) {
+                Mocha.expect(x).to.equal('${++count}_conv');
+            }, null, function (e) {
+                Mocha.expect(count).to.equal(2);
+                Mocha.expect(e.message).to.equal("Canceled");
+                done();
+            });
+        });
     }
 
-    @:descripbe
+    @:describe
     public static function flatMap() {
         Mocha.it("flatMap() - close", function (done) {
             var s = new Stream(function (context) {
@@ -739,7 +889,7 @@ class StreamSpec {
                 Timer.delay(context.update.bind("1"), 0);
                 Timer.delay(context.update.bind("2"), 0);
             });
-            Timer.delay(s.cancel, 50);
+            Timer.delay(s.cancel, 100);
 
             var s2 = s.flatMap(function (x) {
                 return Promise.fulfilled(x + "_conv");
@@ -750,6 +900,7 @@ class StreamSpec {
                 Mocha.expect(x).to.equal('${++count}_conv');
             }, null, function (e) {
                 Mocha.expect(count).to.equal(2);
+                Mocha.expect(e.message).to.equal("Canceled");
                 done();
             });
         });
@@ -788,7 +939,7 @@ class StreamSpec {
         });
     }
 
-    @:descripbe
+    @:describe
     public static function flatMapLastest() {
         Mocha.it("flatMapLastest() - close", function (done) {
             var s = new Stream(function (context) {
@@ -835,7 +986,7 @@ class StreamSpec {
                 Timer.delay(context.update.bind("1"), 0);
                 Timer.delay(context.update.bind("2"), 0);
             });
-            Timer.delay(s.cancel, 50);
+            Timer.delay(s.cancel, 100);
 
             var s2 = s.flatMapLastest(function (x) {
                 return Promise.fulfilled(x + "_conv");
@@ -846,6 +997,7 @@ class StreamSpec {
                 Mocha.expect(x).to.equal('${++count}_conv');
             }, null, function (e) {
                 Mocha.expect(count).to.equal(2);
+                Mocha.expect(e.message).to.equal("Canceled");
                 done();
             });
         });
