@@ -9,14 +9,41 @@ class ArrayTools {
         return array;
     }
 
+    public static function zipWithIndex<A>(array: Array<A>): Array<{index: Int, value: A}> {
+        return mapWithIndex(array, function (a, i) {
+            return { index: i, value: a };
+        });
+    }
+
     public static inline function iter<A>(array: Array<A>, f: A -> Void): Void {
         for (x in array) f(x);
+    }
+
+    public static inline function iterWithIndex<A>(array: Array<A>, f: A -> Int -> Void): Void {
+        var i = 0;
+        for (x in array) f(x, i++);
+    }
+
+    public static function filter<A>(array: Array<A>, f: A -> Bool): Array<A> {
+        var result = [];
+        iter(array, function (a) {
+            if (f(a)) result.push(a);
+        });
+        return result;
     }
 
     public static function map<A, B>(array: Array<A>, f: A -> B): Array<B> {
         var result = [];
         iter(array, function (a) {
             result.push(f(a));
+        });
+        return result;
+    }
+
+    public static function mapWithIndex<A, B>(array: Array<A>, f: A -> Int -> B): Array<B> {
+        var result = [];
+        iterWithIndex(array, function (a, i) {
+            result.push(f(a, i));
         });
         return result;
     }
@@ -46,8 +73,19 @@ class ArrayTools {
         return OptionTools.toOption(Lambda.find(array, f));
     }
 
-    public static function headOption<A>(array: Array<A>): Option<A> {
-        return if(array.length == 0) None else Some(array[0]);
+    public static function head<A>(array: Array<A>, ?f: A -> Bool): A {
+        return OptionTools.getOrThrow(headOption(array, f), new Error("not found"));
+    }
+
+    public static function headOption<A>(array: Array<A>, ?f: A -> Bool): Option<A> {
+        if (f == null) {
+            if (array.length > 0) return Some(array[0]);
+        } else {
+            for (x in array) {
+                if (f(x)) return Some(x);
+            }
+        }
+        return None;
     }
 
     public static function lastOption<A>(array: Array<A>): Option<A> {
