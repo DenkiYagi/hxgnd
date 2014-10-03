@@ -1,6 +1,7 @@
 package hxgnd.js;
 
 import hxgnd.js.JqHtml.EffectOptions;
+import hxgnd.Stream;
 import js.html.Element;
 import js.html.Event;
 import js.html.EventTarget;
@@ -195,6 +196,7 @@ extern class JqHtml implements ArrayAccess<Element> {
     function get(index: Int): Element;
 
     @:overload(function (contained: Element): JqHtml{})
+    @:overload(function (contained: EventTarget): JqHtml{})
     function has(selector :String): JqHtml;
 
     function hasClass(className: String): Bool;
@@ -518,6 +520,19 @@ extern class JqHtml implements ArrayAccess<Element> {
 
     @:overload(function (fn: Int -> String): JqHtml{})
     function wrapInner(wrappingElement: String): JqHtml;
+
+    // 拡張
+    public inline function asEventStream(event: String, ?selector: String): Stream<Event> {
+        return new Stream(function (ctx) {
+            function handle(e: Event) {
+                ctx.update(e);
+                ctx.onCancel = function () {
+                    this.off(event, selector, handle);
+                };
+            }
+            this.on(event, selector, handle);
+        });
+    }
 }
 
 typedef EffectOptions = {
