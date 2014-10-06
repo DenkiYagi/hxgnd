@@ -1022,4 +1022,93 @@ class StreamSpec {
             });
         });
     }
+
+    @:describe
+    public static function zipTest() {
+        Mocha.it("zip() - close", function (done) {
+            var s1 = new Stream(function (context) {
+                Timer.delay(context.update.bind("1-1"), 50);
+                Timer.delay(context.update.bind("1-2"), 150);
+                Timer.delay(context.close, 250);
+            });
+            var s2 = new Stream(function (context) {
+                Timer.delay(context.update.bind("2-1"), 100);
+                Timer.delay(context.update.bind("2-2"), 200);
+                Timer.delay(context.close, 300);
+            });
+
+            var stream = s1.zip(s2);
+            var count = 0;
+            stream.then(function (x) {
+                switch (count++) {
+                    case 0: Mocha.expect(x).to.equal("1-1");
+                    case 1: Mocha.expect(x).to.equal("2-1");
+                    case 2: Mocha.expect(x).to.equal("1-2");
+                    case 3: Mocha.expect(x).to.equal("2-2");
+                    default: Mocha.expectFail();
+                }
+            }, function () {
+                Mocha.expect(count).to.equal(4);
+                done();
+            });
+        });
+
+        Mocha.it("zip() - fail", function (done) {
+            var s1 = new Stream(function (context) {
+                Timer.delay(context.update.bind("1-1"), 50);
+                Timer.delay(context.update.bind("1-2"), 150);
+                Timer.delay(context.close, 250);
+            });
+            var s2 = new Stream(function (context) {
+                Timer.delay(context.update.bind("2-1"), 100);
+                Timer.delay(context.update.bind("2-2"), 200);
+                Timer.delay(context.fail.bind(new Error()), 300);
+            });
+
+            var stream = s1.zip(s2);
+            var count = 0;
+            stream.then(function (x) {
+                switch (count++) {
+                    case 0: Mocha.expect(x).to.equal("1-1");
+                    case 1: Mocha.expect(x).to.equal("2-1");
+                    case 2: Mocha.expect(x).to.equal("1-2");
+                    case 3: Mocha.expect(x).to.equal("2-2");
+                    default: Mocha.expectFail();
+                }
+            }, null, function (e) {
+                Mocha.expect(count).to.equal(4);
+                done();
+            });
+        });
+
+        Mocha.it("zip() - cancel", function (done) {
+            var s1 = new Stream(function (context) {
+                Timer.delay(context.update.bind("1-1"), 50);
+                Timer.delay(context.update.bind("1-2"), 150);
+            });
+            var s2 = new Stream(function (context) {
+                Timer.delay(context.update.bind("2-1"), 100);
+                Timer.delay(context.update.bind("2-2"), 200);
+            });
+
+
+            var stream = s1.zip(s2);
+            Timer.delay(stream.cancel, 300);
+
+            var count = 0;
+            stream.then(function (x) {
+                switch (count++) {
+                    case 0: Mocha.expect(x).to.equal("1-1");
+                    case 1: Mocha.expect(x).to.equal("2-1");
+                    case 2: Mocha.expect(x).to.equal("1-2");
+                    case 3: Mocha.expect(x).to.equal("2-2");
+                    default: Mocha.expectFail();
+                }
+            }, null, function (e) {
+                Mocha.expect(count).to.equal(4);
+                Mocha.expect(e.message).to.equal("Canceled");
+                done();
+            });
+        });
+    }
 }

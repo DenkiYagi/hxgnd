@@ -352,6 +352,30 @@ class Stream<A> {
             }
         });
     }
+
+    public function zip(other: Varargs<Stream<A>>): Stream<A> {
+        return if (other.length > 0) {
+            var streams = [this].concat(other);
+            var closed = 0;
+            new Stream(function (ctx: StreamContext<A>) {
+                ctx.onCancel = function () {
+                    for (x in streams) {
+                        x.cancel();
+                    }
+                }
+
+                for (x in streams) {
+                    x.then(
+                        ctx.update,
+                        function () { if (++closed >= streams.length) ctx.close(); },
+                        ctx.fail
+                    );
+                }
+            });
+        } else {
+            this;
+        }
+    }
 }
 
 typedef StreamContext<A> = {
