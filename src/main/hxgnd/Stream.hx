@@ -222,10 +222,14 @@ class Stream<A> {
         }
     }
 
-    //public function filter(f: A -> Bool): Stream<A> {
-        //return null;
-    //}
-//
+    public function filter(f: A -> Bool): Stream<A> {
+        return new Stream(function (context) {
+            this.then(function (a) {
+                if (f(a)) context.update(a);
+            }, context.close, context.fail);
+        });
+    }
+
     public function throttle(msec: UInt): Stream<A> {
         return if (msec == 0) {
             this;
