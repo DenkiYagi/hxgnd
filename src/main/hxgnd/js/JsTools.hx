@@ -67,7 +67,7 @@ class JsTools {
         return untyped __js__("void 0");
     }
 
-    public static inline function delete(obj: {}, name: String): Void {
+    public static function delete(obj: {}, name: String): Void {
         untyped __js__("delete obj[name]");
     }
 
