@@ -74,6 +74,7 @@ extern class JQuery {
     @:overload(function (nodes: NodeList): JqHtml{})
     @:overload(function (node: EventTarget): JqHtml{})
     @:overload(function (selector: String, ?context: JqHtml): JqHtml{})
+    @:overload(function (handler: Void -> Void): Void{})
     static inline function _(selector: String, ?context: Element): JqHtml {
         return untyped __js__("jQuery")(selector, context);
     }
