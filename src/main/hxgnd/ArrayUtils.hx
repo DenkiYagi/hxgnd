@@ -1,6 +1,6 @@
 package hxgnd;
 
-class ArrayTools {
+class ArrayUtils {
     public static function array<T>(x: Iterator<T>): Array<T> {
         var array = [];
         while (x.hasNext()) {
@@ -10,7 +10,7 @@ class ArrayTools {
     }
 
     public static function zipWithIndex<A>(array: Array<A>): Array<{index: Int, value: A}> {
-        return mapWithIndex(array, function (a, i) {
+        return mapi(array, function (a, i) {
             return { index: i, value: a };
         });
     }
@@ -40,7 +40,7 @@ class ArrayTools {
         return result;
     }
 
-    public static function mapWithIndex<A, B>(array: Array<A>, f: A -> Int -> B): Array<B> {
+    public static function mapi<A, B>(array: Array<A>, f: A -> Int -> B): Array<B> {
         var result = [];
         iterWithIndex(array, function (a, i) {
             result.push(f(a, i));
@@ -48,11 +48,20 @@ class ArrayTools {
         return result;
     }
 
-    public static function flatMap<A, B>(array: Array<Array<A>>, f: A -> B): Array<B> {
+    public static function flatMap<A, B>(array: Array<A>, f: A -> Array<B>): Array<B> {
         var result = [];
-        iter(array, function (sub) {
-            iter(sub, function (a) result.push(f(a)));
-        });
+		for (x in array) {
+		 	result = result.concat(f(x));
+		}
+        return result;
+    }
+
+    public static function flatMapi<A, B>(array: Array<A>, f: A -> Int -> Array<B>): Array<B> {
+        var result = [];
+		var i = 0;
+		for (x in array) {
+		 	result = result.concat(f(x, i++));
+		}
         return result;
     }
 
@@ -70,11 +79,11 @@ class ArrayTools {
     }
 
     public static function findOption<A>(array: Array<A>, f: A -> Bool): Option<A> {
-        return OptionTools.toOption(Lambda.find(array, f));
+        return OptionUtils.toOption(Lambda.find(array, f));
     }
 
     public static function head<A>(array: Array<A>, ?f: A -> Bool): A {
-        return OptionTools.getOrThrow(headOption(array, f), new Error("not found"));
+        return OptionUtils.getOrThrow(headOption(array, f), new Error("not found"));
     }
 
     public static function headOption<A>(array: Array<A>, ?f: A -> Bool): Option<A> {
@@ -104,4 +113,44 @@ class ArrayTools {
         }
         return {first: array.slice(0, i), rest: array.slice(i, array.length)};
     }
+	
+	public static function foldLeft<A, B>(array: Array<A>, init: B, f: B -> A -> B): B {
+		return if (array.length == 0) {
+			init;
+		} else {
+			var acc = init;
+			for (x in array) {
+				acc = f(acc, x);
+			}
+			acc;
+		}
+	}
+	
+	public static function foldRight<A, B>(array: Array<A>, init: B, f: A -> B -> B): B {
+		return if (array.length == 0) {
+			init;
+		} else {
+			var acc = init;
+			var i = array.length;
+			do {
+				acc = f(array[i--], acc);
+			} while (i > 0);
+			acc;
+		}
+	}
+
+	public static function exists<A>(array: Array<A>, f: A -> Bool): Bool {
+		if (array != null && array.length >= 0) {
+			for (x in array) if (f(x)) return true;
+		}
+		return false;
+	}
+	
+	public static function count<A>(array: Array<A>, f: A -> Bool): Int {
+		var count = 0;
+		for (x in array) {
+			if (f(x)) ++count;
+		}
+		return count;
+	}
 }

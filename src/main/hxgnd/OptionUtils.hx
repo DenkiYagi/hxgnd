@@ -2,7 +2,7 @@ package hxgnd;
 
 import hxgnd.Option;
 
-class OptionTools {
+class OptionUtils {
     public static inline function toOption<T>(x: T) : Option<T> {
         return (x == null) ? None: Some(x);
     }
@@ -62,6 +62,10 @@ class OptionTools {
             case None: true;
         }
     }
+	
+    public static inline function nonEmpty<A>(x: Option<A>): Bool {
+        return !isEmpty(x);
+    }	
 
     public static inline function filter<A>(x: Option<A>, cond: A -> Bool): Option<A> {
         return switch (x) {
@@ -97,4 +101,16 @@ class OptionTools {
             case None: [];
         }
     }
+	
+	public static function all<A>(array: Array<Option<A>>): Option<Array<A>> {
+		if (array.length == 0) return None;
+		var result = [];
+		for (x in array) {
+			switch (x) {
+				case Some(y): result.push(y);
+				case None: return None;
+			}
+		}
+		return Some(result);
+	}
 }

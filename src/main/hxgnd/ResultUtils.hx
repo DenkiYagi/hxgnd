@@ -1,6 +1,6 @@
 package hxgnd;
 
-class ResultTools {
+class ResultUtils {
 
     public static inline function create<T>(f: Void -> T): Result<T> {
         return try {

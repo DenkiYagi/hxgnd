@@ -1,7 +1,7 @@
 package hxgnd;
 
 import haxe.Timer;
-using hxgnd.OptionTools;
+using hxgnd.OptionUtils;
 
 class Stream<A> {
     @:allow(hxgnd) @:noCompletion var _state: _StreamState<A>;
