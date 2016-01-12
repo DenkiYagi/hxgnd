@@ -113,7 +113,7 @@ class ArrayUtils {
         }
         return {first: array.slice(0, i), rest: array.slice(i, array.length)};
     }
-	
+
 	public static function foldLeft<A, B>(array: Array<A>, init: B, f: B -> A -> B): B {
 		return if (array.length == 0) {
 			init;
@@ -125,16 +125,16 @@ class ArrayUtils {
 			acc;
 		}
 	}
-	
+
 	public static function foldRight<A, B>(array: Array<A>, init: B, f: A -> B -> B): B {
 		return if (array.length == 0) {
 			init;
 		} else {
 			var acc = init;
 			var i = array.length;
-			do {
-				acc = f(array[i--], acc);
-			} while (i > 0);
+            while (i > 0) {
+				acc = f(array[--i], acc);
+            }
 			acc;
 		}
 	}
@@ -145,7 +145,7 @@ class ArrayUtils {
 		}
 		return false;
 	}
-	
+
 	public static function count<A>(array: Array<A>, f: A -> Bool): Int {
 		var count = 0;
 		for (x in array) {
