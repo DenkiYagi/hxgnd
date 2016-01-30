@@ -1,11 +1,21 @@
 package hxgnd;
 
+abstract Iter<T>(Iterator<T>) from Iterator<T> to Iterator<T> {
+	inline function new(x: Iterator<T>) {
+		this = x;
+	}
+	
+	@:from
+	public static inline function fromIterable<T>(x: Iterable<T>) {
+		return new Iter(x.iterator());
+	}
+}
+
 class ArrayUtils {
-    public static function array<T>(x: Iterator<T>): Array<T> {
+    public static function array<T>(iter: Iter<T>): Array<T> {
+		var it: Iterator<T> = iter;
         var array = [];
-        while (x.hasNext()) {
-            array.push(x.next());
-        }
+		while (it.hasNext()) array.push(it.next());
         return array;
     }
 
