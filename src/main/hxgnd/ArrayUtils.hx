@@ -75,14 +75,14 @@ class ArrayUtils {
         return result;
     }
 
-    public static function groupBy<A>(array: Array<A>, f: A -> String): Dynamic<Array<A>> {
-        var result: Dynamic<Array<A>> = { };
+    public static function groupBy<A>(array: Array<A>, f: A -> String): Map<String, Array<A>> {
+        var result = new Map<String, Array<A>>();
         for (x in array) {
             var key = f(x);
-            if (Reflect.hasField(result, key)) {
-                Reflect.field(result, key).push(x);
+            if (result.exists(key)) {
+                result.get(key).push(x);
             } else {
-                Reflect.setField(result, key, [x]);
+                result.set(key, [x]);
             }
         }
         return result;
