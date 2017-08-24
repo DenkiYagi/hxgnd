@@ -76,7 +76,15 @@ class JsTools {
     public static inline function encodeURI(x: String): String {
         return untyped __js__("encodeURI")(x);
     }
-
+   
+    public static inline function keys(x: Dynamic): Array<String> {
+        return untyped __js__("Object").keys(x);
+    }
+    
+    public static inline function values(x: Dynamic): Array<Dynamic> {
+        return untyped __js__("Object").values(x);
+    }
+    
     public static inline function confirm(msg: String, noitifyCancel = true): Promise<Unit> {
         return new Promise(function (context) {
             if (Browser.window.confirm(msg)) {
