@@ -11,7 +11,7 @@ class JsTools {
             }
         } else if (untyped window.MessageChannel) {
             var tasks = [];
-            function remove(i) untyped __js__("delete tasks")[i];
+            function remove(i) tasks = [];
 
             var channel = untyped __js__("new MessageChannel()");
             channel.port1.onmessage = function (e) {
