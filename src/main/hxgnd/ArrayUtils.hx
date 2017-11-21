@@ -163,4 +163,17 @@ class ArrayUtils {
 		}
 		return count;
 	}
+
+    public static function distinct<A>(array: Array<A>, f: A -> String) {
+        var map = new haxe.ds.StringMap<Any>();
+        var result = [];
+        for (x in array) {
+            var k = f(x);
+            if (!map.exists(k)) {
+               map.set(k, null);
+                result.push(x);
+            }
+        }
+        return result;
+    }
 }
