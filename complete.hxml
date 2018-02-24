@@ -1,0 +1,8 @@
+-main TestMain
+-cp src
+-cp test
+-lib utest
+-js build/dummy.js
+-debug
+--no-inline
+--no-output
