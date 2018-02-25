@@ -33,7 +33,7 @@ class JsNative {
     }
 
 	public static inline function toString(object: Dynamic): String {
-		return untyped __js__('{0}.toString()', object);
+		return untyped __js__("{0}.toString()", object);
 	}
 
 	public static inline function debugger() {
@@ -41,11 +41,11 @@ class JsNative {
 	}
 
 	public inline static function delete(expression: Dynamic): Void {
-        untyped __js__('delete {0}', expression);
+        untyped __js__("delete {0}", expression);
     }
 
 	public inline static function await<T>(promise: js.Promise<T>): T {
-		return untyped __js__('await {0}', promise);
+		return untyped __js__("await {0}", promise);
 	}
 }
 
