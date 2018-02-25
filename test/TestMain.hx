@@ -10,6 +10,10 @@ class TestMain {
         runner.addCase(new hxgnd.LangToolsTest());
         runner.addCase(new hxgnd.ArrayToolsTest());
         runner.addCase(new hxgnd.MaybeTest());
+        runner.addCase(new hxgnd.MacroToolsTest());
+        #if js
+        runner.addCase(new hxgnd.js.PromiseToolsTest());
+        #end
         runner.run();
     }
 }
