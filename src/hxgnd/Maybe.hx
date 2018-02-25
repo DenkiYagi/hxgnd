@@ -49,7 +49,6 @@ abstract Maybe<T>(Null<T>) from Null<T> {
         return if (nonEmpty()) {
             fn(this);
         } else {
-
             empty();
         }
     }
