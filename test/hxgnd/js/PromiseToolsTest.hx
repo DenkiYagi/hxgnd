@@ -93,6 +93,91 @@ class PromiseToolsTest {
                 done2();
             });
         }
+    }
 
+    public function test_callAsPromiseUnsafe() {
+        {
+            function fnOK(callback: Error -> Int -> Void) {
+                callback(null, 100);
+            }
+            function fnNG(callback: Error -> Int -> Void) {
+                callback(new Error("error"), null);
+            }
+
+            var done1 = Assert.createAsync();
+            fnOK.callAsPromiseUnsafe().then(function (x) {
+                Assert.equals(100, x);
+                done1();
+            }).catchError(function (e) {
+                Assert.fail();
+                done1();
+            });
+
+            var done2 = Assert.createAsync();
+            fnNG.callAsPromiseUnsafe().then(function (x) {
+                Assert.fail();
+                done2();
+            }).catchError(function (e) {
+                Assert.notNull(e);
+                done2();
+            });
+        }
+
+        {
+            function fn1(flag: Bool, callback: Error -> Int -> Void) {
+                if (flag) {
+                    callback(null, 100);
+                } else {
+                    callback(new Error("error"), null);
+                }
+            }
+
+            var done1 = Assert.createAsync();
+            fn1.callAsPromiseUnsafe(true).then(function (x) {
+                Assert.equals(100, x);
+                done1();
+            }).catchError(function (e) {
+                Assert.fail();
+                done1();
+            });
+
+            var done2 = Assert.createAsync();
+            fn1.callAsPromiseUnsafe(false).then(function (x) {
+                Assert.fail();
+                done2();
+            }).catchError(function (e) {
+                Assert.notNull(e);
+                done2();
+            });
+        }
+
+        {
+            function fn2(flag: Bool, v1: Int, v2: String, callback: Error -> Int -> String -> Void) {
+                if (flag) {
+                    callback(null, v1, v2);
+                } else {
+                    callback(new Error("error"), null, null);
+                }
+            }
+
+            var done1 = Assert.createAsync();
+            fn2.callAsPromiseUnsafe(true, 500, "hello").then(function (x) {
+                trace(x);
+                Assert.same([500, "hello"], x);
+                done1();
+            }).catchError(function (e) {
+                Assert.fail();
+                done1();
+            });
+
+            var done2 = Assert.createAsync();
+            fn2.callAsPromiseUnsafe(false, 300, "hello").then(function (x) {
+                Assert.fail();
+                done2();
+            }).catchError(function (e) {
+                Assert.notNull(e);
+                done2();
+            });
+        }
     }
 }

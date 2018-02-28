@@ -96,6 +96,67 @@ class PromiseTools {
         }
     }
 
+    public static macro function callAsPromiseUnsafe(
+            fn: ExprOf<haxe.Constraints.Function>, params: Array<ExprOf<Dynamic>>): Expr {
+        var argTypes = getCallbackArgTypes(fn);
+
+        return switch (argTypes.length) {
+            case 0:
+                Context.error("Invalid function is specified.", fn.pos);
+            case 1:
+                // new Promise(funciton (resolve, reject) {
+                //     fn(function (error) {
+                //         if (error) reject(error) else resolve();
+                //     });
+                // });
+                var cb = macro function (error) {
+                    if (untyped error) reject(error) else resolve();
+                };
+                
+                macro new js.Promise<Void>(function (resolve: haxe.Constraints.Function, reject) {
+                    $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, params.concat([cb]))} };
+                });
+            case 2:
+                // new Promise(funciton (resolve, reject) {
+                //     fn(function (error, data) {
+                //         if (error) reject(error) else resolve(data);
+                //     });
+                // });
+                var cb = macro function (error, data) {
+                    if (untyped error) reject(error) else resolve(data);
+                };
+                var init = macro function (resolve, reject) {
+                    $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, params.concat([cb]))} };
+                }
+                
+                { 
+                    expr: ENew({ pack: ["js"], name: "Promise", params: [] }, [init]),
+                    pos: fn.pos
+                };
+            case _:
+                // new Promise(funciton (resolve, reject) {
+                //     fn(function (error, a, b, ..., z) {
+                //         if (error) reject(error) else resolve([a, b, ..., z]);
+                //     });
+                // });
+                var cb = macro untyped function (error) {
+                    if (untyped error) {
+                        reject(error);
+                     } else {
+                        resolve(hxgnd.js.JsArray.from(hxgnd.js.JsNative.nativeArguments).slice(1));
+                     }
+                };
+                
+                macro new js.Promise<Array<Dynamic>>(function (resolve, reject) {
+                    $e{ {
+                        pos: fn.pos, 
+                        expr: ExprDef.ECall(fn, params.concat([cb]))
+                    } };
+                });
+        }
+    }
+
+
     #if macro
     static function getCallbackArgTypes(fn: Expr): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
         switch (Context.typeof(fn)) {
