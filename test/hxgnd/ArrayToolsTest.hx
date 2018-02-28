@@ -2,7 +2,7 @@ package hxgnd;
 
 import utest.Assert;
 
-using hxgnd.ArrayUtils;
+using hxgnd.ArrayTools;
 
 class ArrayToolsTest {
     public function new() {}
