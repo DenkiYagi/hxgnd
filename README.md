@@ -1,4 +1,5 @@
-hxgnd
-=====
+# hxgnd - Haxe/JS utility
 
-Haxe base library
+## License
+Apache License 2.0<br>
+Copyright (c) 2018 DenkiYagi Inc.
