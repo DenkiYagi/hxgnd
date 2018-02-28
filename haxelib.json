@@ -1,0 +1,12 @@
+{
+    "name": "hxgnd",
+    "url": "https://github.com/DenkiYagi/hxgnd",
+    "license": "Apache",
+    "tags": ["haxe", "js"],
+    "description": "Haxe/JS utility",
+    "version": "1.0.0-alpha.1",
+    "classPath": "src/",
+    "releasenote": "1.0.0 alpha-1",
+    "contributors": ["terurou"],
+    "dependencies": {}
+}
