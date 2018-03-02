@@ -162,7 +162,6 @@ class PromiseToolsTest {
 
             var done1 = Assert.createAsync();
             fn2.callAsPromiseUnsafe(true, 500, "hello").then(function (x) {
-                trace(x);
                 Assert.same([500, "hello"], x);
                 done1();
             }).catchError(function (e) {
