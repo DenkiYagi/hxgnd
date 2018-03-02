@@ -1,6 +1,8 @@
 package hxgnd;
 
+#if macro
 import haxe.macro.Expr;
+import haxe.macro.Context;
 
 class MacroTools {
     public static function isNull(expr: Expr): Bool {
@@ -10,3 +12,4 @@ class MacroTools {
         }
     }
 }
+#end

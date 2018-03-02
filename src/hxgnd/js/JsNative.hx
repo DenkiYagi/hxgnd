@@ -48,14 +48,6 @@ class JsNative {
     public static macro function delete(expression: Expr): ExprOf<Void> {
         return macro untyped __js__("delete {0}", ${expression});
     }
-
-    public static macro function async(expr: ExprOf<Function>): ExprOf<Function> {
-        return macro untyped __js__("(async {0})", ${expr});
-    }
-
-    public static macro function await<T>(p: ExprOf<js.Promise<T>>): ExprOf<T> {
-        return macro untyped __js__("await {0}", ${p});
-    }
 }
 
 extern class Arguments implements ArrayAccess<Int> {
