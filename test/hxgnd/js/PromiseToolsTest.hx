@@ -179,4 +179,26 @@ class PromiseToolsTest {
             });
         }
     }
+
+    public function test_async_await() {
+        function fnOK(callback: Error -> Int -> Void) {
+            callback(null, 100);
+        }
+        function fnNG(callback: Error -> Int -> Void) {
+            callback(new Error("error"), null);
+        }
+
+        var done = Assert.createAsync();
+        JsNative.async(function () {
+            Assert.equals(100, fnOK.callAsPromise().await());
+
+            try {
+                fnNG.callAsPromise().await();
+                Assert.fail();
+            } catch (e: Dynamic) {
+                Assert.is(e, js.Error);
+            }
+            done();
+        })();
+    }
 }

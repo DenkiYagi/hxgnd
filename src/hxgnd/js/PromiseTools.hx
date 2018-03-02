@@ -156,7 +156,6 @@ class PromiseTools {
         }
     }
 
-
     #if macro
     static function getCallbackArgTypes(fn: Expr): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
         switch (Context.typeof(fn)) {
@@ -173,4 +172,8 @@ class PromiseTools {
         return [];
     }
     #end
+
+    public static macro function await<T>(p: ExprOf<js.Promise<T>>): ExprOf<T> {
+        return macro untyped __js__("await {0}", ${p});
+    }
 }
