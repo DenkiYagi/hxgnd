@@ -173,8 +173,20 @@ class PromiseTools {
     }
     #end
 
-    public static macro function await<T>(p: ExprOf<js.Promise<T>>): ExprOf<T> {
-        return macro untyped __js__("await {0}", ${p});
+    public static macro function await<T>(expr: ExprOf<js.Promise<T>>): ExprOf<T> {
+        var type = switch (Context.toComplexType(Context.typeof(expr))) {
+            case TPath({ name: "Promise", pack: ["js"], params: params }):
+                switch (params[0]) {
+                    case TPType(t): t;
+                    case TPExpr(e): Context.toComplexType(Context.typeof(e));
+                }
+            default:
+                Context.error("argument must be js.Promsise<T>", expr.pos);
+        };
+        return {
+            pos: expr.pos,
+            expr: ECheckType(macro untyped __js__("await {0}", ${expr}), type) 
+        };
     }
 
     public static macro function async<T>(expr: ExprOf<haxe.Constraints.Function>): Expr {
@@ -189,7 +201,7 @@ class PromiseTools {
                 funcDef = f;
                 retType = inferReturnType(expr, []);
             case _:
-                Context.error("expr argument must be a function expr", expr.pos);
+                Context.error("expr must be a function expr", expr.pos);
                 throw "";
         }
 
@@ -214,7 +226,7 @@ class PromiseTools {
                 funcName = n;
                 funcDef = f;
             case _:
-                Context.error("expr argument must be a function expr", expr.pos);
+                Context.error("expr must be a function expr", expr.pos);
                 throw "";
         }
 
