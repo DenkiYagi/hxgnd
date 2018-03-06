@@ -186,7 +186,7 @@ class PromiseTools {
         };
         return {
             pos: expr.pos,
-            expr: ECheckType(macro untyped __js__("await {0}", ${expr}), type) 
+            expr: ECheckType(macro untyped __js__("(await {0})", ${expr}), type) 
         };
     }
 
