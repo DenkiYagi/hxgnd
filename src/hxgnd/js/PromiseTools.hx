@@ -10,7 +10,7 @@ using hxgnd.ArrayTools;
 class PromiseTools {
     public static macro function callAsPromise(
             fn: ExprOf<haxe.Constraints.Function>, args: Array<Expr>): Expr {
-        var argTypes = getCallbackArgTypes(fn);
+        var argTypes = getCallbackArgTypes(fn, args);
 
         return switch (argTypes.length) {
             case 0:
@@ -98,7 +98,7 @@ class PromiseTools {
 
     public static macro function callAsPromiseUnsafe(
             fn: ExprOf<haxe.Constraints.Function>, args: Array<Expr>): Expr {
-        var argTypes = getCallbackArgTypes(fn);
+        var argTypes = getCallbackArgTypes(fn, args);
 
         return switch (argTypes.length) {
             case 0:
@@ -157,8 +157,9 @@ class PromiseTools {
     }
 
     #if macro
-    static function getCallbackArgTypes(fn: Expr): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
-        switch (Context.typeof(fn)) {
+    static function getCallbackArgTypes(fn: Expr, args: Array<Expr>): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
+        var bind = { expr: ECall(macro ${fn}.bind, args), pos: fn.pos };
+        switch (Context.typeof(bind)) {
             case TFun(args, _):
                 var cb = args[args.length-1];
                 if (cb != null) {
