@@ -93,6 +93,49 @@ class PromiseToolsTest {
                 done2();
             });
         }
+
+        // typedef with type-parameter
+        {
+            var done1 = Assert.createAsync();
+            function (callback: Callback2<Int>) {
+                callback(null, 1);
+            }.callAsPromise().then(function (x) {
+                Assert.equals(1, x);
+                done1();
+            }).catchError(function (e) {
+                Assert.fail();
+                done1();
+            });
+
+            var done2 = Assert.createAsync();
+            function (callback: Callback3<Int, String>) {
+                callback(null, 2, "foo");
+            }.callAsPromise().then(function (x) {
+                Assert.same({
+                    value1: 2,
+                    value2: "foo"
+                }, x);
+                done2();
+            }).catchError(function (e) {
+                Assert.fail();
+                done2();
+            });
+
+            // recursive
+            var done3 = Assert.createAsync();
+            function (callback: CB3<Int, String>) {
+                callback(null, 3, "bar");
+            }.callAsPromise().then(function (x) {
+                Assert.same({
+                    value1: 3,
+                    value2: "bar"
+                }, x);
+                done3();
+            }).catchError(function (e) {
+                Assert.fail();
+                done3();
+            });
+        }
     }
 
     public function test_callAsPromiseUnsafe() {
@@ -333,3 +376,7 @@ class PromiseToolsTest {
         });
     }
 }
+
+typedef Callback2<T> = Error -> T -> Void;
+typedef Callback3<T1, T2> = Error -> T1 -> T2 -> Void;
+typedef CB3<T1, T2> = Callback3<T1, T2>;

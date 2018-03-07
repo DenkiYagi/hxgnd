@@ -11,7 +11,6 @@ class PromiseTools {
     public static macro function callAsPromise(
             fn: ExprOf<haxe.Constraints.Function>, args: Array<Expr>): Expr {
         var argTypes = getCallbackArgTypes(fn, args);
-
         return switch (argTypes.length) {
             case 0:
                 Context.error("Invalid function is specified.", fn.pos);
@@ -156,24 +155,6 @@ class PromiseTools {
         }
     }
 
-    #if macro
-    static function getCallbackArgTypes(fn: Expr, args: Array<Expr>): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
-        var bind = { expr: ECall(macro ${fn}.bind, args), pos: fn.pos };
-        switch (Context.typeof(bind)) {
-            case TFun(args, _):
-                var cb = args[args.length-1];
-                if (cb != null) {
-                    switch (cb.t) {
-                        case TFun(cbArgs, _) if (cbArgs.length >= 1): return cbArgs;
-                        case _:
-                    }
-                }
-            case _:
-        }
-        return [];
-    }
-    #end
-
     public static macro function await<T>(expr: ExprOf<js.Promise<T>>): ExprOf<T> {
         var type = switch (Context.toComplexType(Context.typeof(expr))) {
             case TPath({ name: "Promise", pack: ["js"], params: params }):
@@ -230,7 +211,6 @@ class PromiseTools {
                 Context.error("expr must be a function expr", expr.pos);
                 throw "";
         }
-
         return {
             pos: expr.pos,
             expr: ECall({
@@ -245,6 +225,91 @@ class PromiseTools {
     }
 
     #if macro
+    static function getCallbackArgTypes(fn: Expr, args: Array<Expr>): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
+        function resolve(callback: haxe.macro.Type, dict: Map<String, haxe.macro.Type>) {
+            // trace("-----");
+            // trace(callback);
+            // trace(dict);
+            switch (callback) {
+                case TFun(args, _) if (args.length > 0): //must Error -> ... -> Void
+                    return args.map(function (x) {
+                        return switch (x.t) {
+                            case TInst(ref, _) if (dict.exists(ref.toString())):
+                                { t: dict.get(ref.toString()), opt: x.opt, name: x.name };
+                            case _:
+                                x;
+                        }
+                    });
+                case TType(typeRef, typeParams):
+                    var type = typeRef.get();
+                    return resolve(type.type, type.params.map(function (x) {
+                        switch (x.t) {
+                            case TInst(ref, _):
+                                return ref.toString();
+                            case _:
+                                throw "unsupported type";
+                        }
+                    }).zipStringMap(typeParams.map(function (x) {
+                        return switch (x) {
+                            case TInst(ref, _) if (dict.exists(ref.toString())):
+                                dict.get(ref.toString());
+                            case _:
+                                x;
+                        }
+                    })));
+                case _:
+                    Context.error("Callback function must have any arguemnts", fn.pos);
+                    throw "";
+            }
+        }
+
+        var bind = { expr: ECall(macro ${fn}.bind, args), pos: fn.pos };
+        switch (Context.typeof(bind)) {
+            case TFun(args, _) if (args.length > 0):
+                var callback = args[args.length-1];
+                return resolve(callback.t, new Map());
+                    // switch (callback.t) {
+                    //     case TFun(cbArgs, _) if (cbArgs.length >= 1):
+                    //         return cbArgs;
+                    //     case TType(t, params):
+                    //         var type = t.get();
+                    //         var tmap = type.params.map(function (x) {
+                    //             switch (x.t) {
+                    //                 case TInst(ref, _): return ref.toString();
+                    //                 case _: throw "unsupported type";
+                    //             }
+                    //         }).zipmap(params);
+                    //         switch (type.type) {
+                    //             case TFun(cbArgs, _):
+                    //                 return cbArgs.map(function (x) {
+                    //                     return switch (x.t) {
+                    //                         case TInst(n, _) if (tmap.exists(Std.string(n))):
+                    //                             { t: tmap.get(Std.string(n)), opt: x.opt, name: x.name };
+                    //                         case _:
+                    //                             x;
+                    //                     }
+                    //                 });
+                    //             case _:
+                    //         }
+                            
+                    //         trace("****");
+                    //         trace(tmap);
+                    //         trace("****");
+                    //         trace(t.get().type);
+                    //         trace(t.get().params);
+                    //         trace(params);
+                    //         trace("****");
+                    //         // switch (t.get().type) {
+
+                    //         // }
+                    //     case _:
+                    // }
+            case _:
+                Context.error("Specified expr is not function.", fn.pos);
+                throw "";
+        }
+    }
+
     static function inferReturnType(expr: Expr, args: Array<Expr>): ComplexType {
         switch (Context.toComplexType(Context.typeof(expr))) {
             case TFunction(fargs, fret):

@@ -63,4 +63,41 @@ class ArrayToolsTest {
         Assert.equals(3, index);
         Assert.same(["a0", "b1", "c2"], ret2);
     }
+
+    public function test_zip() {
+        Assert.raises(function () {
+            [].zip([1]);
+        });
+        Assert.raises(function () {
+            ["hello"].zip([]);
+        });
+
+        Assert.same([{value1: 1, value2: "foo"}], [1].zip(["foo"]));
+        Assert.same([
+            {value1: 1, value2: "foo"},
+            {value1: 2, value2: "bar"},
+            {value1: 3, value2: "baz"}
+        ], [1,2,3].zip(["foo","bar","baz"]));
+    }
+
+    public function test_zipStringMap() {
+        Assert.raises(function () {
+            [].zipStringMap([1]);
+        });
+        Assert.raises(function () {
+            ["hello"].zipStringMap([]);
+        });
+
+        var map1 = [1].zipStringMap(["foo"]);
+        var keys1 = map1.keys().toArray();
+        Assert.equals(1, keys1.length);
+        Assert.equals("foo", map1.get("1"));
+
+        var map2 = [1, 2, 3].zipStringMap(["foo", "bar", "baz"]);
+        var keys2 = map2.keys().toArray();
+        Assert.equals(3, keys2.length);
+        Assert.equals("foo", map2.get("1"));
+        Assert.equals("bar", map2.get("2"));
+        Assert.equals("baz", map2.get("3"));
+    }
 }

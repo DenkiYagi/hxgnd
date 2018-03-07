@@ -34,6 +34,26 @@ class ArrayTools {
         #end
     }
 
+    public static function zip<A, B>(a: Array<A>, b: Array<B>): Array<{value1: A, value2: B}> {
+        if (a.length != b.length) throw new Error("invalid argument");
+        
+        var array = [];
+        for (i in 0...a.length) {
+            array.push({value1: a[i], value2: b[i]});
+        }
+        return array;
+    }
+
+    public static function zipStringMap<A, B>(a: Array<A>, b: Array<B>): Map<String, B> {
+        if (a.length != b.length) throw new Error("invalid argument");
+        
+        var map = new haxe.ds.StringMap<B>();
+        for (i in 0...a.length) {
+            map.set(Std.string(a[i]), b[i]);
+        }
+        return map;
+    }
+
     // public static function zipWithIndex<A>(array: Array<A>): Array<{index: Int, value: A}> {
     //     return mapi(array, function (a, i) {
     //         return { index: i, value: a };
