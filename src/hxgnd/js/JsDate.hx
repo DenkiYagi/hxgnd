@@ -12,8 +12,12 @@ extern class JsDate {
     function new();
 
     // TODO add methods
-    
+
     function valueOf(): Int;
+
+    public static inline function fromHaxeDate(x: Date): JsDate {
+        return cast x;
+    }
 
     public inline function toHaxeDate(): Date {
         return cast this;
