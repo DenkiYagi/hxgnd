@@ -227,9 +227,6 @@ class PromiseTools {
     #if macro
     static function getCallbackArgTypes(fn: Expr, args: Array<Expr>): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
         function resolve(callback: haxe.macro.Type, dict: Map<String, haxe.macro.Type>) {
-            // trace("-----");
-            // trace(callback);
-            // trace(dict);
             switch (callback) {
                 case TFun(args, _) if (args.length > 0): //must Error -> ... -> Void
                     return args.map(function (x) {
@@ -268,42 +265,6 @@ class PromiseTools {
             case TFun(args, _) if (args.length > 0):
                 var callback = args[args.length-1];
                 return resolve(callback.t, new Map());
-                    // switch (callback.t) {
-                    //     case TFun(cbArgs, _) if (cbArgs.length >= 1):
-                    //         return cbArgs;
-                    //     case TType(t, params):
-                    //         var type = t.get();
-                    //         var tmap = type.params.map(function (x) {
-                    //             switch (x.t) {
-                    //                 case TInst(ref, _): return ref.toString();
-                    //                 case _: throw "unsupported type";
-                    //             }
-                    //         }).zipmap(params);
-                    //         switch (type.type) {
-                    //             case TFun(cbArgs, _):
-                    //                 return cbArgs.map(function (x) {
-                    //                     return switch (x.t) {
-                    //                         case TInst(n, _) if (tmap.exists(Std.string(n))):
-                    //                             { t: tmap.get(Std.string(n)), opt: x.opt, name: x.name };
-                    //                         case _:
-                    //                             x;
-                    //                     }
-                    //                 });
-                    //             case _:
-                    //         }
-                            
-                    //         trace("****");
-                    //         trace(tmap);
-                    //         trace("****");
-                    //         trace(t.get().type);
-                    //         trace(t.get().params);
-                    //         trace(params);
-                    //         trace("****");
-                    //         // switch (t.get().type) {
-
-                    //         // }
-                    //     case _:
-                    // }
             case _:
                 Context.error("Specified expr is not function.", fn.pos);
                 throw "";
