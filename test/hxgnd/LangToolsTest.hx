@@ -157,4 +157,17 @@ class LangToolsTest {
         Assert.isFalse(y.nonBlank());
         #end
     }
+
+    public function test_combine() {
+        Assert.same({}, ({}).combine());
+        Assert.same({name: "test"}, {name: "test"}.combine());
+        
+        Assert.same({}, ({}).combine({}));
+        Assert.same({name: "test"}, {name: "test"}.combine({}));
+        Assert.same({name: "test"}, ({}).combine({name: "test"}));
+        Assert.same({name: "test", age: 10}, {name: "test"}.combine({age: 10}));
+
+        Assert.same({}, ({}).combine({}, {}));
+        Assert.same({name: "test", age: 10, id:300}, {name: "test"}.combine({age: 10}, {id:300}));
+    }
 }

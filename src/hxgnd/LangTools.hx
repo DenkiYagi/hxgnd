@@ -1,5 +1,12 @@
 package hxgnd;
 
+#if macro
+import haxe.macro.Expr;
+import haxe.macro.Context;
+using haxe.macro.Tools;
+using Lambda;
+#end
+
 class LangTools {
     public static inline function eq<T>(a: Null<T>, b: Null<T>): Bool {
         #if js
@@ -56,5 +63,33 @@ class LangTools {
 
     public static inline function nonBlank(x: Null<String>): Bool {
         return !isBlank(x);
+    }
+
+    #if macro
+    static var sequence = 1;
+    #end
+    public static macro function combine(rest: Array<ExprOf<{}>>): Expr {
+        if (rest.length <= 0) return Context.error("Not enough arguments", Context.currentPos());
+        if (rest.length == 1) return rest[0];
+        
+        var block = [];
+        var map = new Map<String, {field: String, expr: Expr}>();
+        for (rx in rest) {
+            var type = Context.typeof(rx);
+            switch (type.follow()) {
+                case TAnonymous(_.get() => tr):
+                    var name = "__hxgnd_tmp_struct_" + sequence++;
+                    block.push(macro var $name = $rx);
+                    var extVar = macro $i{name};
+                    for (field in tr.fields) {
+                        var fname = field.name;
+                        map.set(fname, { field: fname, expr: macro $extVar.$fname } );
+                    }
+                default:
+                    return Context.error("Object type expected instead of " + type.toString(), rx.pos);
+            }
+        }
+        block.push(macro ${ {expr: EObjectDecl(map.array()), pos: Context.currentPos()} });
+        return macro $b{block};
     }
 }
