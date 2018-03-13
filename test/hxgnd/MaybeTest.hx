@@ -148,5 +148,15 @@ class MaybeTest {
             function (x) return x * 3,
             function () return -1
         ));
+
+        Maybe.of(1).match(
+            function (x) Assert.equals(1, x),
+            function () Assert.fail()
+        );
+
+        Maybe.empty().match(
+            function (x) Assert.fail(),
+            function () Assert.pass()
+        );
     }
 }
