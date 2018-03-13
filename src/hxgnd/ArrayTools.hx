@@ -94,20 +94,16 @@ class ArrayTools {
     //     return OptionUtils.toOption(Lambda.find(array, f));
     // }
 
-    // public static function head<A>(array: Array<A>, ?f: A -> Bool): A {
-    //     return OptionUtils.getOrThrow(headOption(array, f), new Error("not found"));
-    // }
-
-    // public static function headOption<A>(array: Array<A>, ?f: A -> Bool): Option<A> {
-    //     if (f == null) {
-    //         if (array.length > 0) return Some(array[0]);
-    //     } else {
-    //         for (x in array) {
-    //             if (f(x)) return Some(x);
-    //         }
-    //     }
-    //     return None;
-    // }
+    public static function head<A>(array: Array<A>, ?fn: A -> Bool): Maybe<A> {
+        if (fn == null) {
+            if (array.length > 0) return Maybe.of(array[0]);
+        } else {
+            for (x in array) {
+                if (fn(x)) return Maybe.of(x);
+            }
+        }
+        return Maybe.empty();
+    }
 
     // public static function lastOption<A>(array: Array<A>): Option<A> {
     //     return if(array.length == 0) None else Some(array[array.length - 1]);

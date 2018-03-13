@@ -100,4 +100,15 @@ class ArrayToolsTest {
         Assert.equals("bar", map2.get("2"));
         Assert.equals("baz", map2.get("3"));
     }
+
+    public function test_head() {
+        Assert.isTrue([].head().isEmpty());
+        Assert.equals(1, [1, 2, 3].head());
+
+        Assert.isTrue([].head(function (x) return true).isEmpty());
+        Assert.isTrue([].head(function (x) return false).isEmpty());
+
+        Assert.equals(2, [1, 2, 3].head(function (x) return x == 2));
+        Assert.isTrue([1, 2, 3].head(function (x) return x == 100).isEmpty());
+    }
 }
