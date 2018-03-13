@@ -68,4 +68,12 @@ abstract Maybe<T>(Null<T>) from Null<T> {
             empty();
         }
     }
+
+    public inline function match<U>(fn: T -> U, elseFn: Void -> U): U {
+        return if (nonEmpty()) {
+            fn(this);
+        } else {
+            elseFn(); 
+        }
+    }
 }

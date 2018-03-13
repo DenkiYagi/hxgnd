@@ -137,4 +137,16 @@ class MaybeTest {
         });
         Assert.pass();
     }
+
+    public function test_match() {
+        Assert.equals(3, Maybe.of(1).match(
+            function (x) return x * 3,
+            function () return -1
+        ));
+
+        Assert.equals(-1, Maybe.empty().match(
+            function (x) return x * 3,
+            function () return -1
+        ));
+    }
 }
