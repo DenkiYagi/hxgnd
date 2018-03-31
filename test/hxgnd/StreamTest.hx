@@ -8,24 +8,38 @@ class StreamTest {
     public function new() {}
 
     public function test_already_ended() {
-        var stream = new Stream(function (callback) {
-            callback(End);
+        var stream = new Stream(function (ctx) {
+            ctx.emit(End);
             Assert.pass();
         });
-        stream.subscribe(function (_) {
-            Assert.fail();
+        
+        var count = 0;
+        stream.subscribe(function (value) {
+            Assert.isTrue(count <= 0);
+            Assert.same(End, value);
+            Assert.isFalse(stream.isActive);
+            count++;
         });
+
+        Assert.isTrue(stream.isActive);
     }
 
-    public function test_duplicate_end() {
-        var stream = new Stream(function (callback) {
-            callback(End);
-            callback(End);
+    public function test_duplicated_end() {
+        var stream = new Stream(function (ctx) {
+            ctx.emit(End);
+            ctx.emit(End);
             Assert.pass();
         });
-        stream.subscribe(function (_) {
-            Assert.fail();
+
+        var count = 0;
+        stream.subscribe(function (value) {
+            Assert.isTrue(count <= 0);
+            Assert.same(End, value);
+            Assert.isFalse(stream.isActive);
+            count++;
         });
+        
+        Assert.isTrue(stream.isActive);
     }
 
     public function test_subscribe_end() {
@@ -36,16 +50,44 @@ class StreamTest {
             done();
         }, 100);
 
-        var stream = new Stream(function (callback) {
+        var stream = new Stream(function (ctx) {
             Timer.delay(function () {
-                callback(End);
+                ctx.emit(End);
             }, 10);
         });
         stream.subscribe(function (value) {
             Assert.same(End, value);
+            Assert.isFalse(stream.isActive);
             done();
             killTimer.stop();
         });
+        Assert.isTrue(stream.isActive);
+        
+        initTimerLoop();
+    }
+
+    public function test_subscribe_duplicated_end() {
+        var done = Assert.createAsync();
+
+        var stream = new Stream(function (ctx) {
+            Timer.delay(ctx.emit.bind(End), 10);
+            Timer.delay(ctx.emit.bind(End), 20);
+        });
+
+        // do not call End twice.
+        var count = 0;
+        Timer.delay(function () {
+            Assert.equals(1, count);
+            Assert.isFalse(stream.isActive);
+            done();
+        }, 30);
+
+        stream.subscribe(function (value) {
+            Assert.same(End, value);
+            Assert.isFalse(stream.isActive);
+            count++;
+        });
+        Assert.isTrue(stream.isActive);
         
         initTimerLoop();
     }
@@ -59,24 +101,26 @@ class StreamTest {
         }, 100);
 
         var count = 0;
-        var stream = new Stream(function (callback) {
+        var stream = new Stream(function (ctx) {
             Timer.delay(function () {
                 count++;
-                callback(Some(1));
+                ctx.emit(Data(1));
             }, 10);
 
             Timer.delay(function () {
                 count++;
-                callback(End);
+                ctx.emit(End);
             }, 20);
         });
 
         stream.subscribe(function (value) {
             switch (count) {
                 case 1:
-                    Assert.same(Some(1), value);
+                    Assert.same(Data(1), value);
+                    Assert.isTrue(stream.isActive);
                 case 2:
                     Assert.same(End, value);
+                    Assert.isFalse(stream.isActive);
                     done();
                     killTimer.stop();
                 case _:
@@ -85,6 +129,7 @@ class StreamTest {
                     killTimer.stop();
             }
         });
+        Assert.isTrue(stream.isActive);
 
         initTimerLoop();
     }
@@ -98,29 +143,32 @@ class StreamTest {
         }, 100);
 
         var count = 0;
-        var stream = new Stream(function (callback) {
+        var stream = new Stream(function (ctx) {
             Timer.delay(function () {
                 count++;
-                callback(Some(1));
+                ctx.emit(Data(1));
             }, 10);
             Timer.delay(function () {
                 count++;
-                callback(Some(2));
+                ctx.emit(Data(2));
             }, 20);
             Timer.delay(function () {
                 count++;
-                callback(End);
+                ctx.emit(End);
             }, 30);
         });
 
         stream.subscribe(function (value) {
             switch (count) {
                 case 1:
-                    Assert.same(Some(1), value);
+                    Assert.same(Data(1), value);
+                    Assert.isTrue(stream.isActive);
                 case 2:
-                    Assert.same(Some(2), value);
+                    Assert.same(Data(2), value);
+                    Assert.isTrue(stream.isActive);
                 case 3:
                     Assert.same(End, value);
+                    Assert.isFalse(stream.isActive);
                     done();
                     killTimer.stop();
                 case _:
@@ -129,6 +177,9 @@ class StreamTest {
                     killTimer.stop();
             }
         });
+        Assert.isTrue(stream.isActive);
+
+        initTimerLoop();
     }
 
     public function test_two_subscribers() {
@@ -140,23 +191,25 @@ class StreamTest {
         }, 100);
 
         var count = 0;
-        var stream = new Stream(function (callback) {
+        var stream = new Stream(function (ctx) {
             Timer.delay(function () {
                 count++;
-                callback(Some(1));
+                ctx.emit(Data(1));
             }, 10);
             Timer.delay(function () {
                 count++;
-                callback(End);
+                ctx.emit(End);
             }, 20);
         });
 
         stream.subscribe(function (value) {
             switch (count) {
                 case 1:
-                    Assert.same(Some(1), value);
+                    Assert.same(Data(1), value);
+                    Assert.isTrue(stream.isActive);
                 case 2:
                     Assert.same(End, value);
+                    Assert.isFalse(stream.isActive);
                 case _:
                     Assert.fail();
                     killTimer.stop();
@@ -167,9 +220,11 @@ class StreamTest {
         stream.subscribe(function (value) {
             switch (count) {
                 case 1:
-                    Assert.same(Some(1), value);
+                    Assert.same(Data(1), value);
+                    Assert.isTrue(stream.isActive);
                 case 2:
                     Assert.same(End, value);
+                    Assert.isFalse(stream.isActive);
                     killTimer.stop();
                     done();
                 case _:
@@ -178,6 +233,8 @@ class StreamTest {
                     done();
             }
         });
+
+        Assert.isTrue(stream.isActive);
 
         initTimerLoop();
     }
