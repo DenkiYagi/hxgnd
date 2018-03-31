@@ -11,6 +11,7 @@ class TestMain {
         runner.addCase(new hxgnd.ArrayToolsTest());
         runner.addCase(new hxgnd.MaybeTest());
         runner.addCase(new hxgnd.MacroToolsTest());
+        runner.addCase(new hxgnd.StreamTest());
         #if js
         runner.addCase(new hxgnd.js.PromiseToolsTest());
         #end
