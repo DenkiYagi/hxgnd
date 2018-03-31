@@ -41,12 +41,48 @@ class JsNative {
         return untyped __js__("{0}.toString()", object);
     }
 
+    public static var setImmediate(default, null): (Void -> Void) -> Int;
+
+    public static var clearImmediate(default, null): Int -> Void;
+
     public static macro function debugger(): ExprOf<Void> {
         return macro untyped __js__("debugger");
     }
 
     public static macro function delete(expression: Expr): ExprOf<Void> {
         return macro untyped __js__("delete {0}", ${expression});
+    }
+
+    static function __init__() {
+        if (untyped __js__("setImmediate")) {
+            JsNative.setImmediate = untyped __js__("setImmediate");
+            JsNative.clearImmediate = untyped __js__("clearImmediate");
+        } else if (untyped __js__("MessageChannel")) {
+            var channel = untyped __js__("new MessageChannel()");
+            var functions = [];
+            channel.onmessage = function (i) {
+                var fn = functions[i];
+                untyped __js__("delete {0}", functions[i]);
+                if (untyped fn) fn();
+            }
+            JsNative.setImmediate = function setImmediateMC(fn) {
+                var i = functions.length;
+                functions[i] = fn;
+                channel.postMessage(i);
+                return i;
+            }
+            JsNative.clearImmediate = function clearImmediateMC(i) {
+                untyped __js__("delete {0}", functions[i]);
+            }
+        } else {
+            JsNative.setImmediate = function setImmediateTO(fn) {
+                return untyped __js__("setTimeout({0}, {1})", fn, 0);
+            }
+            JsNative.clearImmediate = function clearImmediateTO(i) {
+                untyped __js__("clearTimeout({0})", i);
+            }
+        }
+
     }
 }
 
