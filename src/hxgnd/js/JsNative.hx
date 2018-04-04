@@ -41,6 +41,18 @@ class JsNative {
         return untyped __js__("{0}.toString()", object);
     }
 
+    public static inline function strictEq<T>(a: T, b: T): Bool {
+        return untyped __strict_eq__(a, b);
+    }
+
+    public static inline function strictNeq<T>(a: T, b: T): Bool {
+        return untyped __strict_neq__(a, b);
+    }
+
+    public static inline function typeof(x: Dynamic): String {
+        return untyped __typeof__(x);
+    }
+
     public static var setImmediate(default, null): (Void -> Void) -> Int;
 
     public static var clearImmediate(default, null): Int -> Void;
