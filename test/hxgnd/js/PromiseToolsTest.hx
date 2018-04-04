@@ -1,378 +1,316 @@
 package hxgnd.js;
 
-import utest.Assert;
+import buddy.BuddySuite;
 import hxgnd.Error;
+using buddy.Should;
 using hxgnd.js.PromiseTools;
 
-class PromiseToolsTest {
-    public function new() {}
-
-    public function test_callAsPromise() {
-        {
-            function fnOK(callback: Error -> Int -> Void) {
-                callback(null, 100);
-            }
-            function fnNG(callback: Error -> Int -> Void) {
-                callback(new Error("error"), null);
-            }
-
-            var done1 = Assert.createAsync();
-            fnOK.callAsPromise().then(function (x) {
-                Assert.equals(100, x);
-                done1();
-            }).catchError(function (e) {
-                Assert.fail();
-                done1();
-            });
-
-            var done2 = Assert.createAsync();
-            fnNG.callAsPromise().then(function (x) {
-                Assert.fail();
-                done2();
-            }).catchError(function (e) {
-                Assert.notNull(e);
-                done2();
-            });
-        }
-
-        {
-            function fn1(flag: Bool, callback: Error -> Int -> Void) {
-                if (flag) {
+class PromiseToolsTest extends BuddySuite {
+    public function new() {
+        describe("PromiseTools.callAsPromise() :", {
+            it("sholud be resolved - 2 args callback", function (done) {
+                function fnOK(callback: Error -> Int -> Void) {
                     callback(null, 100);
-                } else {
+                }
+                fnOK.callAsPromise().then(function (x: Int) {
+                    x.should.be(100);
+                    done();
+                }).catchError(function (e) {
+                    fail();
+                    done();
+                });
+            });
+
+            it("sholud be rejected - 2 args callback", function (done) {
+                function fnNG(callback: Error -> Int -> Void) {
                     callback(new Error("error"), null);
                 }
-            }
-
-            var done1 = Assert.createAsync();
-            fn1.callAsPromise(true).then(function (x) {
-                Assert.equals(100, x);
-                done1();
-            }).catchError(function (e) {
-                Assert.fail();
-                done1();
+                fnNG.callAsPromise().then(function (x) {
+                    fail();
+                    done();
+                }).catchError(function (e) {
+                    Std.is(e, js.Error).should.be(true);
+                    done();
+                });
             });
 
-            var done2 = Assert.createAsync();
-            fn1.callAsPromise(false).then(function (x) {
-                Assert.fail();
-                done2();
-            }).catchError(function (e) {
-                Assert.notNull(e);
-                done2();
-            });
-        }
-
-        {
-            function fn2(flag: Bool, v1: Int, v2: String, callback: Error -> Int -> String -> Void) {
-                if (flag) {
-                    callback(null, v1, v2);
-                } else {
-                    callback(new Error("error"), null, null);
+            it("sholud be resolved - 3 args callback and other args", function (done) {
+                function fn(flag: Bool, v1: Int, v2: String, callback: Error -> Int -> String -> Void) {
+                    if (flag) {
+                        callback(null, v1, v2);
+                    } else {
+                        callback(new Error("error"), null, null);
+                    }
                 }
-            }
-
-            var done1 = Assert.createAsync();
-            fn2.callAsPromise(true, 500, "hello").then(function (x) {
-                Assert.same({
-                    value1: 500,
-                    value2: "hello"
-                }, x);
-                done1();
-            }).catchError(function (e) {
-                Assert.fail();
-                done1();
+                
+                fn.callAsPromise(true, 500, "hello").then(function (x) {
+                    LangTools.same(x, {
+                        value1: 500,
+                        value2: "hello"
+                    }).should.be(true);
+                    done();
+                }).catchError(function (e) {
+                    fail();
+                    done();
+                });
             });
 
-            var done2 = Assert.createAsync();
-            fn2.callAsPromise(false, 300, "hello").then(function (x) {
-                Assert.fail();
-                done2();
-            }).catchError(function (e) {
-                Assert.notNull(e);
-                done2();
-            });
-        }
-
-        // typedef with type-parameter
-        {
-            var done1 = Assert.createAsync();
-            function (callback: Callback2<Int>) {
-                callback(null, 1);
-            }.callAsPromise().then(function (x) {
-                Assert.equals(1, x);
-                done1();
-            }).catchError(function (e) {
-                Assert.fail();
-                done1();
+            it("sholud be rejected - 3 args callback and other args", function (done) {
+                function fn(flag: Bool, v1: Int, v2: String, callback: Error -> Int -> String -> Void) {
+                    if (flag) {
+                        callback(null, v1, v2);
+                    } else {
+                        callback(new Error("error"), null, null);
+                    }
+                }
+                
+                fn.callAsPromise(false, 500, "hello").then(function (x) {
+                    fail();
+                    done();
+                }).catchError(function (e) {
+                    Std.is(e, js.Error).should.be(true);
+                    done();
+                });
             });
 
-            var done2 = Assert.createAsync();
-            function (callback: Callback3<Int, String>) {
-                callback(null, 2, "foo");
-            }.callAsPromise().then(function (x) {
-                Assert.same({
-                    value1: 2,
-                    value2: "foo"
-                }, x);
-                done2();
-            }).catchError(function (e) {
-                Assert.fail();
-                done2();
+            it("sholud be resolved - 2 args with type-parameter", function (done) {
+                function (callback: Callback2<Int>) {
+                    callback(null, 1);
+                }.callAsPromise().then(function (x) {
+                    LangTools.same(x, 1).should.be(true);
+                    done();
+                }).catchError(function (e) {
+                    fail();
+                    done();
+                });
             });
 
-            // recursive
-            var done3 = Assert.createAsync();
-            function (callback: CB3<Int, String>) {
-                callback(null, 3, "bar");
-            }.callAsPromise().then(function (x) {
-                Assert.same({
-                    value1: 3,
-                    value2: "bar"
-                }, x);
-                done3();
-            }).catchError(function (e) {
-                Assert.fail();
-                done3();
-            });
-        }
-    }
-
-    public function test_callAsPromiseUnsafe() {
-        {
-            function fnOK(callback: Error -> Int -> Void) {
-                callback(null, 100);
-            }
-            function fnNG(callback: Error -> Int -> Void) {
-                callback(new Error("error"), null);
-            }
-
-            var done1 = Assert.createAsync();
-            fnOK.callAsPromiseUnsafe().then(function (x) {
-                Assert.equals(100, x);
-                done1();
-            }).catchError(function (e) {
-                Assert.fail();
-                done1();
+            it("sholud be rejected - 2 args with type-parameter", function (done) {
+                function (callback: Callback2<Int>) {
+                    callback(new js.Error(""), null);
+                }.callAsPromise().then(function (x) {
+                    fail();
+                    done();
+                }).catchError(function (e) {
+                    Std.is(e, js.Error).should.be(true);
+                    done();
+                });
             });
 
-            var done2 = Assert.createAsync();
-            fnNG.callAsPromiseUnsafe().then(function (x) {
-                Assert.fail();
-                done2();
-            }).catchError(function (e) {
-                Assert.notNull(e);
-                done2();
+            it("sholud be resolved - 3 args with type-alias", function (done) {
+                function (callback: CB3<Int, String>) {
+                    callback(null, 3, "bar");
+                }.callAsPromise().then(function (x) {
+                    LangTools.same(x, {
+                        value1: 3,
+                        value2: "bar"
+                    }).should.be(true);
+                    done();
+                }).catchError(function (e) {
+                    fail();
+                    done();
+                });
             });
-        }
 
-        {
-            function fn1(flag: Bool, callback: Error -> Int -> Void) {
-                if (flag) {
+            it("sholud be rejected - 3 args with type-alias", function (done) {
+                function (callback: CB3<Int, String>) {
+                    callback(new js.Error(""), null, null);
+                }.callAsPromise().then(function (x) {
+                    fail();
+                    done();
+                }).catchError(function (e) {
+                    Std.is(e, js.Error).should.be(true);
+                    done();
+                });
+            });
+        });
+
+        describe("PromiseTools.callAsPromiseUnsafe()", {
+            it("sholud be resolved - 2 args callback", function (done) {
+                function fnOK(callback: Error -> Int -> Void) {
                     callback(null, 100);
-                } else {
+                }
+                fnOK.callAsPromiseUnsafe().then(function (x: Int) {
+                    x.should.be(100);
+                    done();
+                }).catchError(function (e) {
+                    fail();
+                    done();
+                });
+            });
+
+            it("sholud be rejected - 2 args callback", function (done) {
+                function fnNG(callback: Error -> Int -> Void) {
                     callback(new Error("error"), null);
                 }
-            }
-
-            var done1 = Assert.createAsync();
-            fn1.callAsPromiseUnsafe(true).then(function (x) {
-                Assert.equals(100, x);
-                done1();
-            }).catchError(function (e) {
-                Assert.fail();
-                done1();
+                fnNG.callAsPromiseUnsafe().then(function (x) {
+                    fail();
+                    done();
+                }).catchError(function (e) {
+                    Std.is(e, js.Error).should.be(true);
+                    done();
+                });
             });
 
-            var done2 = Assert.createAsync();
-            fn1.callAsPromiseUnsafe(false).then(function (x) {
-                Assert.fail();
-                done2();
-            }).catchError(function (e) {
-                Assert.notNull(e);
-                done2();
-            });
-        }
-
-        {
-            function fn2(flag: Bool, v1: Int, v2: String, callback: Error -> Int -> String -> Void) {
-                if (flag) {
-                    callback(null, v1, v2);
-                } else {
-                    callback(new Error("error"), null, null);
+            it("sholud be resolved - 3 args callback and other args", function (done) {
+                function fn(flag: Bool, v1: Int, v2: String, callback: Error -> Int -> String -> Void) {
+                    if (flag) {
+                        callback(null, v1, v2);
+                    } else {
+                        callback(new Error("error"), null, null);
+                    }
                 }
-            }
-
-            var done1 = Assert.createAsync();
-            fn2.callAsPromiseUnsafe(true, 500, "hello").then(function (x) {
-                Assert.same([500, "hello"], x);
-                done1();
-            }).catchError(function (e) {
-                Assert.fail();
-                done1();
+                
+                fn.callAsPromiseUnsafe(true, 500, "hello").then(function (x) {
+                    LangTools.same(x, [500, "hello"]).should.be(true);
+                    done();
+                }).catchError(function (e) {
+                    fail();
+                    done();
+                });
             });
 
-            var done2 = Assert.createAsync();
-            fn2.callAsPromiseUnsafe(false, 300, "hello").then(function (x) {
-                Assert.fail();
-                done2();
-            }).catchError(function (e) {
-                Assert.notNull(e);
-                done2();
+            it("sholud be rejected - 3 args callback and other args", function (done) {
+                function fn(flag: Bool, v1: Int, v2: String, callback: Error -> Int -> String -> Void) {
+                    if (flag) {
+                        callback(null, v1, v2);
+                    } else {
+                        callback(new Error("error"), null, null);
+                    }
+                }
+                
+                fn.callAsPromiseUnsafe(false, 500, "hello").then(function (x) {
+                    fail();
+                    done();
+                }).catchError(function (e) {
+                    Std.is(e, js.Error).should.be(true);
+                    done();
+                });
             });
-        }
-    }
-
-    public function test_await() {
-        function fnOK(callback: Error -> Int -> Void) {
-            callback(null, 100);
-        }
-        function fnNG(callback: Error -> Int -> Void) {
-            callback(new Error("error"), null);
-        }
-
-        var done = Assert.createAsync();
-        function () {
-            Assert.equals(100, fnOK.callAsPromise().await());
-
-            try {
-                fnNG.callAsPromise().await();
-                Assert.fail();
-            } catch (e: Dynamic) {
-                Assert.is(e, js.Error);
-            }
-            done();
-        }.asyncCall();
-    }
-
-    public function test_async_with_function_name() {
-        function fn1() {}.async();
-        var done1 = Assert.createAsync();
-        fn1().then(function (_) {
-            Assert.pass();
-            done1();
-        });
-        
-        function fn2() { return 1; }.async();
-        var done2 = Assert.createAsync();
-        fn2().then(function (x) {
-            Assert.equals(1, x);
-            done2();
         });
 
-        function fn3(x: String) { return x; }.async();
-        var done3 = Assert.createAsync();
-        fn3("hello").then(function (x) {
-            Assert.equals("hello", x);
-            done3();
+        describe("PromiseTools.async()", {
+            it("should convert Void -> Void", function (done) {
+                function fn() {}.async();
+                fn().then(function (_) {
+                    done();
+                });
+            });
+            it("should convert Void -> Void : anonymous", function (done) {
+                function () {}.async()().then(function (_) {
+                    done();
+                });
+            });
+
+            it("should convert Void -> Int", function (done) {
+                function fn() { return 1; }.async();
+                fn().then(function (x) {
+                    LangTools.same(x, 1).should.be(true);
+                    done();
+                });
+            });
+            it("should convert Void -> Int : anonymous", function (done) {
+                function () { return 1; }.async()().then(function (x) {
+                    LangTools.same(x, 1).should.be(true);
+                    done();
+                });
+            });
+
+            it("should convert String -> String", function (done) {
+                function fn(x: String) { return x; }.async();
+                fn("hello").then(function (x) {
+                    LangTools.same(x, "hello").should.be(true);
+                    done();
+                });
+            });
+            it("should convert String -> String : anonymous", function (done) {
+                function (x: String) { return x; }.async()("hello").then(function (x) {
+                    LangTools.same(x, "hello").should.be(true);
+                    done();
+                });
+            });
+
+            it("should convert Int -> Int -> Int", function (done) {
+                function fn(a: Int, b: Int) { return a * b; }.async();
+                fn(2, 3).then(function (x) {
+                    LangTools.same(x, 6).should.be(true);
+                    done();
+                });
+            });
+            it("should convert Int -> Int -> Int : anonymous", function (done) {
+                function (a: Int, b: Int) { return a * b; }.async()(2, 3).then(function (x) {
+                    LangTools.same(x, 6).should.be(true);
+                    done();
+                });
+            });
         });
 
-        function fn4(a: Int, b: Int) { return a * b; }.async();
-        var done4 = Assert.createAsync();
-        fn4(2, 3).then(function (x) {
-            Assert.equals(6, x);
-            done4();
+        describe("PromiseTools.asyncCall()", {
+            it("should convert Void -> Void", function (done) {
+                function () {}.asyncCall().then(function (_) {
+                    done();
+                });
+            });
+
+            it("should convert Void -> Int", function (done) {
+                function () { return 1; }.asyncCall().then(function (x) {
+                    LangTools.same(x, 1).should.be(true);
+                    done();
+                });
+            });
+
+            it("should convert String -> String", function (done) {
+                function (x: String) { return x; }.asyncCall("hello").then(function (x) {
+                    LangTools.same(x, "hello").should.be(true);
+                    done();
+                });
+            });
+
+            it("should convert Int -> Int -> Int", function (done) {
+                function (a: Int, b: Int) { return a * b; }.asyncCall(2, 3).then(function (x) {
+                    LangTools.same(x, 6).should.be(true);
+                    done();
+                });
+            });
         });
 
-        function fn5(a: Int) { 
-            function f(n) {
-                return n + n;
-            }
-            var x = a * 100;
-            var y = a + 50;
-            var z = f(a);
-            return x + y + z;
-        }.async();
-        var done5 = Assert.createAsync();
-        fn5(2).then(function (x) {
-            Assert.equals(256, x);
-            done5();
-        });
-    }
+        describe("PromiseTools.await()", {
+            it("sholud be resolved", function (done) {
+                function fn(callback: Error -> Int -> Void) {
+                    callback(null, 100);
+                }
 
-    public function test_async_without_function_name() {
-        var done1 = Assert.createAsync();
-        function () {}.async()().then(function (_) {
-            Assert.pass();
-            done1();
-        });
-        
-        var done2 = Assert.createAsync();
-        function () { return 1; }.async()().then(function (x) {
-            Assert.equals(1, x);
-            done2();
-        });
+                function assert(result) {
+                    LangTools.same(result, 100).should.be(true);
+                    done();
+                }
 
-        var done3 = Assert.createAsync();
-        function (x: String) { return x; }.async()("hello").then(function (x) {
-            Assert.equals("hello", x);
-            done3();
-        });
+                function () {
+                    var result = fn.callAsPromise().await();
+                    assert(result);
+                }.asyncCall();
+            });
 
-        var done4 = Assert.createAsync();
-        function (a: Int, b: Int) { return a * b; }.async()(2, 3).then(function (x) {
-            Assert.equals(6, x);
-            done4();
-        });
+            it("sholud be rejected", function (done) {
+                function fn(callback: Error -> Int -> Void) {
+                    callback(new js.Error(""), null);
+                }
 
-        var done5 = Assert.createAsync();
-        function (a: Int) { 
-            function f(n) {
-                return n + n;
-            }
-            var x = a * 100;
-            var y = a + 50;
-            var z = f(a);
-            return x + y + z;
-        }.async()(2).then(function (x) {
-            Assert.equals(256, x);
-            done5();
-        });
-    }
+                function assert(error) {
+                    Std.is(error, js.Error).should.be(true);
+                    done();
+                }
 
-    public function test_asyncCall() {
-        var done1 = Assert.createAsync();
-        function () {}.asyncCall().then(function (_) {
-            Assert.pass();
-            done1();
-        });
-        
-        var done2 = Assert.createAsync();
-        function () { return 1; }.asyncCall().then(function (x) {
-            Assert.equals(1, x);
-            done2();
-        });
-
-        var done3 = Assert.createAsync();
-        function (x: String) { return x; }.asyncCall("hello").then(function (x) {
-            Assert.equals("hello", x);
-            done3();
-        });
-
-        var done4 = Assert.createAsync();
-        function (a: Int, b: Int) { return a * b; }.asyncCall(2, 3).then(function (x) {
-            Assert.equals(6, x);
-            done4();
-        });
-
-        var done5 = Assert.createAsync();
-        function (a: Int) { 
-            function f(n) {
-                return n + n;
-            }
-            var x = a * 100;
-            var y = a + 50;
-            var z = f(a);
-            return x + y + z;
-        }.asyncCall(2).then(function (x) {
-            Assert.equals(256, x);
-            done5();
-        });
-
-        var done6 = Assert.createAsync();
-        function test() {}.asyncCall().then(function (_) {
-            Assert.pass();
-            done6();
+                function () {
+                    try {
+                        fn.callAsPromise().await();
+                        fail();
+                        done();
+                    } catch (e: Dynamic) {
+                        assert(e);
+                    }
+                }.asyncCall();
+            });
         });
     }
 }

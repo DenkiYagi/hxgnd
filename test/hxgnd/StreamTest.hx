@@ -1,248 +1,208 @@
 package hxgnd;
 
-import utest.Assert;
 import hxgnd.Stream;
-import haxe.Timer;
+import buddy.BuddySuite;
+import buddy.tools.AsyncTools.wait;
+using buddy.Should;
+using hxgnd.LangTools;
 
-class StreamTest {
-    public function new() {}
+class StreamTest extends BuddySuite {
+    public function new() {
+        describe("Stream", {
+            it("should invoke middleware defer", function (done) {
+                var stream = new Stream(function (ctx) {
+                    ctx.emit(End);
+                });
+                
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(End).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                stream.isActive.should.be(true);
 
-    public function test_already_ended() {
-        var stream = new Stream(function (ctx) {
-            ctx.emit(End);
-            Assert.pass();
-        });
-        
-        var count = 0;
-        stream.subscribe(function (value) {
-            Assert.isTrue(count <= 0);
-            Assert.same(End, value);
-            Assert.isFalse(stream.isActive);
-            count++;
-        });
-
-        Assert.isTrue(stream.isActive);
-    }
-
-    public function test_duplicated_end() {
-        var stream = new Stream(function (ctx) {
-            ctx.emit(End);
-            ctx.emit(End);
-            Assert.pass();
-        });
-
-        var count = 0;
-        stream.subscribe(function (value) {
-            Assert.isTrue(count <= 0);
-            Assert.same(End, value);
-            Assert.isFalse(stream.isActive);
-            count++;
-        });
-        
-        Assert.isTrue(stream.isActive);
-    }
-
-    public function test_subscribe_end() {
-        var done = Assert.createAsync();
-
-        var killTimer = Timer.delay(function () {
-            Assert.fail();
-            done();
-        }, 100);
-
-        var stream = new Stream(function (ctx) {
-            Timer.delay(function () {
-                ctx.emit(End);
-            }, 10);
-        });
-        stream.subscribe(function (value) {
-            Assert.same(End, value);
-            Assert.isFalse(stream.isActive);
-            done();
-            killTimer.stop();
-        });
-        Assert.isTrue(stream.isActive);
-        
-        initTimerLoop();
-    }
-
-    public function test_subscribe_duplicated_end() {
-        var done = Assert.createAsync();
-
-        var stream = new Stream(function (ctx) {
-            Timer.delay(ctx.emit.bind(End), 10);
-            Timer.delay(ctx.emit.bind(End), 20);
-        });
-
-        // do not call End twice.
-        var count = 0;
-        Timer.delay(function () {
-            Assert.equals(1, count);
-            Assert.isFalse(stream.isActive);
-            done();
-        }, 30);
-
-        stream.subscribe(function (value) {
-            Assert.same(End, value);
-            Assert.isFalse(stream.isActive);
-            count++;
-        });
-        Assert.isTrue(stream.isActive);
-        
-        initTimerLoop();
-    }
-
-    public function test_subscribe_one_value() {
-        var done = Assert.createAsync();
-
-        var killTimer = Timer.delay(function () {
-            Assert.fail();
-            done();
-        }, 100);
-
-        var count = 0;
-        var stream = new Stream(function (ctx) {
-            Timer.delay(function () {
-                count++;
-                ctx.emit(Data(1));
-            }, 10);
-
-            Timer.delay(function () {
-                count++;
-                ctx.emit(End);
-            }, 20);
-        });
-
-        stream.subscribe(function (value) {
-            switch (count) {
-                case 1:
-                    Assert.same(Data(1), value);
-                    Assert.isTrue(stream.isActive);
-                case 2:
-                    Assert.same(End, value);
-                    Assert.isFalse(stream.isActive);
+                wait(5).then(function (_) {
+                    count.should.be(1);
                     done();
-                    killTimer.stop();
-                case _:
-                    Assert.fail();
+                });
+            });
+
+            it("should be pass when middleware emits End 2-times", function (done) {
+                var stream = new Stream(function (ctx) {
+                    ctx.emit(End);
+                    ctx.emit(End);
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(End).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                stream.isActive.should.be(true);
+
+                wait(5).then(function (_) {
+                    count.should.be(1);
                     done();
-                    killTimer.stop();
-            }
-        });
-        Assert.isTrue(stream.isActive);
+                });
+            });
 
-        initTimerLoop();
-    }
+            it("should wait delayed End", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5).then(function (_) {
+                        ctx.emit(End);
+                    });
+                });
 
-    public function test_subscribe_two_values() {
-        var done = Assert.createAsync();
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(End).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                stream.isActive.should.be(true);
 
-        var killTimer = Timer.delay(function () {
-            Assert.fail();
-            done();
-        }, 100);
-
-        var count = 0;
-        var stream = new Stream(function (ctx) {
-            Timer.delay(function () {
-                count++;
-                ctx.emit(Data(1));
-            }, 10);
-            Timer.delay(function () {
-                count++;
-                ctx.emit(Data(2));
-            }, 20);
-            Timer.delay(function () {
-                count++;
-                ctx.emit(End);
-            }, 30);
-        });
-
-        stream.subscribe(function (value) {
-            switch (count) {
-                case 1:
-                    Assert.same(Data(1), value);
-                    Assert.isTrue(stream.isActive);
-                case 2:
-                    Assert.same(Data(2), value);
-                    Assert.isTrue(stream.isActive);
-                case 3:
-                    Assert.same(End, value);
-                    Assert.isFalse(stream.isActive);
+                wait(10).then(function (e) {
+                    count.should.be(1);
                     done();
-                    killTimer.stop();
-                case _:
-                    Assert.fail();
+                });
+            });
+
+            it("should subscribe 1 Data and End", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5).then(function (_) {
+                        ctx.emit(Data(1));
+                    });
+                    wait(10).then(function (_) {
+                        ctx.emit(End);
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    switch (count) {
+                        case 0:
+                            e.same(Data(1)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count++;
+                        case 1:
+                            e.same(End).should.be(true);
+                            stream.isActive.should.be(false);
+                            count++;
+                        case _:
+                            fail();
+                    }
+                });
+                stream.isActive.should.be(true);
+
+                wait(15).then(function (e) {
+                    count.should.be(2);
                     done();
-                    killTimer.stop();
-            }
-        });
-        Assert.isTrue(stream.isActive);
+                });
+            });
 
-        initTimerLoop();
-    }
+            it("should subscribe 2 Data and End", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5).then(function (_) {
+                        ctx.emit(Data(1));
+                    });
+                    wait(10).then(function (_) {
+                        ctx.emit(Data(2));
+                    });
+                    wait(15).then(function (_) {
+                        ctx.emit(End);
+                    });
+                });
 
-    public function test_two_subscribers() {
-        var done = Assert.createAsync();
+                var count = 0;
+                stream.subscribe(function (e) {
+                    switch (count) {
+                        case 0:
+                            e.same(Data(1)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count++;
+                        case 1:
+                            e.same(Data(2)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count++;
+                        case 2:
+                            e.same(End).should.be(true);
+                            stream.isActive.should.be(false);
+                            count++;
+                        case _:
+                            fail();
+                    }
+                });
+                stream.isActive.should.be(true);
 
-        var killTimer = Timer.delay(function () {
-            Assert.fail();
-            done();
-        }, 100);
-
-        var count = 0;
-        var stream = new Stream(function (ctx) {
-            Timer.delay(function () {
-                count++;
-                ctx.emit(Data(1));
-            }, 10);
-            Timer.delay(function () {
-                count++;
-                ctx.emit(End);
-            }, 20);
-        });
-
-        stream.subscribe(function (value) {
-            switch (count) {
-                case 1:
-                    Assert.same(Data(1), value);
-                    Assert.isTrue(stream.isActive);
-                case 2:
-                    Assert.same(End, value);
-                    Assert.isFalse(stream.isActive);
-                case _:
-                    Assert.fail();
-                    killTimer.stop();
+                wait(20).then(function (e) {
+                    count.should.be(3);
                     done();
-            }
-        });
+                });
+            });
 
-        stream.subscribe(function (value) {
-            switch (count) {
-                case 1:
-                    Assert.same(Data(1), value);
-                    Assert.isTrue(stream.isActive);
-                case 2:
-                    Assert.same(End, value);
-                    Assert.isFalse(stream.isActive);
-                    killTimer.stop();
+            it("should notify to 2 subscribers", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5).then(function (_) {
+                        ctx.emit(Data(1));
+                    });
+                    wait(10).then(function (_) {
+                        ctx.emit(Data(2));
+                    });
+                    wait(15).then(function (_) {
+                        ctx.emit(End);
+                    });
+                });
+
+                var count1 = 0;
+                stream.subscribe(function (e) {
+                    switch (count1) {
+                        case 0:
+                            e.same(Data(1)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count1++;
+                        case 1:
+                            e.same(Data(2)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count1++;
+                        case 2:
+                            e.same(End).should.be(true);
+                            stream.isActive.should.be(false);
+                            count1++;
+                        case _:
+                            fail();
+                    }
+                });
+                stream.isActive.should.be(true);
+
+                var count2 = 0;
+                stream.subscribe(function (e) {
+                    switch (count2) {
+                        case 0:
+                            e.same(Data(1)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count2++;
+                        case 1:
+                            e.same(Data(2)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count2++;
+                        case 2:
+                            e.same(End).should.be(true);
+                            stream.isActive.should.be(false);
+                            count2++;
+                        case _:
+                            fail();
+                    }
+                });
+                stream.isActive.should.be(true);
+
+                wait(20).then(function (e) {
+                    count1.should.be(3);
+                    count2.should.be(3);
                     done();
-                case _:
-                    Assert.fail();
-                    killTimer.stop();
-                    done();
-            }
+                });
+            });
         });
-
-        Assert.isTrue(stream.isActive);
-
-        initTimerLoop();
-    }
-
-    inline function initTimerLoop() {
-        // for haxe.Timer
-        #if neko
-        haxe.EntryPoint.run();
-        #end
     }
 }

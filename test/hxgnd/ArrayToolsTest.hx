@@ -1,114 +1,146 @@
 package hxgnd;
 
-import utest.Assert;
-
+import buddy.BuddySuite;
+using buddy.Should;
 using hxgnd.ArrayTools;
+using hxgnd.LangTools;
 
-class ArrayToolsTest {
-    public function new() {}
+class ArrayToolsTest extends BuddySuite {
+    public function new() {
+        describe("ArrayTools.toArray()", {
+            it("can convert empty iterable", {
+                var result = ({ iterator: function () return 0...-1 }).toArray();
+                result.same([]).should.be(true);
+            });
+            
+            it("can convert some values iterable", {
+                var result = ({ iterator: function () return 0...3 }).toArray();
+                result.same([0, 1, 2]).should.be(true);
+            });
 
-    public function test_toArray() {
-        Assert.same([].iterator().toArray(), []);
-        Assert.same([1, 2, 3], [1, 2, 3].iterator().toArray());
+            it("can convert empty iterator", {
+                var result = (0...-1).toArray();
+                result.same([]).should.be(true);
+            });
 
-        var iterable1: Iterable<Int> = [];
-        Assert.same([], iterable1.toArray());
-
-        var iterable2: Iterable<Int> = [4, 5, 6];
-        Assert.same([4, 5, 6], iterable2.toArray());
-    }
-
-    public function test_forEach() {
-        [].forEach(function (x) {
-            Assert.fail();
+            it("can convert some values iterator", {
+                var result = (0...3).toArray();
+                result.same([0, 1, 2]).should.be(true);
+            });
         });
 
-        var i = 1;
-        [1, 2, 3].forEach(function (x) {
-            Assert.equals(i++, x);
-        });
-        Assert.equals(4, i);
-    }
+        describe("ArrayTools.forEach()", {
+            it("should not call", {
+                [].forEach(function (_) {
+                    fail();
+                });
+            });
 
-    public function test_forEachWithIndex() {
-        [].forEachWithIndex(function (x, i) {
-            Assert.fail();
-        });
-
-        var expected = ["a", "b", "c"];
-        var index = 0;
-        ["a", "b", "c"].forEachWithIndex(function (x, i) {
-            Assert.equals(expected[index], x);
-            Assert.equals(index, i);
-            index++;
-        });
-        Assert.equals(3, index);
-    }
-
-    public function test_mapWithIndex() {
-        var ret1 = [].mapWithIndex(function (x, i) {
-            Assert.fail();
-            return x;
-        });
-        Assert.same([], ret1);
-
-        var expected = ["a", "b", "c"];
-        var index = 0;
-        var ret2 = ["a", "b", "c"].mapWithIndex(function (x, i) {
-            Assert.equals(expected[index], x);
-            Assert.equals(index, i);
-            index++;
-            return x + i;
-        });
-        Assert.equals(3, index);
-        Assert.same(["a0", "b1", "c2"], ret2);
-    }
-
-    public function test_zip() {
-        Assert.raises(function () {
-            [].zip([1]);
-        });
-        Assert.raises(function () {
-            ["hello"].zip([]);
+            it("should call", {
+                var i = 1;
+                [1, 2, 3].forEach(function (x) {
+                    LangTools.eq(x, i++).should.be(true);
+                });
+                i.should.be(4);
+            });
         });
 
-        Assert.same([{value1: 1, value2: "foo"}], [1].zip(["foo"]));
-        Assert.same([
-            {value1: 1, value2: "foo"},
-            {value1: 2, value2: "bar"},
-            {value1: 3, value2: "baz"}
-        ], [1,2,3].zip(["foo","bar","baz"]));
-    }
+        describe("ArrayTools.forEachWithIndex()", {
+            it("should not call", {
+                [].forEachWithIndex(function (_, _) {
+                    fail();
+                });
+            });
 
-    public function test_zipStringMap() {
-        Assert.raises(function () {
-            [].zipStringMap([1]);
+            it("should call", {
+                var index = 0;
+                var expected = ["a", "b", "c"];
+                ["a", "b", "c"].forEachWithIndex(function (x, i) {
+                    LangTools.eq(x, expected[index]).should.be(true);
+                    LangTools.eq(i, index).should.be(true);
+                    index++;
+                });
+                index.should.be(3);
+            });
         });
-        Assert.raises(function () {
-            ["hello"].zipStringMap([]);
+
+        describe("ArrayTools.mapWithIndex()", {
+            it("should not call", {
+                var ret = [].mapWithIndex(function (_, _) {
+                    fail();
+                    return 0;
+                });
+                ret.same([]).should.be(true);
+            });
+
+            it("should call", {
+                var index = 0;
+                var expected = ["a", "b", "c"];
+                var ret = ["a", "b", "c"].mapWithIndex(function (x, i) {
+                    LangTools.eq(x, expected[index]).should.be(true);
+                    LangTools.eq(i, index).should.be(true);
+                    index++;
+                    return x + i;
+                });
+                index.should.be(3);
+                ret.same(["a0", "b1", "c2"]).should.be(true);
+            });
         });
 
-        var map1 = [1].zipStringMap(["foo"]);
-        var keys1 = map1.keys().toArray();
-        Assert.equals(1, keys1.length);
-        Assert.equals("foo", map1.get("1"));
+        describe("ArrayTools.zip()", {
+            it("should throw", {
+                (function () [].zip([1])).should.throwAnything();
+                (function () [1].zip([])).should.throwAnything();
+            });
 
-        var map2 = [1, 2, 3].zipStringMap(["foo", "bar", "baz"]);
-        var keys2 = map2.keys().toArray();
-        Assert.equals(3, keys2.length);
-        Assert.equals("foo", map2.get("1"));
-        Assert.equals("bar", map2.get("2"));
-        Assert.equals("baz", map2.get("3"));
-    }
+            it("should be success", {
+                [1].zip(["foo"])
+                    .same([{value1: 1, value2: "foo"}]).should.be(true);
 
-    public function test_head() {
-        Assert.isTrue([].head().isEmpty());
-        Assert.equals(1, [1, 2, 3].head());
+                [1,2,3].zip(["foo","bar","baz"])
+                    .same([
+                        {value1: 1, value2: "foo"},
+                        {value1: 2, value2: "bar"},
+                        {value1: 3, value2: "baz"}
+                    ]).should.be(true);
+            });
+        });
 
-        Assert.isTrue([].head(function (x) return true).isEmpty());
-        Assert.isTrue([].head(function (x) return false).isEmpty());
+        describe("ArrayTools.zipStringMap()", {
+            it("should throw", {
+                (function () [].zipStringMap([1])).should.throwAnything();
+                (function () [1].zipStringMap([])).should.throwAnything();
+            });
 
-        Assert.equals(2, [1, 2, 3].head(function (x) return x == 2));
-        Assert.isTrue([1, 2, 3].head(function (x) return x == 100).isEmpty());
+            it("should be success", {
+                [1].zipStringMap(["foo"])
+                    .same(["1" => "foo"]).should.be(true);
+
+                [1,2,3].zipStringMap(["foo","bar","baz"])
+                    .same([
+                        "1" => "foo",
+                        "2" => "bar",
+                        "3" => "baz"
+                    ]).should.be(true);
+            });
+        });
+
+        describe("ArrayTools.head()", {
+            it("should take from empty", {
+                [].head().isEmpty().should.be(true);
+            });
+            it("should take from any", {
+                [1, 2, 3].head().should.be(1);
+            });
+
+            it("should take from empty with filter", {
+                [].head(function (x) return true).isEmpty().should.be(true);
+                [].head(function (x) return false).isEmpty().should.be(true);
+            });
+            it("should take from any with filter", {
+                [1, 2, 3].head(function (x) return x == 2).should.be(2);
+                [1, 2, 3].head(function (x) return false).isEmpty().should.be(true);
+            });
+        });
     }
 }

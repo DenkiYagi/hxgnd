@@ -1,162 +1,210 @@
 package hxgnd;
 
-import utest.Assert;
+import buddy.BuddySuite;
+using buddy.Should;
 
-class MaybeTest {
-    public function new() {}
+class MaybeTest extends BuddySuite {
+    public function new() {
+        describe("Maybe cast", {
+            it("should be some", {
+                var a: Maybe<Int> = 1;
+                a.nonEmpty().should.be(true);
+                a.get().should.be(1);
+            });
 
-    public function test_cast() {
-        var a: Maybe<Int> = 1;
-        Assert.equals(a.get(), 1);
-
-        var b: Maybe<Int> = null;
-        Assert.isTrue(b.isEmpty());
-    }
-
-    public function test_operator() {
-        var a: Maybe<String> = "test";
-        var b: Maybe<String> = "test";
-        var c: Maybe<String> = "hoge";
-
-        Assert.isTrue(a == b);
-        Assert.isFalse(a == c);
-        Assert.isFalse(a == Maybe.empty());
-    }
-
-    public function test_of() {
-        var a = Maybe.of(1);
-        Assert.equals(a.get(), 1);
-        
-        Assert.raises(function () Maybe.of(null), Error);
-        #if js
-        Assert.raises(function () Maybe.of(js.Lib.undefined), Error);
-        #end
-    }
-
-    public function test_ofNullable() {
-        var a = Maybe.ofNullable(1);
-        Assert.equals(a.get(), 1);
-
-        var b = Maybe.ofNullable(null);
-        Assert.isTrue(b.isEmpty());
-
-        #if js
-        var c = Maybe.ofNullable(js.Lib.undefined);
-        Assert.isTrue(c.isEmpty());
-        #end
-    }
-
-    public function test_empty() {
-        Assert.isTrue(Maybe.empty().isEmpty());
-    }
-
-    public function test_get() {
-        Assert.equals(Maybe.of(1).get(), 1);
-        Assert.raises(function () Maybe.empty().get(), Error);
-    }
-
-    public function test_getOrElse() {
-        Assert.equals(Maybe.of(1).getOrElse(-5), 1);
-        Assert.equals(Maybe.empty().getOrElse(-6), -6);
-    }
-
-    public function test_getOrNull() {
-        Assert.equals(Maybe.of(1).getOrNull(), 1);
-        Assert.equals(Maybe.empty().getOrNull(), null);
-    }
-
-    public function test_isEmpty() {
-        Assert.isFalse(Maybe.of(1).isEmpty());
-        Assert.isTrue(Maybe.empty().isEmpty());
-    }
-
-    public function test_nonEmpty() {
-        Assert.isTrue(Maybe.of(1).nonEmpty());
-        Assert.isFalse(Maybe.empty().nonEmpty());
-    }
-
-    public function test_forEach() {
-        Maybe.of(1).forEach(function (x) {
-            Assert.equals(x, 1);
+            it("should be none", {
+                var a: Maybe<Int> = null;
+                a.isEmpty().should.be(true);
+            });
         });
 
-        Maybe.empty().forEach(function (x) {
-            Assert.fail();
+        describe("Maybe operator", {
+            it("can compare", {
+                var a: Maybe<String> = "test";
+                var b: Maybe<String> = "test";
+                var c: Maybe<String> = "hoge";
+
+                (a == b).should.be(true);
+                (a == c).should.be(false);
+                (a == Maybe.empty()).should.be(false);
+                (a == "test").should.be(true);
+            });
         });
-        Assert.pass();
-    }
 
-    public function test_map() {
-        var ret = Maybe.of(1).map(function (x) {
-            Assert.equals(x, 1);
-            return x + 1;
+        describe("Maybe.of()", {
+            it("can convert value", {
+                var a = Maybe.of(1);
+                a.get().should.be(1);
+            });
+            it("can not convert null", {
+                function () { Maybe.of(null); }.should.throwAnything();
+                #if js
+                function () { Maybe.of(js.Lib.undefined); }.should.throwAnything();
+                #end
+            });
         });
-        Assert.equals(ret, 2);
-        
-        Maybe.empty().map(function (x) {
-            Assert.fail();
-            return 0;
+
+        describe("Maybe.ofNullable()", {
+            it("can convert value", {
+                Maybe.ofNullable(1).get().should.be(1);
+            });
+            it("can convert null", {
+                Maybe.ofNullable(null).isEmpty().should.be(true);
+                #if js
+                Maybe.ofNullable(js.Lib.undefined).isEmpty().should.be(true);
+                #end
+            });
         });
-        Assert.pass();
-    }
-
-    public function test_flatMap() {
-        var ret1 = Maybe.of(1).flatMap(function (x) {
-            Assert.equals(x, 1);
-            return Maybe.of(x + 1);
+ 
+        describe("Maybe.empty()", {
+            it("should be success", {
+                Maybe.empty().isEmpty().should.be(true);
+            });
         });
-        Assert.equals(ret1.get(), 2);
 
-        var ret2 = Maybe.of(1).flatMap(function (x) {
-            return Maybe.empty();
+        describe("Maybe.get()", {
+            it("should be success", {
+                Maybe.of(1).get().should.be(1);
+            });
+            it("should be failure", {
+                function () { Maybe.empty().get(); }.should.throwAnything();
+            });
         });
-        Assert.isTrue(ret2.isEmpty());
 
-        Maybe.empty().flatMap(function (x) {
-            Assert.fail();
-            return Maybe.empty();
+        describe("Maybe.getOrElse()", {
+            it("should return value", {
+                Maybe.of(1).getOrElse(-5).should.be(1);
+            });
+            it("should return alt value", {
+                Maybe.empty().getOrElse(-5).should.be(-5);
+            });
         });
-        Assert.pass();
-    }
 
-    public function test_filter() {
-        var ret1 = Maybe.of(2).filter(function (x) {
-            Assert.equals(x, 2);
-            return x == 2;
+        describe("Maybe.getOrNull()", {
+            it("should return value", {
+                Maybe.of(1).getOrNull().should.be(1);
+            });
+            it("should return null", {
+                (Maybe.empty(): Maybe<Int>).getOrNull().should.be(null);
+            });
         });
-        Assert.equals(ret1, 2);
 
-        var ret2 = Maybe.of(2).filter(function (x) {
-            return x == 0;
+        describe("Maybe.isEmpty()", {
+            it("should be true", {
+                Maybe.empty().isEmpty().should.be(true);
+            });
+            it("should be false", {
+                Maybe.of(1).isEmpty().should.be(false);
+            });
         });
-        Assert.isTrue(ret2.isEmpty());
 
-        Maybe.empty().filter(function (x) {
-            Assert.fail();
-            return true;
+        describe("Maybe.nonEmpty()", {
+            it("should be true", {
+                Maybe.of(1).nonEmpty().should.be(true);
+            });
+            it("should be false", {
+                Maybe.empty().nonEmpty().should.be(false);
+            });
         });
-        Assert.pass();
-    }
 
-    public function test_match() {
-        Assert.equals(3, Maybe.of(1).match(
-            function (x) return x * 3,
-            function () return -1
-        ));
+        describe("Maybe.forEach()", {
+            it("should call", {
+                var count = 0;
+                Maybe.of(1).forEach(function (x) {
+                    x.should.be(1);
+                    count++;
+                });
+                count.should.be(1);
+            });
+            it("should not call", {
+                Maybe.empty().forEach(function (x) {
+                    fail();
+                });
+            });
+        });
 
-        Assert.equals(-1, Maybe.empty().match(
-            function (x) return x * 3,
-            function () return -1
-        ));
+        describe("Maybe.map()", {
+            it("should call", {
+                var count = 0;
+                var ret = Maybe.of(1).map(function (x) {
+                    x.should.be(1);
+                    count++;
+                    return x + 1;
+                });
+                ret.should.be(2);
+                count.should.be(1);
+            });
+            it("should not call", {
+                Maybe.empty().map(function (x) {
+                    fail();
+                    return x;
+                });
+            });
+        });
 
-        Maybe.of(1).match(
-            function (x) Assert.equals(1, x),
-            function () Assert.fail()
-        );
+        describe("Maybe.flatMap()", {
+            it("should call", {
+                var count = 0;
+                var ret = Maybe.of(1).flatMap(function (x) {
+                    x.should.be(1);
+                    count++;
+                    return Maybe.of(x + 1);
+                });
+                ret.should.be(2);
+                count.should.be(1);
+            });
+            it("should call and be empty", {
+                var ret = Maybe.of(1).flatMap(function (x) {
+                    return Maybe.empty();
+                });
+                ret.isEmpty().should.be(true);
+            });
+            it("should not call", {
+                Maybe.empty().flatMap(function (x) {
+                    fail();
+                    return x;
+                });
+            });
+        });
 
-        Maybe.empty().match(
-            function (x) Assert.fail(),
-            function () Assert.pass()
-        );
+        describe("Maybe.filter()", {
+            it("should call and be some value", {
+                var count = 0;
+                var ret = Maybe.of(1).filter(function (x) {
+                    x.should.be(1);
+                    count++;
+                    return true;
+                });
+                ret.should.be(1);
+                count.should.be(1);
+            });
+            it("should call and be empty", {
+                var ret = Maybe.of(1).filter(function (x) {
+                    return false;
+                });
+                ret.isEmpty().should.be(true);
+            });
+            it("should not call", {
+                Maybe.empty().filter(function (x) {
+                    fail();
+                    return x;
+                });
+            });
+        });
+
+        describe("Maybe.match()", {
+            it("should match some pattern", {
+                Maybe.of(1).match(
+                    function (x) return x * 3,
+                    function () return -1
+                ).should.be(3);
+            });
+            it("should match empty pattern", {
+                Maybe.empty().match(
+                    function (x) return x * 3,
+                    function () return -1
+                ).should.be(-1);
+            });
+        });
     }
 }
