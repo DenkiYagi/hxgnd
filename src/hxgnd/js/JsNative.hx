@@ -6,6 +6,8 @@ import haxe.macro.Expr;
 import haxe.Constraints.Function;
 
 class JsNative {
+    static inline var IMMEDIATE_QUEUE_SIZE = 65536; //2^16
+
     public static var nativeThis(get, never): Dynamic;
     @:extern inline static function get_nativeThis(): Dynamic {
         return untyped __js__("this");
@@ -66,35 +68,66 @@ class JsNative {
     }
 
     static function __init__() {
-        if (untyped __js__("setImmediate")) {
+        // NOTE setImmediate() of Edge/IE11 is very slow.
+        // https://jsfiddle.net/terurou/Lsxrjmpd/3/
+        if (!js.Lib.global.navigator && js.Lib.global.setImmediate) {
             JsNative.setImmediate = untyped __js__("setImmediate");
             JsNative.clearImmediate = untyped __js__("clearImmediate");
-        } else if (untyped __js__("MessageChannel")) {
-            var channel = untyped __js__("new MessageChannel()");
+        } else if  (untyped js.Lib.global.Promise) {
             var functions = [];
-            channel.onmessage = function (i) {
-                var fn = functions[i];
-                untyped __js__("delete {0}", functions[i]);
-                if (untyped fn) fn();
+            var i = 0;
+            
+            function invoke(id) {
+                var fn = functions[id];
+                if (untyped fn) {
+                    untyped __js__("delete {0}", functions[id]);
+                    fn();
+                }
             }
-            JsNative.setImmediate = function setImmediateMC(fn) {
-                var i = functions.length;
+
+            JsNative.setImmediate = function setImmediatePromise(fn) {
+                if (strictEq(i, IMMEDIATE_QUEUE_SIZE)) i = 0;
                 functions[i] = fn;
-                channel.postMessage(i);
-                return i;
+                js.Promise.resolve(i).then(invoke);
+                return i++;
+            };
+            JsNative.clearImmediate = function clearImmediatePromise(id) {
+                untyped __js__("delete {0}", functions[id]);
+            };
+        } else if (untyped js.Lib.global.MessageChannel) {
+            var channel = new js.html.MessageChannel();
+            var functions = [];
+            var i = 0;
+
+            channel.port1.onmessage = function (e) {
+                var id = e.data;
+                var fn = functions[id];
+                if (untyped fn) {
+                    untyped __js__("delete {0}", functions[id]);
+                    fn();
+                }
             }
-            JsNative.clearImmediate = function clearImmediateMC(i) {
+            channel.port1.start();
+            channel.port2.start();
+            
+            JsNative.setImmediate = function setImmediateMessageChannel(fn) {
+                if (strictEq(i, IMMEDIATE_QUEUE_SIZE)) i = 0;
+                functions[i] = fn;
+                channel.port2.postMessage(i);
+                return i++;
+            }
+            JsNative.clearImmediate = function clearImmediateMessageChannel(i) {
                 untyped __js__("delete {0}", functions[i]);
             }
         } else {
-            JsNative.setImmediate = function setImmediateTO(fn) {
+            JsNative.setImmediate = function setImmediateTimeout(fn) {
                 return untyped __js__("setTimeout({0}, {1})", fn, 0);
             }
-            JsNative.clearImmediate = function clearImmediateTO(i) {
+            JsNative.clearImmediate = function clearImmediateTimeout(i) {
                 untyped __js__("clearTimeout({0})", i);
             }
         }
-
+        js.Lib.global._test = JsNative;
     }
 }
 
