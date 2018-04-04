@@ -28,9 +28,7 @@ class ArrayTools {
         #if js
         return untyped __js__("{0}.map({1})", array, fn);
         #else
-        var result = [];
-        for (i in 0...array.length) result.push(fn(array[i], i));
-        return result;
+        return [for (i in 0...array.length) fn(array[i], i)];
         #end
     }
 
