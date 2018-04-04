@@ -14,6 +14,8 @@ using Lambda;
 #end
 
 class LangTools {
+    public static var emptyFunction(default, null) = function empty() {};
+
     public static inline function eq<T>(a: Null<T>, b: Null<T>): Bool {
         #if js
         return JsNative.strictEq(a, b);
