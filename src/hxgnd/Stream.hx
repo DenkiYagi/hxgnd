@@ -1,6 +1,10 @@
 package hxgnd;
 
 using hxgnd.LangTools;
+#if neko
+using neko.vm.Lock;
+using neko.vm.Thread;
+#end
 
 class Stream<T> {
     public var isActive(default, null): Bool;
@@ -8,6 +12,10 @@ class Stream<T> {
     var middleware: StreamMiddleware<T>;
     var subscribers: Array<StreamSubscriber<T>>;
     var context: StreamContext<T>;
+    #if neko
+    var lock = new Lock();
+    var thread: Thread;
+    #end
 
     public function new(middleware: StreamMiddleware<T>) {
         this.middleware = middleware;
@@ -15,7 +23,15 @@ class Stream<T> {
         context = { emit: emit, onStop: null };
         isActive = true;
         
-        nextTick(middleware.bind(context));
+        #if js
+        hxgnd.js.JsNative.setImmediate(middleware.bind(context));
+        #else
+        thread = Thread.create(function () {
+            lock.wait();
+            middleware(context);
+        });
+        lock.release();
+        #end
     }
 
     public function subscribe(fn: StreamSubscriber<T>): Void {
@@ -54,14 +70,6 @@ class Stream<T> {
             case _:
         }
         for (fn in _subscribers) fn(value);
-    }
-
-    inline function nextTick(fn: Void -> Void): Void {
-        #if js
-        hxgnd.js.JsNative.setImmediate(fn);
-        #else
-        haxe.Timer.delay(fn, 0);
-        #end
     }
 }
 
