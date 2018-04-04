@@ -1,0 +1,12 @@
+-x TestMain
+-cp src
+-cp test
+-lib buddy
+#-D buddy-colors
+
+#-main TestMain
+#-cp src
+#-cp test
+#-lib buddy
+#-neko build/neko.n
+#-cmd neko build/neko.n

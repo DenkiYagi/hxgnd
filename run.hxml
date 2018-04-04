@@ -1,9 +1,0 @@
--main hxgnd.Run
--cp src
--cp test
-#--interp
--js build/run.js
-
---next
-
--cmd node build/run.js

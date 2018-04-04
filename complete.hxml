@@ -1,7 +1,7 @@
 -main TestMain
 -cp src
 -cp test
--lib utest
+-lib buddy
 -js build/dummy.js
 -debug
 --no-inline

@@ -1,0 +1,8 @@
+-main TestMain
+-cp src
+-cp test
+-lib buddy
+-js build/node.js
+-D nodejs
+#-D buddy-colors
+-cmd node build/node.js

@@ -1,0 +1,7 @@
+-main TestMain
+-cp src
+-cp test
+-lib buddy
+-js build/browser.js
+#-D buddy-colors
+-cmd start bin/index.html
