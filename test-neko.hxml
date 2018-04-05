@@ -1,10 +1,11 @@
 -main TestMain
 -cp src
 -cp test
+-lib externtype
 -lib buddy
 -neko build/neko.n
--cmd neko build/neko.n
-#-D buddy-colors
+-D buddy-colors
+#-cmd neko build/neko.n
 
 # -x TestMain
 # -cp src

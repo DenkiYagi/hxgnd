@@ -1,9 +1,11 @@
-package hxgnd.js;
+package hxgnd;
 
-import js.Promise;
 import hxgnd.Maybe;
 import hxgnd.Result;
-import haxe.extern.EitherType;
+import externtype.Mixed2;
+#if js
+import externtype.Mixed3;
+#end
 
 class PromiseLike<T> {
     public var result(default, null): Maybe<Result<T>> = Maybe.empty();
@@ -40,13 +42,19 @@ class PromiseLike<T> {
     }
 
     public function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>, 
-            ?rejected: EitherType<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): PromiseLike<TOut> {
+            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): PromiseLike<TOut> {
         var promise = new PromiseLike<TOut>(function (_, _) {});
 
         function handleFulfilled(value: T) {
             var callback: T -> Dynamic = cast fulfilled;
             try {
-                promise.onFulfill(callback(value));
+                var next = callback(value);
+                if (Std.is(next, PromiseLike) #if js || Std.is(next, js.Promise) #end) {
+                    var nextPromise: Thenable<TOut> = cast next;
+                    nextPromise.then(promise.onFulfill, promise.onReject);
+                } else {
+                    promise.onFulfill(next);
+                }
             } catch (e: Dynamic) {
                 promise.onReject(e);
             }
@@ -55,7 +63,13 @@ class PromiseLike<T> {
         function handleRejected(error: Dynamic) {
             var callback: Dynamic -> Dynamic = cast rejected;
             try {
-                promise.onFulfill(callback(error));
+                var next = callback(error);
+                if (Std.is(next, PromiseLike) #if js || Std.is(next, js.Promise) #end) {
+                    var nextPromise: Thenable<TOut> = cast next;
+                    nextPromise.then(promise.onFulfill, promise.onReject);
+                } else {
+                    promise.onFulfill(next);
+                }
             } catch (e: Dynamic) {
                 promise.onReject(e);
             }
@@ -74,20 +88,22 @@ class PromiseLike<T> {
         return promise;
     }
 
-    public function catchError<TOut>(rejected: EitherType<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): PromiseLike<TOut> {
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): PromiseLike<TOut> {
         return then(null, rejected);
     }
 
-    public function toPromise(native = false): Promise<T> {
-        if (native) {
-            return new Promise(function (resolve, reject) {
+    #if js
+    public function toPromise(native = true): js.Promise<T> {
+        return if (native) {
+            new js.Promise(function (resolve, reject) {
                 then(resolve, reject);
             });
         } else {
             Reflect.setField(this, "catch", catchError);
-            return cast this;
+            cast this;
         }
     }
+    #end
 
     public static function resolve<T>(?value: T): PromiseLike<T> {
         return new PromiseLike(function (f, _) {
@@ -101,3 +117,9 @@ class PromiseLike<T> {
         });
     }
 }
+
+#if js
+typedef PromiseCallback<T, TOut> = Mixed3<T -> TOut, T -> PromiseLike<TOut>, T -> js.Promise<TOut>>;
+#else
+typedef PromiseCallback<T, TOut> = Mixed2<T -> TOut, T -> PromiseLike<TOut>>;
+#end

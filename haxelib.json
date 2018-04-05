@@ -8,5 +8,7 @@
     "classPath": "src/",
     "releasenote": "1.0.0 alpha-1",
     "contributors": ["terurou"],
-    "dependencies": {}
+    "dependencies": {
+        "externtype": "git:git@github.com:DenkiYagi/haxe-extern-type.git"
+    }
 }

@@ -1,6 +1,7 @@
 -main TestMain
 -cp src
 -cp test
+-lib externtype
 -lib buddy
 -js build/node.js
 -D nodejs
