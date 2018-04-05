@@ -14,6 +14,7 @@ class PromiseLikeTest extends BuddySuite {
                     done();
                 });
             });
+            
             it("should be empty", {
                 var promise = new PromiseLike(function (_, _) {});
                 promise.result.isEmpty().should.be(true);
@@ -62,7 +63,7 @@ class PromiseLikeTest extends BuddySuite {
             });
         });
 
-        describe("PromiseLike.then()/catchError() : resolve defer", {
+        describe("PromiseLike.then()/catchError() : resolve async", {
             it("should call", function (done) {
                 new PromiseLike(function (resolve, reject) {
                     wait(5).then(function (_) {
@@ -115,7 +116,7 @@ class PromiseLikeTest extends BuddySuite {
             });
         });
 
-        describe("PromiseLike.then()/catchError() : reject defer", {
+        describe("PromiseLike.then()/catchError() : reject async", {
             it("should call - then", function (done) {
                 new PromiseLike(function (_, reject) {
                     wait(5).then(function (_) {

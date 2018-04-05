@@ -8,6 +8,7 @@ class TestMain implements Buddy<[
     hxgnd.MaybeTest,
     hxgnd.StreamTest,
     hxgnd.PromiseLikeTest,
+    hxgnd.FutureTest,
     #if js
     hxgnd.js.PromiseToolsTest,
     #end

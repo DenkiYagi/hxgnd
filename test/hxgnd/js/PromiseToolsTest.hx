@@ -7,7 +7,7 @@ using hxgnd.js.PromiseTools;
 
 class PromiseToolsTest extends BuddySuite {
     public function new() {
-        describe("PromiseTools.callAsPromise() :", {
+        describe("PromiseTools.callAsPromise()", {
             it("sholud be resolved - 2 args callback", function (done) {
                 function fnOK(callback: Error -> Int -> Void) {
                     callback(null, 100);

@@ -20,7 +20,9 @@ class StreamTest extends BuddySuite {
                     stream.isActive.should.be(false);
                     count++;
                 });
+                #if !neko
                 stream.isActive.should.be(true);
+                #end
 
                 wait(5).then(function (_) {
                     count.should.be(1);
@@ -40,7 +42,9 @@ class StreamTest extends BuddySuite {
                     stream.isActive.should.be(false);
                     count++;
                 });
+                #if !neko
                 stream.isActive.should.be(true);
+                #end
 
                 wait(5).then(function (_) {
                     count.should.be(1);
