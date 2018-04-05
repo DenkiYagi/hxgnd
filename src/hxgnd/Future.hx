@@ -6,7 +6,6 @@ import hxgnd.PromiseLike;
 import hxgnd.js.JsNative.setImmediate;
 #end
 
-
 class Future<T> {
     public var result(default, null): Maybe<Result<T>> = Maybe.empty();
 

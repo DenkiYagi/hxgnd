@@ -9,7 +9,7 @@ using neko.vm.Thread;
 class Stream<T> {
     public var isActive(default, null): Bool;
 
-    var middleware: StreamMiddleware<T>;
+    var executor: StreamContext<T> -> Void;
     var subscribers: Array<StreamSubscriber<T>>;
     var context: StreamContext<T>;
     #if neko
@@ -17,17 +17,17 @@ class Stream<T> {
     var thread: Thread;
     #end
 
-    public function new(middleware: StreamMiddleware<T>) {
-        this.middleware = middleware;
+    public function new(executor: StreamContext<T> -> Void) {
+        this.executor = executor;
         subscribers = [];
         context = { emit: emit, onStop: null };
         isActive = true;
         #if js
-        hxgnd.js.JsNative.setImmediate(middleware.bind(context));
+        hxgnd.js.JsNative.setImmediate(executor.bind(context));
         #else
         thread = Thread.create(function () {
             lock.wait();
-            middleware(context);
+            executor(context);
         });
         lock.release();
         #end
@@ -35,13 +35,11 @@ class Stream<T> {
 
     public function subscribe(fn: StreamSubscriber<T>): Void {
         if (!isActive) return;
-        
         subscribers.push(fn);
     }
 
     public function unsubscribe(fn: StreamSubscriber<T>): Void {
         if (!isActive) return;
-        
         subscribers.remove(fn);
     }
 
@@ -63,7 +61,7 @@ class Stream<T> {
         switch (value) {
             case End: 
                 isActive = false;
-                middleware = null;
+                executor = null;
                 subscribers = null;
                 context = null;
             case _:
@@ -77,7 +75,6 @@ typedef StreamContext<T> = {
     dynamic function onStop(done: Void -> Void): Void; 
 }
 
-typedef StreamMiddleware<T> = StreamContext<T> -> Void;
 typedef StreamSubscriber<T> = StreamEvent<T> -> Void;
 
 enum StreamEvent<T> {
