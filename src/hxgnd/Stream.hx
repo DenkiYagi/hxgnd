@@ -22,7 +22,6 @@ class Stream<T> {
         subscribers = [];
         context = { emit: emit, onStop: null };
         isActive = true;
-        
         #if js
         hxgnd.js.JsNative.setImmediate(middleware.bind(context));
         #else

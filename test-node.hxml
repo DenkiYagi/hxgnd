@@ -4,5 +4,5 @@
 -lib buddy
 -js build/node.js
 -D nodejs
-#-D buddy-colors
--cmd node build/node.js
+-D buddy-colors
+#-cmd node build/node.js

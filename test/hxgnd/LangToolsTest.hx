@@ -2,6 +2,7 @@ package hxgnd;
 
 import buddy.BuddySuite;
 import haxe.ds.Option;
+import hxgnd.Result;
 import haxe.io.Bytes;
 import haxe.ds.StringMap;
 using buddy.Should;
@@ -258,6 +259,8 @@ class LangToolsTest extends BuddySuite {
                 True.same(function () {}).should.be(false);
             });
             it("can compare Paramed Enum", {
+                Success(1).same(Success(1)).should.be(true);
+                Failed("error").same(Failed("error")).should.be(true);
                 Some(1).same(Some(1)).should.be(true);
                 Some(1).same(Some(2)).should.be(false);
                 Some(1).same(null).should.be(false);
