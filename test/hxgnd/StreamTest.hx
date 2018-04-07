@@ -9,6 +9,7 @@ using hxgnd.LangTools;
 class StreamTest extends BuddySuite {
     public function new() {
         describe("Stream", {
+            #if js
             it("should invoke middleware defer", function (done) {
                 var stream = new Stream(function (ctx) {
                     ctx.emit(End);
@@ -20,37 +21,14 @@ class StreamTest extends BuddySuite {
                     stream.isActive.should.be(false);
                     count++;
                 });
-                #if !neko
                 stream.isActive.should.be(true);
-                #end
 
                 wait(5).then(function (_) {
                     count.should.be(1);
                     done();
                 });
             });
-
-            it("should be pass when middleware emits End 2-times", function (done) {
-                var stream = new Stream(function (ctx) {
-                    ctx.emit(End);
-                    ctx.emit(End);
-                });
-
-                var count = 0;
-                stream.subscribe(function (e) {
-                    e.same(End).should.be(true);
-                    stream.isActive.should.be(false);
-                    count++;
-                });
-                #if !neko
-                stream.isActive.should.be(true);
-                #end
-
-                wait(5).then(function (_) {
-                    count.should.be(1);
-                    done();
-                });
-            });
+            #end
 
             it("should wait delayed End", function (done) {
                 var stream = new Stream(function (ctx) {
@@ -68,6 +46,30 @@ class StreamTest extends BuddySuite {
                 stream.isActive.should.be(true);
 
                 wait(10).then(function (e) {
+                    count.should.be(1);
+                    done();
+                });
+            });
+
+            it("should be pass when middleware emits End 2-times", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5).then(function (_) {
+                        ctx.emit(End);
+                        ctx.emit(End);
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(End).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                #if !neko
+                stream.isActive.should.be(true);
+                #end
+
+                wait(10).then(function (_) {
                     count.should.be(1);
                     done();
                 });

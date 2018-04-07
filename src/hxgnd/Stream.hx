@@ -2,7 +2,6 @@ package hxgnd;
 
 using hxgnd.LangTools;
 #if neko
-using neko.vm.Lock;
 using neko.vm.Thread;
 #end
 
@@ -13,7 +12,6 @@ class Stream<T> {
     var subscribers: Array<StreamSubscriber<T>>;
     var context: StreamContext<T>;
     #if neko
-    var lock = new Lock();
     var thread: Thread;
     #end
 
@@ -25,11 +23,7 @@ class Stream<T> {
         #if js
         hxgnd.js.JsNative.setImmediate(executor.bind(context));
         #else
-        thread = Thread.create(function () {
-            lock.wait();
-            executor(context);
-        });
-        lock.release();
+        thread = Thread.create(executor.bind(context));
         #end
     }
 
