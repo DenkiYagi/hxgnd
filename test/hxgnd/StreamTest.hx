@@ -8,7 +8,7 @@ using hxgnd.LangTools;
 
 class StreamTest extends BuddySuite {
     public function new() {
-        describe("Stream", {
+        describe("Stream.emit()/subscribe()", {
             #if js
             it("should invoke middleware defer", function (done) {
                 var stream = new Stream(function (ctx) {
@@ -207,6 +207,52 @@ class StreamTest extends BuddySuite {
                     count1.should.be(3);
                     count2.should.be(3);
                     done();
+                });
+            });
+        });
+
+        describe("Stream.unsubscribe()", {
+            it("should not subscribe", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5).then(function (_) {
+                        ctx.emit(End);
+                    });
+                });
+
+                function handler(e) {
+                    fail();
+                }
+
+                stream.subscribe(handler);
+                stream.unsubscribe(handler);
+
+                wait(10).then(function (e) {
+                    stream.isActive.should.be(false);
+                    done();
+                });
+            });
+        });
+
+        describe("Stream.stop()", {
+            it("should stop event loop", function (done) {
+                var stream = new Stream(function (ctx) {
+                    var i = 0;
+                    function loop() {
+                        ctx.emit(Data(i++));
+                        wait(5).then(function(_) loop());
+                    }
+                    loop();
+                });
+
+                wait(10).then(function (e) {
+                    stream.isActive.should.be(true);
+                    stream.subscribe(function (e) {
+                        switch (e) {
+                            case End: done();
+                            case _:
+                        }
+                    });
+                    stream.stop();
                 });
             });
         });
