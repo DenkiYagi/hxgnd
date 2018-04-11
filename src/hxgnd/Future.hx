@@ -5,71 +5,84 @@ import hxgnd.PromiseLike;
 #if js
 import hxgnd.js.JsNative.setImmediate;
 #end
+#if neko
+using neko.vm.Thread;
+#end
 
 class Future<T> {
+    public var isActive(default, null): Bool = true;
     public var result(default, null): Maybe<Result<T>> = Maybe.empty();
 
-    var cancellFunc: Maybe<Void -> Thenable<#if js Void #else Unit #end>> = Maybe.empty();
+    var abortFunc: Maybe<Void -> Void> = Maybe.empty();
     var handlers: Array<Result<T> -> Void> = [];
+    #if js
     var async: Bool;
+    #elseif neko
+    var thread: Thread;
+    #end
 
-    public function new(executor: Executor<T> #if js, async: Bool = true #end) {
-        #if js
-        this.async = async;
-        #else
-        this.async = false;
-        #end
-
+    public function new(executor: Executor<T>, async: Bool = true) {
         inline function invoke() {
+            if (result.nonEmpty()) return; //when already aborted
+
             try {
-                cancellFunc = executor(onComplete, onAbort);
+                abortFunc = executor(onCompleted, onAborted);
             } catch (e: Dynamic) {
-                onProcess(Failed(e));
+                onProcessed(Failed(e));
             }
         }
 
+        #if js
         if (async) {
-            #if js
             setImmediate(function () invoke());
-            #else
-            throw "not implemented";
-            #end
         } else {
             invoke();
         }
-    }
-
-    function onComplete(value: T): Void {
+        #elseif neko
         if (async) {
-            #if js
-            setImmediate(function () onProcess(Success(value)));
-            #else
-            throw "not implemented";
-            #end
+            thread = Thread.create(function () invoke());
         } else {
-            onProcess(Success(value));
+            invoke();
         }
+        #else
+        invoke();
+        #end
     }
 
-    function onAbort(error: Dynamic): Void {
+    function onCompleted(value: T): Void {
+        #if js
         if (async) {
-            #if js
-            setImmediate(function () onProcess(Failed(error)));
-            #else
-            throw "not implemented";
-            #end
+            setImmediate(function () onProcessed(Success(value)));
         } else {
-            onProcess(Failed(error));
+            onProcessed(Success(value));
         }
+        #else
+        onProcessed(Success(value));
+        #end
     }
 
-    inline function onProcess(x: Result<T>) {
+    function onAborted(error: Dynamic): Void {
+        #if js
+        if (async) {
+            setImmediate(function () onProcessed(Failed(error)));
+        } else {
+            onProcessed(Failed(error));
+        }
+        #else
+        onProcessed(Failed(error));
+        #end
+    }
+
+    inline function onProcessed(x: Result<T>) {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(x);
+        isActive = false;
+
         for (f in handlers) f(x);
+
         handlers = null;
-        cancellFunc = Maybe.empty();
+        abortFunc = Maybe.empty();
     }
 
     public function then(handler: Result<T> -> Void): Void {
@@ -79,15 +92,15 @@ class Future<T> {
             inline function dispatch() {
                 handler(result.getOrNull());
             }
+            #if js
             if (async) {
-                #if js
                 setImmediate(function () dispatch());
-                #else
-                throw "not implemented";
-                #end
             } else {
                 dispatch();
             }
+            #else
+            dispatch();
+            #end
         }
     }
 
@@ -101,20 +114,13 @@ class Future<T> {
     //     return null;
     // }
 
-    public function cancel(): Thenable<#if js Void #else Unit #end> {
-        #if js
-        return if (cancellFunc.nonEmpty()) {
-            cancellFunc.getOrNull()();
-        } else {
-            PromiseLike.resolve();
+    public function abort(): Void {
+        if (result.nonEmpty()) return;
+
+        if (abortFunc.nonEmpty()) {
+            abortFunc.getOrNull()();
         }
-        #else 
-        return if (cancellFunc.nonEmpty()) {
-            cancellFunc.getOrNull()();
-        } else {
-            PromiseLike.resolve(new Unit());
-        }
-        #end
+        onProcessed(Failed(new AbortError("aborted")));
     }
 
     #if js
@@ -142,4 +148,6 @@ class Future<T> {
     #end
 }
 
-typedef Executor<T> = (T -> Void) -> (Dynamic -> Void) -> (Void -> Thenable<#if js Void #else Unit #end>);
+typedef Executor<T> = (T -> Void) -> (Dynamic -> Void) -> (Void -> Void);
+
+class AbortError extends Error {}
