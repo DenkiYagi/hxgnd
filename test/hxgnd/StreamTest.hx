@@ -14,7 +14,7 @@ class StreamTest extends BuddySuite {
                 var stream = new Stream(function (ctx) {
                     ctx.emit(End);
                 });
-                
+
                 var count = 0;
                 stream.subscribe(function (e) {
                     e.same(End).should.be(true);
@@ -233,8 +233,8 @@ class StreamTest extends BuddySuite {
             });
         });
 
-        describe("Stream.stop()", {
-            it("should stop event loop", function (done) {
+        describe("Stream.abort()", {
+            it("should abort event loop", function (done) {
                 var stream = new Stream(function (ctx) {
                     var i = 0;
                     function loop() {
@@ -252,7 +252,36 @@ class StreamTest extends BuddySuite {
                             case _:
                         }
                     });
-                    stream.stop();
+                    stream.abort();
+                });
+            });
+
+            it("should call onAbort", function (done) {
+                var isCalled = false;
+
+                var stream = new Stream(function (ctx) {
+                    ctx.onAbort = function (done) {
+                        isCalled = true;
+                        done();
+                    }
+
+                    function loop() {
+                        wait(5).then(function(_) loop());
+                    }
+                    loop();
+                });
+
+                wait(10).then(function (e) {
+                    stream.isActive.should.be(true);
+                    stream.subscribe(function (e) {
+                        switch (e) {
+                            case End:
+                                isCalled.should.be(true);
+                                done();
+                            case _:
+                        }
+                    });
+                    stream.abort();
                 });
             });
         });

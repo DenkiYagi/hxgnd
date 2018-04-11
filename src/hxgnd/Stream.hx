@@ -18,7 +18,7 @@ class Stream<T> {
     public function new(executor: StreamContext<T> -> Void) {
         this.executor = executor;
         subscribers = [];
-        context = { emit: emit, onStop: null };
+        context = { emit: emit, onAbort: null };
         isActive = true;
         #if js
         hxgnd.js.JsNative.setImmediate(executor.bind(context));
@@ -37,14 +37,14 @@ class Stream<T> {
         subscribers.remove(fn);
     }
 
-    public function stop(): Void {
+    public function abort(): Void {
         if (!isActive) return;
-        
-        var stopped = emit.bind(End);
-        if (context.onStop.nonNull()) {
-            context.onStop(stopped);
+
+        var done = emit.bind(End);
+        if (context.onAbort.nonNull()) {
+            context.onAbort(done);
         } else {
-            stopped();
+            done();
         }
     }
 
@@ -53,7 +53,7 @@ class Stream<T> {
 
         var _subscribers = this.subscribers;
         switch (value) {
-            case End: 
+            case End:
                 isActive = false;
                 executor = null;
                 subscribers = null;
@@ -66,7 +66,7 @@ class Stream<T> {
 
 typedef StreamContext<T> = {
     function emit(value: StreamEvent<T>): Void;
-    dynamic function onStop(done: Void -> Void): Void; 
+    dynamic function onAbort(done: Void -> Void): Void;
 }
 
 typedef StreamSubscriber<T> = StreamEvent<T> -> Void;
