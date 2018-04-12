@@ -9,6 +9,8 @@ using buddy.Should;
 class FutureTest extends BuddySuite {
     public function new() {
         describe("Future.new()", {
+            timeoutMs = 1000;
+
             it("should call", function (done) {
                 new Future(function (_, _) {
                     done();
@@ -33,6 +35,8 @@ class FutureTest extends BuddySuite {
             });
         });
         describe("Future(async).new()", {
+            timeoutMs = 1000;
+
             it("should call", function (done) {
                 new Future(function (_, _) {
                     done();
@@ -68,6 +72,8 @@ class FutureTest extends BuddySuite {
         });
 
         describe("Future.then() : already complated", {
+            timeoutMs = 1000;
+
             it("should completed", function (done) {
                 var future = new Future(function (complate, _) {
                     complate(1);
@@ -96,6 +102,8 @@ class FutureTest extends BuddySuite {
         });
 
         describe("Future.then() : async", {
+            timeoutMs = 1000;
+
             it("should completed", function (done) {
                 var future = new Future(function (complate, _) {
                     wait(5).then(function (_) complate(1));
@@ -127,6 +135,8 @@ class FutureTest extends BuddySuite {
             });
         });
         describe("Future(async).then() : async", {
+            timeoutMs = 1000;
+
             it("should completed", function (done) {
                 var future = new Future(function (complate, _) {
                     wait(5).then(function (_) complate(1));
@@ -158,17 +168,59 @@ class FutureTest extends BuddySuite {
             });
         });
 
-        // TODO describe("Future().abort()"
+        describe("Future.abort()", {
+            timeoutMs = 1000;
 
+            it("should call cancel callback", {
+                var called = false;
+                var future = new Future(function (_, _) {
+                    return function () {
+                        called = true;
+                    };
+                }, false);
+
+                future.abort();
+                future.isActive.should.be(false);
+                switch (future.result) {
+                    case Failed(e): Std.is(e, Future.AbortError).should.be(true);
+                    case _: fail();
+                }
+                called.should.be(true);
+            });
+
+            it("should call then() as aborted", function (done) {
+                var future = new Future(function (_, _) {
+                    return function () {};
+                }, false);
+
+                future.then(function (x) {
+                    future.result.same(x).should.be(true);
+                    future.isActive.should.be(false);
+                    switch (x) {
+                        case Failed(e):
+                            Std.is(e, Future.AbortError).should.be(true);
+                        case _:
+                            fail();
+                    }
+                    done();
+                });
+
+                future.abort();
+            });
+        });
         describe("Future(async).abort()", {
-            it("should not call callback", {
+            timeoutMs = 1000;
+
+            it("should not call executor", {
                 var future = new Future(function (_, _) {
                     #if neko
                     wait(100).then(function (_) fail());
                     #else
                     fail();
                     #end
-                    return function () {};
+                    return function () {
+                        fail();
+                    };
                 }, true);
 
                 future.abort();
@@ -179,7 +231,7 @@ class FutureTest extends BuddySuite {
                 }
             });
 
-            it("should aborted", function (done) {
+            it("should call then() as aborted", function (done) {
                 var future = new Future(function (_, _) {
                     #if neko
                     wait(100).then(function (_) fail());
