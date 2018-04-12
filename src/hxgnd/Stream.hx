@@ -20,10 +20,19 @@ class Stream<T> {
         subscribers = [];
         context = { emit: emit, onAbort: null };
         isActive = true;
+
+        inline function invoke() {
+            try {
+                executor(context);
+            } catch (e: Dynamic) {
+                emit(Error(e));
+            }
+        }
+
         #if js
-        hxgnd.js.JsNative.setImmediate(executor.bind(context));
+        hxgnd.js.JsNative.setImmediate(function () invoke());
         #else
-        thread = Thread.create(executor.bind(context));
+        thread = Thread.create(function () invoke());
         #end
     }
 
@@ -48,30 +57,37 @@ class Stream<T> {
         }
     }
 
-    function emit(value: StreamEvent<T>): Void {
+    function emit(event: StreamEvent<T>): Void {
         if (!isActive) return;
 
+        inline function cleanup() {
+            isActive = false;
+            executor = null;
+            subscribers = null;
+            context = null;
+        }
+
         var _subscribers = this.subscribers;
-        switch (value) {
+        switch (event) {
             case End:
-                isActive = false;
-                executor = null;
-                subscribers = null;
-                context = null;
+                cleanup();
+            case Error(e):
+                cleanup();
             case _:
         }
-        for (fn in _subscribers) fn(value);
+        for (fn in _subscribers) fn(event);
     }
 }
 
 typedef StreamContext<T> = {
-    function emit(value: StreamEvent<T>): Void;
+    function emit(event: StreamEvent<T>): Void;
     dynamic function onAbort(done: Void -> Void): Void;
 }
 
 typedef StreamSubscriber<T> = StreamEvent<T> -> Void;
 
 enum StreamEvent<T> {
-    Data(x: T);
+    Data(value: T);
+    Error(error: Dynamic);
     End;
 }
