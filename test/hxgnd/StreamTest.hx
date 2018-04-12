@@ -2,13 +2,15 @@ package hxgnd;
 
 import hxgnd.Stream;
 import buddy.BuddySuite;
-import buddy.tools.AsyncTools.wait;
+import TestTools.wait;
 using buddy.Should;
 using hxgnd.LangTools;
 
 class StreamTest extends BuddySuite {
     public function new() {
         describe("Stream.emit()/subscribe()", {
+            timeoutMs = 1000;
+
             #if js
             it("should invoke middleware defer", function (done) {
                 var stream = new Stream(function (ctx) {
@@ -23,7 +25,7 @@ class StreamTest extends BuddySuite {
                 });
                 stream.isActive.should.be(true);
 
-                wait(5).then(function (_) {
+                wait(5, function () {
                     count.should.be(1);
                     done();
                 });
@@ -32,7 +34,7 @@ class StreamTest extends BuddySuite {
 
             it("should wait delayed End", function (done) {
                 var stream = new Stream(function (ctx) {
-                    wait(5).then(function (_) {
+                    wait(5, function () {
                         ctx.emit(End);
                     });
                 });
@@ -45,7 +47,7 @@ class StreamTest extends BuddySuite {
                 });
                 stream.isActive.should.be(true);
 
-                wait(10).then(function (e) {
+                wait(10, function () {
                     count.should.be(1);
                     done();
                 });
@@ -53,7 +55,7 @@ class StreamTest extends BuddySuite {
 
             it("should be pass when middleware emits End 2-times", function (done) {
                 var stream = new Stream(function (ctx) {
-                    wait(5).then(function (_) {
+                    wait(5, function () {
                         ctx.emit(End);
                         ctx.emit(End);
                     });
@@ -69,7 +71,7 @@ class StreamTest extends BuddySuite {
                 stream.isActive.should.be(true);
                 #end
 
-                wait(10).then(function (_) {
+                wait(10, function () {
                     count.should.be(1);
                     done();
                 });
@@ -77,10 +79,10 @@ class StreamTest extends BuddySuite {
 
             it("should subscribe 1 Data and End", function (done) {
                 var stream = new Stream(function (ctx) {
-                    wait(5).then(function (_) {
+                    wait(5, function () {
                         ctx.emit(Data(1));
                     });
-                    wait(10).then(function (_) {
+                    wait(10, function () {
                         ctx.emit(End);
                     });
                 });
@@ -102,7 +104,7 @@ class StreamTest extends BuddySuite {
                 });
                 stream.isActive.should.be(true);
 
-                wait(15).then(function (e) {
+                wait(15, function () {
                     count.should.be(2);
                     done();
                 });
@@ -110,13 +112,13 @@ class StreamTest extends BuddySuite {
 
             it("should subscribe 2 Data and End", function (done) {
                 var stream = new Stream(function (ctx) {
-                    wait(5).then(function (_) {
+                    wait(5, function () {
                         ctx.emit(Data(1));
                     });
-                    wait(10).then(function (_) {
+                    wait(10, function () {
                         ctx.emit(Data(2));
                     });
-                    wait(15).then(function (_) {
+                    wait(15, function () {
                         ctx.emit(End);
                     });
                 });
@@ -142,7 +144,7 @@ class StreamTest extends BuddySuite {
                 });
                 stream.isActive.should.be(true);
 
-                wait(20).then(function (e) {
+                wait(20, function () {
                     count.should.be(3);
                     done();
                 });
@@ -150,13 +152,13 @@ class StreamTest extends BuddySuite {
 
             it("should notify to 2 subscribers", function (done) {
                 var stream = new Stream(function (ctx) {
-                    wait(5).then(function (_) {
+                    wait(5, function () {
                         ctx.emit(Data(1));
                     });
-                    wait(10).then(function (_) {
+                    wait(10, function () {
                         ctx.emit(Data(2));
                     });
-                    wait(15).then(function (_) {
+                    wait(15, function () {
                         ctx.emit(End);
                     });
                 });
@@ -203,7 +205,7 @@ class StreamTest extends BuddySuite {
                 });
                 stream.isActive.should.be(true);
 
-                wait(20).then(function (e) {
+                wait(20, function () {
                     count1.should.be(3);
                     count2.should.be(3);
                     done();
@@ -212,9 +214,11 @@ class StreamTest extends BuddySuite {
         });
 
         describe("Stream.unsubscribe()", {
+            timeoutMs = 1000;
+
             it("should not subscribe", function (done) {
                 var stream = new Stream(function (ctx) {
-                    wait(5).then(function (_) {
+                    wait(5, function () {
                         ctx.emit(End);
                     });
                 });
@@ -226,7 +230,7 @@ class StreamTest extends BuddySuite {
                 stream.subscribe(handler);
                 stream.unsubscribe(handler);
 
-                wait(10).then(function (e) {
+                wait(10, function () {
                     stream.isActive.should.be(false);
                     done();
                 });
@@ -234,17 +238,19 @@ class StreamTest extends BuddySuite {
         });
 
         describe("Stream.abort()", {
+            timeoutMs = 1000;
+
             it("should abort event loop", function (done) {
                 var stream = new Stream(function (ctx) {
                     var i = 0;
                     function loop() {
                         ctx.emit(Data(i++));
-                        wait(5).then(function(_) loop());
+                        wait(5, function () loop());
                     }
                     loop();
                 });
 
-                wait(10).then(function (e) {
+                wait(10, function () {
                     stream.isActive.should.be(true);
                     stream.subscribe(function (e) {
                         switch (e) {
@@ -266,12 +272,12 @@ class StreamTest extends BuddySuite {
                     }
 
                     function loop() {
-                        wait(5).then(function(_) loop());
+                        wait(5, function () loop());
                     }
                     loop();
                 });
 
-                wait(10).then(function (e) {
+                wait(5, function () {
                     stream.isActive.should.be(true);
                     stream.subscribe(function (e) {
                         switch (e) {
