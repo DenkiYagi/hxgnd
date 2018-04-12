@@ -8,6 +8,14 @@ using hxgnd.LangTools;
 
 class StreamTest extends BuddySuite {
     public function new() {
+        describe("Stream is Abortable", {
+            it("should can compile", {
+                var stream: Abortable = new Stream(function (ctx) {
+                    ctx.emit(End);
+                });
+            });
+        });
+
         describe("Stream.emit()/subscribe()", {
             timeoutMs = 1000;
 

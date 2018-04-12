@@ -3,11 +3,18 @@ package hxgnd;
 import buddy.BuddySuite;
 import buddy.tools.AsyncTools.wait;
 import hxgnd.Result;
+import hxgnd.Abortable;
 using hxgnd.LangTools;
 using buddy.Should;
 
 class FutureTest extends BuddySuite {
     public function new() {
+        describe("Future is Abortable", {
+            it("should can compile", {
+                var future: Abortable = new Future(function (_, _) return LangTools.emptyFunction);
+            });
+        });
+
         describe("Future.new()", {
             timeoutMs = 1000;
 
