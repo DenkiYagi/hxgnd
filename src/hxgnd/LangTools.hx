@@ -5,6 +5,8 @@ import haxe.io.Bytes;
 import haxe.Constraints.IMap;
 #if js
 import hxgnd.js.JsNative;
+import hxgnd.js.JsObject;
+import hxgnd.js.JsArray;
 #end
 #if macro
 import haxe.macro.Expr;
@@ -72,6 +74,25 @@ class LangTools {
     public static inline function nonBlank(x: Null<String>): Bool {
         return !isBlank(x);
     }
+
+    #if js
+    public static function freeze(value: Dynamic): Dynamic {
+        var stack = [value];
+        while (stack.length > 0) {
+            var current = stack.pop();
+            if (nonJsObject(current)) continue;
+            JsObject.freeze(current);
+            if (JsArray.isArray(current)) {
+                stack = stack.concat(current);
+            } else {
+                for (k in Reflect.fields(current)) {
+                    stack.push(Reflect.field(current, k));
+                }
+            }
+        }
+        return value;
+    }
+    #end
 
     #if macro
     static var sequence = 1;

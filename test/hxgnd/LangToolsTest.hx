@@ -5,6 +5,9 @@ import haxe.ds.Option;
 import hxgnd.Result;
 import haxe.io.Bytes;
 import haxe.ds.StringMap;
+#if js
+import hxgnd.js.JsObject;
+#end
 using buddy.Should;
 using hxgnd.LangTools;
 
@@ -187,6 +190,48 @@ class LangToolsTest extends BuddySuite {
                 " \u2030".nonBlank().should.be(true);
             });
         });
+
+        #if js
+        describe("LangTools.freeze()", {
+            it("pass when it has given null", {
+                LangTools.freeze(null);
+            });
+
+            it("pass when it has given primitive", {
+                LangTools.freeze(1);
+            });
+
+            it("pass when it has given object", {
+                var obj = LangTools.freeze({ name: "test" });
+                JsObject.isFrozen(obj).should.be(true);
+            });
+
+            it("pass when it has given array", {
+                var array = LangTools.freeze([1, 2, 3]);
+                JsObject.isFrozen(array).should.be(true);
+            });
+
+            it("pass when it has given nested object", {
+                var obj =  LangTools.freeze({
+                    name: "test",
+                    sub: {
+                        key1: "val1",
+                        key2: "val2",
+                        key3: "val3",
+                    },
+                    children: [
+                        { id: 1, value: "100" },
+                        { id: 2, value: "200" },
+                        { id: 3, value: "300" },
+                    ]
+                });
+                JsObject.isFrozen(obj).should.be(true);
+                JsObject.isFrozen(obj.sub).should.be(true);
+                JsObject.isFrozen(obj.children).should.be(true);
+                JsObject.isFrozen(obj.children[0]).should.be(true);
+            });
+        });
+        #end
 
         describe("LangTools.some()", {
             it("can compare null", {
