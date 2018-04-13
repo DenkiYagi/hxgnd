@@ -16,7 +16,22 @@ class StreamTest extends BuddySuite {
             });
         });
 
-        describe("Stream.emit()/subscribe()", {
+        describe("Stream.new()", {
+            timeoutMs = 1000;
+
+            it("should emit Error", function (done) {
+                var stream = new Stream(function (ctx) {
+                    throw "error";
+                });
+                stream.subscribe(function (e) {
+                    e.same(Error("error")).should.be(true);
+                    stream.isActive.should.be(false);
+                    done();
+                });
+            });
+        });
+
+        describe("Stream.subscribe()", {
             timeoutMs = 1000;
 
             #if js
@@ -61,7 +76,7 @@ class StreamTest extends BuddySuite {
                 });
             });
 
-            it("should be pass when middleware emits End 2-times", function (done) {
+            it("should notify single End when executor emits End 2-times", function (done) {
                 var stream = new Stream(function (ctx) {
                     wait(5, function () {
                         ctx.emit(End);
@@ -104,6 +119,159 @@ class StreamTest extends BuddySuite {
                             count++;
                         case 1:
                             e.same(End).should.be(true);
+                            stream.isActive.should.be(false);
+                            count++;
+                        case _:
+                            fail();
+                    }
+                });
+                stream.isActive.should.be(true);
+
+                wait(15, function () {
+                    count.should.be(2);
+                    done();
+                });
+            });
+
+            it("should notify single End when executor emits End and Data", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5, function () {
+                        ctx.emit(End);
+                        ctx.emit(Data(1));
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(End).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                #if !neko
+                stream.isActive.should.be(true);
+                #end
+
+                wait(10, function () {
+                    count.should.be(1);
+                    done();
+                });
+            });
+
+            it("should notify single End when executor emits End and Error", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5, function () {
+                        ctx.emit(End);
+                        ctx.emit(Error("error"));
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(End).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                #if !neko
+                stream.isActive.should.be(true);
+                #end
+
+                wait(10, function () {
+                    count.should.be(1);
+                    done();
+                });
+            });
+
+            it("should notify single Error when executor emits Error and End", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5, function () {
+                        ctx.emit(Error("error"));
+                        ctx.emit(End);
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(Error("error")).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                #if !neko
+                stream.isActive.should.be(true);
+                #end
+
+                wait(10, function () {
+                    count.should.be(1);
+                    done();
+                });
+            });
+
+            it("should notify single End when executor emits Error and Data", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5, function () {
+                        ctx.emit(Error("error"));
+                        ctx.emit(Data(1));
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(Error("error")).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                #if !neko
+                stream.isActive.should.be(true);
+                #end
+
+                wait(10, function () {
+                    count.should.be(1);
+                    done();
+                });
+            });
+
+            it("should notify single Error when executor emits Error 2-times", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5, function () {
+                        ctx.emit(Error("error"));
+                        ctx.emit(Error("error2"));
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    e.same(Error("error")).should.be(true);
+                    stream.isActive.should.be(false);
+                    count++;
+                });
+                #if !neko
+                stream.isActive.should.be(true);
+                #end
+
+                wait(10, function () {
+                    count.should.be(1);
+                    done();
+                });
+            });
+
+            it("should subscribe 1 Data and Error", function (done) {
+                var stream = new Stream(function (ctx) {
+                    wait(5, function () {
+                        ctx.emit(Data(1));
+                    });
+                    wait(10, function () {
+                        ctx.emit(Error("error"));
+                    });
+                });
+
+                var count = 0;
+                stream.subscribe(function (e) {
+                    switch (count) {
+                        case 0:
+                            e.same(Data(1)).should.be(true);
+                            stream.isActive.should.be(true);
+                            count++;
+                        case 1:
+                            e.same(Error("error")).should.be(true);
                             stream.isActive.should.be(false);
                             count++;
                         case _:
