@@ -17,7 +17,7 @@ class JsNative {
     @:extern inline static function get_nativeArguments(): Arguments {
         return untyped __js__("arguments");
     }
-    
+
     public static var undefined(get, never): Dynamic;
     @:extern inline static function get_undefined(): Dynamic {
         return untyped __js__("void 0");
@@ -26,7 +26,7 @@ class JsNative {
     public static inline function encodeURI(x: String): String {
         return untyped __js__("encodeURI")(x);
     }
-   
+
     public static inline function encodeURIComponent(x: String): String {
         return untyped __js__("encodeURIComponent")(x);
     }
@@ -34,7 +34,7 @@ class JsNative {
     public static inline function decodeURI(x: String): String {
         return untyped __js__("decodeURI")(x);
     }
-   
+
     public static inline function decodeURIComponent(x: String): String {
         return untyped __js__("decodeURIComponent")(x);
     }
@@ -67,6 +67,9 @@ class JsNative {
         return macro untyped __js__("delete {0}", ${expression});
     }
 
+    static var functions = [];
+    static var index = 0;
+
     static function __init__() {
         // NOTE setImmediate() of Edge/IE11 is very slow.
         // https://jsfiddle.net/terurou/Lsxrjmpd/3/
@@ -74,11 +77,9 @@ class JsNative {
             JsNative.setImmediate = untyped __js__("setImmediate");
             JsNative.clearImmediate = untyped __js__("clearImmediate");
         } else if  (untyped js.Lib.global.Promise) {
-            var functions = [];
-            var i = 0;
-            
             function invoke(id) {
                 var fn = functions[id];
+                js.Browser.console.log(fn);
                 if (untyped fn) {
                     untyped __js__("delete {0}", functions[id]);
                     fn();
@@ -86,10 +87,10 @@ class JsNative {
             }
 
             JsNative.setImmediate = function setImmediatePromise(fn) {
-                if (strictEq(i, IMMEDIATE_QUEUE_SIZE)) i = 0;
-                functions[i] = fn;
-                js.Promise.resolve(i).then(invoke);
-                return i++;
+                if (strictEq(index, IMMEDIATE_QUEUE_SIZE)) index = 0;
+                functions[index] = fn;
+                js.Promise.resolve(index).then(invoke);
+                return index++;
             };
             JsNative.clearImmediate = function clearImmediatePromise(id) {
                 untyped __js__("delete {0}", functions[id]);
@@ -97,7 +98,7 @@ class JsNative {
         } else if (untyped js.Lib.global.MessageChannel) {
             var channel = new js.html.MessageChannel();
             var functions = [];
-            var i = 0;
+            var index = 0;
 
             channel.port1.onmessage = function (e) {
                 var id = e.data;
@@ -109,12 +110,12 @@ class JsNative {
             }
             channel.port1.start();
             channel.port2.start();
-            
+
             JsNative.setImmediate = function setImmediateMessageChannel(fn) {
-                if (strictEq(i, IMMEDIATE_QUEUE_SIZE)) i = 0;
-                functions[i] = fn;
-                channel.port2.postMessage(i);
-                return i++;
+                if (strictEq(index, IMMEDIATE_QUEUE_SIZE)) index = 0;
+                functions[index] = fn;
+                channel.port2.postMessage(index);
+                return index++;
             }
             JsNative.clearImmediate = function clearImmediateMessageChannel(i) {
                 untyped __js__("delete {0}", functions[i]);
