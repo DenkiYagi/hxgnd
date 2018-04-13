@@ -6,27 +6,37 @@ import hxgnd.PromiseLike;
 import hxgnd.js.JsNative.setImmediate;
 #end
 #if neko
-using neko.vm.Thread;
+import neko.vm.Thread;
 #end
+using hxgnd.LangTools;
 
 class Future<T> {
-    public var isActive(default, null): Bool = true;
-    public var result(default, null): Maybe<Result<T>> = Maybe.empty();
+    public var isActive(default, null): Bool;
+    public var result(default, null): Maybe<Result<T>>;
 
-    var abortFunc: Maybe<Void -> Void> = Maybe.empty();
-    var handlers: Array<Result<T> -> Void> = [];
+    var context: FutureContext<T>;
+    var handlers: Array<Result<T> -> Void>;
     #if js
     var async: Bool;
     #elseif neko
     var thread: Thread;
     #end
 
-    public function new(executor: Executor<T>, async: Bool = true) {
+    public function new(executor: FutureContext<T> -> Void, async: Bool = true) {
+        isActive = true;
+        result = Maybe.empty();
+        context = {
+            fulfill: fulfill,
+            reject: reject,
+            onAbort: null
+        };
+        handlers = [];
+
         inline function invoke() {
             if (result.nonEmpty()) return; //when already aborted
 
             try {
-                abortFunc = executor(onCompleted, onAborted);
+                executor(context);
             } catch (e: Dynamic) {
                 onProcessed(Failed(e));
             }
@@ -49,7 +59,7 @@ class Future<T> {
         #end
     }
 
-    function onCompleted(value: T): Void {
+    function fulfill(value: T): Void {
         #if js
         if (async) {
             setImmediate(function () onProcessed(Success(value)));
@@ -61,7 +71,7 @@ class Future<T> {
         #end
     }
 
-    function onAborted(error: Dynamic): Void {
+    function reject(error: Dynamic): Void {
         #if js
         if (async) {
             setImmediate(function () onProcessed(Failed(error)));
@@ -82,7 +92,7 @@ class Future<T> {
         for (f in handlers) f(x);
 
         handlers = null;
-        abortFunc = Maybe.empty();
+        context = null;
     }
 
     public function then(handler: Result<T> -> Void): Void {
@@ -117,8 +127,8 @@ class Future<T> {
     public function abort(): Void {
         if (result.nonEmpty()) return;
 
-        if (abortFunc.nonEmpty()) {
-            abortFunc.getOrNull()();
+        if (context.onAbort.nonNull()) {
+            context.onAbort();
         }
         onProcessed(Failed(new AbortError("aborted")));
     }
@@ -148,6 +158,10 @@ class Future<T> {
     #end
 }
 
-typedef Executor<T> = (T -> Void) -> (Dynamic -> Void) -> (Void -> Void);
+typedef FutureContext<T> = {
+    function fulfill(value: T): Void;
+    function reject(error: Dynamic): Void;
+    dynamic function onAbort(): Void;
+}
 
 class AbortError extends Error {}
