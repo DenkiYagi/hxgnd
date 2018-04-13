@@ -79,7 +79,6 @@ class JsNative {
         } else if  (untyped js.Lib.global.Promise) {
             function invoke(id) {
                 var fn = functions[id];
-                js.Browser.console.log(fn);
                 if (untyped fn) {
                     untyped __js__("delete {0}", functions[id]);
                     fn();
