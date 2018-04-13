@@ -163,5 +163,3 @@ typedef FutureContext<T> = {
     function reject(error: Dynamic): Void;
     dynamic function onAbort(): Void;
 }
-
-class AbortError extends Error {}

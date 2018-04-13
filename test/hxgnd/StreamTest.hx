@@ -23,11 +23,18 @@ class StreamTest extends BuddySuite {
                 var stream = new Stream(function (ctx) {
                     throw "error";
                 });
+                #if js
                 stream.subscribe(function (e) {
                     e.same(Error("error")).should.be(true);
                     stream.isActive.should.be(false);
                     done();
                 });
+                #else
+                wait(10, function () {
+                    stream.isActive.should.be(false);
+                    done();
+                });
+                #end
             });
         });
 
@@ -430,7 +437,7 @@ class StreamTest extends BuddySuite {
                     stream.isActive.should.be(true);
                     stream.subscribe(function (e) {
                         switch (e) {
-                            case End: done();
+                            case Error(e): done();
                             case _:
                         }
                     });
@@ -457,7 +464,7 @@ class StreamTest extends BuddySuite {
                     stream.isActive.should.be(true);
                     stream.subscribe(function (e) {
                         switch (e) {
-                            case End:
+                            case Error(e):
                                 isCalled.should.be(true);
                                 done();
                             case _:

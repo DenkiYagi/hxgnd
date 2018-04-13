@@ -179,7 +179,7 @@ class FutureTest extends BuddySuite {
                 future.abort();
                 future.isActive.should.be(false);
                 switch (future.result) {
-                    case Failed(e): Std.is(e, Future.AbortError).should.be(true);
+                    case Failed(e): Std.is(e, AbortError).should.be(true);
                     case _: fail();
                 }
                 called.should.be(true);
@@ -194,7 +194,7 @@ class FutureTest extends BuddySuite {
                     future.isActive.should.be(false);
                     switch (x) {
                         case Failed(e):
-                            Std.is(e, Future.AbortError).should.be(true);
+                            Std.is(e, AbortError).should.be(true);
                         case _:
                             fail();
                     }
@@ -222,7 +222,7 @@ class FutureTest extends BuddySuite {
                 future.abort();
                 future.isActive.should.be(false);
                 switch (future.result) {
-                    case Failed(e): Std.is(e, Future.AbortError).should.be(true);
+                    case Failed(e): Std.is(e, AbortError).should.be(true);
                     case _: fail();
                 }
             });
@@ -242,7 +242,7 @@ class FutureTest extends BuddySuite {
                     future.isActive.should.be(false);
                     switch (x) {
                         case Failed(e):
-                            Std.is(e, Future.AbortError).should.be(true);
+                            Std.is(e, AbortError).should.be(true);
                         case _:
                             fail();
                     }

@@ -47,7 +47,7 @@ class Stream<T> {
     public function abort(): Void {
         if (!isActive) return;
 
-        var done = emit.bind(End);
+        var done = emit.bind(Error(new AbortError("aborted")));
         if (context.onAbort.nonNull()) {
             context.onAbort(done);
         } else {
@@ -66,9 +66,7 @@ class Stream<T> {
 
         var _subscribers = this.subscribers;
         switch (event) {
-            case End:
-                cleanup();
-            case Error(e):
+            case End | Error(_):
                 cleanup();
             case _:
         }
