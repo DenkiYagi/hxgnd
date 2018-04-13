@@ -8,7 +8,6 @@ using neko.vm.Thread;
 class Stream<T> {
     public var isActive(default, null): Bool;
 
-    var executor: StreamContext<T> -> Void;
     var subscribers: Array<StreamSubscriber<T>>;
     var context: StreamContext<T>;
     #if neko
@@ -16,7 +15,6 @@ class Stream<T> {
     #end
 
     public function new(executor: StreamContext<T> -> Void) {
-        this.executor = executor;
         subscribers = [];
         context = { emit: emit, onAbort: null };
         isActive = true;
@@ -62,7 +60,6 @@ class Stream<T> {
 
         inline function cleanup() {
             isActive = false;
-            executor = null;
             subscribers = null;
             context = null;
         }
