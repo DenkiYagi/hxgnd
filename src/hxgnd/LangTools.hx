@@ -79,7 +79,7 @@ class LangTools {
     public static macro function combine(rest: Array<ExprOf<{}>>): Expr {
         if (rest.length <= 0) return Context.error("Not enough arguments", Context.currentPos());
         if (rest.length == 1) return rest[0];
-        
+
         var block = [];
         var map = new Map<String, {field: String, expr: Expr}>();
         for (rx in rest) {
@@ -107,7 +107,7 @@ class LangTools {
         #else
         if (eq(value1, value2)) return true;
         #end
-        
+
         var stack = [new Tuple2(value1, value2)];
         var loop = 0;
         while (stack.length > 0 && loop++ < 20) {
@@ -216,13 +216,17 @@ class LangTools {
                 stack.push(new Tuple2(Reflect.field(a, key), Reflect.field(b, key)));
             }
         }
-        
+
         return true;
+    }
+
+    public static function notSame(value1: Dynamic, value2: Dynamic): Bool {
+        return !same(value1, value2);
     }
 
     #if js
     static inline function nonJsObject(x: Dynamic): Bool {
-        return JsNative.strictEq(x, null) || JsNative.strictNeq(JsNative.typeof(x), "object"); 
+        return JsNative.strictEq(x, null) || JsNative.strictNeq(JsNative.typeof(x), "object");
     }
     #end
 

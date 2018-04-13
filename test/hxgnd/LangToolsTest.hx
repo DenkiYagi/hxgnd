@@ -205,7 +205,7 @@ class LangToolsTest extends BuddySuite {
                 LangTools.same(js.Lib.undefined, null).should.be(true);
             });
             #end
-            
+
             it("can compare Bool", {
                 true.same(true).should.be(true);
                 true.same(false).should.be(false);
@@ -218,7 +218,7 @@ class LangToolsTest extends BuddySuite {
                 true.same(Some(1)).should.be(false);
                 true.same(function () {}).should.be(false);
             });
-            
+
             it("can compare Int", {
                 1.same(1).should.be(true);
                 1.same(0).should.be(false);
@@ -231,7 +231,7 @@ class LangToolsTest extends BuddySuite {
                 1.same(Some(1)).should.be(false);
                 1.same(function () {}).should.be(false);
             });
-            
+
             it("can compare Float", {
                 (1.1).same(1.1).should.be(true);
                 (1.1).same(0).should.be(false);
@@ -244,7 +244,7 @@ class LangToolsTest extends BuddySuite {
                 (1.1).same(Some(1.1)).should.be(false);
                 (1.1).same(function () {}).should.be(false);
             });
-            
+
             it("can compare Simple Enum", {
                 True.same(True).should.be(true);
                 True.same(False).should.be(false);
@@ -385,7 +385,7 @@ class LangToolsTest extends BuddySuite {
                 Bytes.alloc(0).same(Some("")).should.be(false);
                 Bytes.alloc(0).same(function () {}).should.be(false);
             });
-            
+
             it("can compare Simple Map", {
                 new StringMap().same(new StringMap()).should.be(true);
                 ["1" => "v1"].same(["1" => "v1"]).should.be(true);
@@ -419,7 +419,7 @@ class LangToolsTest extends BuddySuite {
             it("can compare Valid IterableClass", {
                 new ValidIterable(0, "name", 0, 0).same(new ValidIterable(0, "name", 0, 0)).should.be(true);
                 new ValidIterable(0, "name", 0, 5).same(new ValidIterable(0, "name", 0, 5)).should.be(true);
-                
+
                 new ValidIterable(0, "name", 0, 5).same(new ValidIterable(0, "name", 0, 0)).should.be(false);
                 new ValidIterable(0, "name", 0, 5).same(new ValidIterable(0, "name", 0, 4)).should.be(false);
                 new ValidIterable(1, "name", 0, 5).same(new ValidIterable(0, "name", 0, 5)).should.be(false);
@@ -433,13 +433,13 @@ class LangToolsTest extends BuddySuite {
             it("can compare Valid IteratorClass", {
                 new ValidIterator(0, "name", 0, 0).same(new ValidIterator(0, "name", 0, 0)).should.be(true);
                 new ValidIterator(0, "name", 0, 5).same(new ValidIterator(0, "name", 0, 5)).should.be(true);
-                
+
                 new ValidIterator(0, "name", 0, 5).same(new ValidIterator(0, "name", 0, 0)).should.be(false);
                 new ValidIterator(0, "name", 0, 5).same(new ValidIterator(0, "name", 0, 4)).should.be(false);
                 new ValidIterator(1, "name", 0, 5).same(new ValidIterator(0, "name", 0, 5)).should.be(false);
                 new ValidIterator(0, "hello", 0, 5).same(new ValidIterator(0, "name", 0, 5)).should.be(false);
             });
-            
+
             it("can compare Empty Array", {
                 [].same([]).should.be(true);
                 [].same([1]).should.be(false);
@@ -490,6 +490,15 @@ class LangToolsTest extends BuddySuite {
                     nullValue: null
                 })
                 .should.be(true);
+            });
+        });
+
+        describe("LangTools.notSome()", {
+            it("should pass", {
+                1.notSame(2).should.be(true);
+                1.notSame(1).should.be(false);
+                "1".notSame("1").should.be(false);
+                ({}).notSame({}).should.be(false);
             });
         });
 
