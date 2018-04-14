@@ -26,7 +26,7 @@ class PromiseLikeTest extends BuddySuite {
                 var promise = new PromiseLike(function (_, _) {
                     throw "error";
                 });
-                promise.result.same(Maybe.of(Failed("error"))).should.be(true);
+                promise.result.same(Maybe.of(Failure("error"))).should.be(true);
             });
         });
 
@@ -44,7 +44,7 @@ class PromiseLikeTest extends BuddySuite {
 
             it("should be rejected", {
                 var promise = PromiseLike.reject("error");
-                promise.result.same(Maybe.of(Failed("error"))).should.be(true);
+                promise.result.same(Maybe.of(Failure("error"))).should.be(true);
             });
         });
 

@@ -55,14 +55,14 @@ class FutureTest extends BuddySuite {
                 var future = Future.failed("error");
                 future.isActive.should.be(false);
                 future.result.nonEmpty().should.be(true);
-                future.result.same(Maybe.of(Failed("error"))).should.be(true);
+                future.result.same(Maybe.of(Failure("error"))).should.be(true);
             });
 
             describe(".then()", {
                 it("should call callback", function (done) {
                     var future = Future.failed("error");
                     future.then(function (x: Result<Int>) {
-                        x.same(Failed("error")).should.be(true);
+                        x.same(Failure("error")).should.be(true);
                         x.same(future.result).should.be(true);
                         future.isActive.should.be(false);
                         done();
@@ -86,11 +86,11 @@ class FutureTest extends BuddySuite {
                 future.result.same(Maybe.of(Success(1))).should.be(true);
             });
 
-            it("should pass when it has given Failed", {
-                var future = Future.processed(Failed("error"));
+            it("should pass when it has given Failure", {
+                var future = Future.processed(Failure("error"));
                 future.isActive.should.be(false);
                 future.result.nonEmpty().should.be(true);
-                future.result.same(Maybe.of(Failed("error"))).should.be(true);
+                future.result.same(Maybe.of(Failure("error"))).should.be(true);
             });
 
             describe(".then()", {
@@ -104,10 +104,10 @@ class FutureTest extends BuddySuite {
                     });
                 });
 
-                it("should call callback when it has given Failed", function (done) {
-                    var future = Future.processed(Failed("error"));
+                it("should call callback when it has given Failure", function (done) {
+                    var future = Future.processed(Failure("error"));
                     future.then(function (x: Result<Int>) {
-                        x.same(Failed("error")).should.be(true);
+                        x.same(Failure("error")).should.be(true);
                         x.same(future.result).should.be(true);
                         future.isActive.should.be(false);
                         done();
@@ -121,8 +121,8 @@ class FutureTest extends BuddySuite {
                     future.abort();
                 });
 
-                it("should pass when it has given Failed", {
-                    var future = Future.processed(Failed("error"));
+                it("should pass when it has given Failure", {
+                    var future = Future.processed(Failure("error"));
                     future.abort();
                 });
             });
@@ -156,18 +156,18 @@ class FutureTest extends BuddySuite {
                 });
             });
 
-            it("should be Failed", function (done) {
+            it("should be Failure", function (done) {
                 var future = Future.apply(function (ctx) {
                     ctx.failed("error");
                 });
                 wait(10, function () {
                     future.isActive.should.be(false);
-                    future.result.same(Failed("error")).should.be(true);
+                    future.result.same(Failure("error")).should.be(true);
                     done();
                 });
             });
 
-            it("should be Failed when it throw", function (done) {
+            it("should be Failure when it throw", function (done) {
                 var future = Future.apply(function (ctx) {
                     #if neko
                     Sys.sleep(0.01);
@@ -176,7 +176,7 @@ class FutureTest extends BuddySuite {
                 });
                 wait(20, function () {
                     future.isActive.should.be(false);
-                    future.result.same(Failed("error")).should.be(true);
+                    future.result.same(Failure("error")).should.be(true);
                     done();
                 });
             });
@@ -194,12 +194,12 @@ class FutureTest extends BuddySuite {
                     });
                 });
 
-                it("should call callback when it has given Failed", function (done) {
+                it("should call callback when it has given Failure", function (done) {
                     var future = Future.apply(function (ctx) {
                         wait(5, function () ctx.failed("error"));
                     });
                     future.then(function (x: Result<Int>) {
-                        x.same(Failed("error")).should.be(true);
+                        x.same(Failure("error")).should.be(true);
                         x.same(future.result).should.be(true);
                         future.isActive.should.be(false);
                         done();
@@ -259,7 +259,7 @@ class FutureTest extends BuddySuite {
                     future.abort();
                     future.isActive.should.be(false);
                     switch (future.result) {
-                        case Failed(e): Std.is(e, AbortError).should.be(true);
+                        case Failure(e): Std.is(e, AbortError).should.be(true);
                         case _: fail();
                     }
                 });
@@ -300,7 +300,7 @@ class FutureTest extends BuddySuite {
                         future.result.same(x).should.be(true);
                         future.isActive.should.be(false);
                         switch (x) {
-                            case Failed(e):
+                            case Failure(e):
                                 Std.is(e, AbortError).should.be(true);
                             case _:
                                 fail();
@@ -341,18 +341,18 @@ class FutureTest extends BuddySuite {
                 });
             });
 
-            it("should be Failed", function (done) {
+            it("should be Failure", function (done) {
                 var future = Future.applySync(function (ctx) {
                     ctx.failed("error");
                 });
                 wait(10, function () {
                     future.isActive.should.be(false);
-                    future.result.same(Failed("error")).should.be(true);
+                    future.result.same(Failure("error")).should.be(true);
                     done();
                 });
             });
 
-            it("should be Failed when it throw", function (done) {
+            it("should be Failure when it throw", function (done) {
                 var future = Future.applySync(function (ctx) {
                     #if neko
                     Sys.sleep(0.01);
@@ -361,7 +361,7 @@ class FutureTest extends BuddySuite {
                 });
                 wait(20, function () {
                     future.isActive.should.be(false);
-                    future.result.same(Failed("error")).should.be(true);
+                    future.result.same(Failure("error")).should.be(true);
                     done();
                 });
             });
@@ -379,12 +379,12 @@ class FutureTest extends BuddySuite {
                     });
                 });
 
-                it("should call callback when it has given Failed", function (done) {
+                it("should call callback when it has given Failure", function (done) {
                     var future = Future.applySync(function (ctx) {
                         wait(5, function () ctx.failed("error"));
                     });
                     future.then(function (x: Result<Int>) {
-                        x.same(Failed("error")).should.be(true);
+                        x.same(Failure("error")).should.be(true);
                         x.same(future.result).should.be(true);
                         future.isActive.should.be(false);
                         done();
@@ -444,7 +444,7 @@ class FutureTest extends BuddySuite {
                     future.abort();
                     future.isActive.should.be(false);
                     switch (future.result) {
-                        case Failed(e): Std.is(e, AbortError).should.be(true);
+                        case Failure(e): Std.is(e, AbortError).should.be(true);
                         case _: fail();
                     }
                 });
@@ -469,7 +469,7 @@ class FutureTest extends BuddySuite {
                         future.result.same(x).should.be(true);
                         future.isActive.should.be(false);
                         switch (x) {
-                            case Failed(e):
+                            case Failure(e):
                                 Std.is(e, AbortError).should.be(true);
                             case _:
                                 fail();

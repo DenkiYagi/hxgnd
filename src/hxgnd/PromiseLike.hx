@@ -9,7 +9,7 @@ import externtype.Mixed3;
 
 class PromiseLike<T> {
     public var result(default, null): Maybe<Result<T>> = Maybe.empty();
-    
+
     var onFulfilledHanlders: Array<T -> Void> = [];
     var onRejectedHanlders: Array<Dynamic -> Void> = [];
 
@@ -23,9 +23,9 @@ class PromiseLike<T> {
 
     function onFulfill(value: T): Void {
         if (result.nonEmpty()) return;
-        
+
         result = Maybe.of(Success(value));
-        
+
         for (f in onFulfilledHanlders) f(value);
         onFulfilledHanlders = null;
         onRejectedHanlders = null;
@@ -34,14 +34,14 @@ class PromiseLike<T> {
     function onReject(error: Dynamic): Void {
         if (result.nonEmpty()) return;
 
-        result = Maybe.of(Failed(error));
+        result = Maybe.of(Failure(error));
 
         for (f in onRejectedHanlders) f(error);
         onFulfilledHanlders = null;
         onRejectedHanlders = null;
     }
 
-    public function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>, 
+    public function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): PromiseLike<TOut> {
         var promise = new PromiseLike<TOut>(function (_, _) {});
 
@@ -74,14 +74,14 @@ class PromiseLike<T> {
                 promise.onReject(e);
             }
         }
-        
+
         if (result.isEmpty()) {
             if (LangTools.nonNull(fulfilled)) onFulfilledHanlders.push(handleFulfilled);
             if (LangTools.nonNull(rejected)) onRejectedHanlders.push(handleRejected);
         } else {
             switch (result.getOrNull()) {
                 case Success(v): handleFulfilled(v);
-                case Failed(e): handleRejected(e);
+                case Failure(e): handleRejected(e);
             }
         }
 

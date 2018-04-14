@@ -4,8 +4,7 @@ import hxgnd.Result;
 import hxgnd.PromiseLike;
 #if js
 import hxgnd.js.JsNative.setImmediate;
-#end
-#if neko
+#elseif neko
 import neko.vm.Thread;
 #end
 using hxgnd.LangTools;
@@ -36,7 +35,7 @@ class Future<T> {
         try {
             executor(context);
         } catch (e: Dynamic) {
-            finish(Failed(e));
+            finish(Failure(e));
         }
     }
 
@@ -57,7 +56,7 @@ class Future<T> {
     }
 
     function _failed(error: Dynamic): Void {
-        finish(Failed(error));
+        finish(Failure(error));
     }
 
     public function then(handler: Result<T> -> Void): Void {
@@ -84,7 +83,7 @@ class Future<T> {
         if (context.onAbort.nonNull()) {
             context.onAbort();
         }
-        finish(Failed(new AbortError("aborted")));
+        finish(Failure(new AbortError("aborted")));
     }
 
     #if js
@@ -94,7 +93,7 @@ class Future<T> {
                 then(function (result) {
                     switch (result) {
                         case Success(v): resolve(v);
-                        case Failed(e): reject(e);
+                        case Failure(e): reject(e);
                     }
                 });
             });
@@ -103,7 +102,7 @@ class Future<T> {
                 then(function (result) {
                     switch (result) {
                         case Success(v): resolve(v);
-                        case Failed(e): reject(e);
+                        case Failure(e): reject(e);
                     }
                 });
             }).toPromise(false);
@@ -132,7 +131,7 @@ class Future<T> {
     }
 
     public static inline function failed<T>(error: Dynamic): Future<T> {
-        return new Future(Maybe.of(Failed(error)));
+        return new Future(Maybe.of(Failure(error)));
     }
 
     public static inline function processed<T>(result: Result<T>): Future<T> {
