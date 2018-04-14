@@ -16,74 +16,31 @@ class Future<T> {
 
     var context: FutureContext<T>;
     var handlers: Array<Result<T> -> Void>;
-    #if js
-    var async: Bool;
-    #elseif neko
-    var thread: Thread;
-    #end
 
-    public function new(executor: FutureContext<T> -> Void, async: Bool = true) {
-        isActive = true;
-        result = Maybe.empty();
-        context = {
-            fulfill: fulfill,
-            reject: reject,
-            onAbort: null
-        };
-        handlers = [];
-
-        inline function invoke() {
-            if (result.nonEmpty()) return; //when already aborted
-
-            try {
-                executor(context);
-            } catch (e: Dynamic) {
-                onProcessed(Failed(e));
+    function new(result: Maybe<Result<T>>) {
+        this.result = result;
+        if (result.isEmpty()) {
+            isActive = true;
+            handlers = [];
+            context = {
+                successful: _successful,
+                failed: _failed,
+                onAbort: null
             }
-        }
-
-        #if js
-        if (async) {
-            setImmediate(function () invoke());
         } else {
-            invoke();
+            isActive = false;
         }
-        #elseif neko
-        if (async) {
-            thread = Thread.create(function () invoke());
-        } else {
-            invoke();
-        }
-        #else
-        invoke();
-        #end
     }
 
-    function fulfill(value: T): Void {
-        #if js
-        if (async) {
-            setImmediate(function () onProcessed(Success(value)));
-        } else {
-            onProcessed(Success(value));
+    inline function invoke(executor: FutureContext<T> -> Void) {
+        try {
+            executor(context);
+        } catch (e: Dynamic) {
+            finish(Failed(e));
         }
-        #else
-        onProcessed(Success(value));
-        #end
     }
 
-    function reject(error: Dynamic): Void {
-        #if js
-        if (async) {
-            setImmediate(function () onProcessed(Failed(error)));
-        } else {
-            onProcessed(Failed(error));
-        }
-        #else
-        onProcessed(Failed(error));
-        #end
-    }
-
-    inline function onProcessed(x: Result<T>) {
+    inline function finish(x: Result<T>) {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(x);
@@ -95,22 +52,19 @@ class Future<T> {
         context = null;
     }
 
+    function _successful(value: T): Void {
+        finish(Success(value));
+    }
+
+    function _failed(error: Dynamic): Void {
+        finish(Failed(error));
+    }
+
     public function then(handler: Result<T> -> Void): Void {
-        if (result.isEmpty()) {
+        if (isActive) {
             handlers.push(handler);
         } else {
-            inline function dispatch() {
-                handler(result.getOrNull());
-            }
-            #if js
-            if (async) {
-                setImmediate(function () dispatch());
-            } else {
-                dispatch();
-            }
-            #else
-            dispatch();
-            #end
+            handler(result.getOrNull());
         }
     }
 
@@ -125,12 +79,12 @@ class Future<T> {
     // }
 
     public function abort(): Void {
-        if (result.nonEmpty()) return;
+        if (!isActive) return;
 
         if (context.onAbort.nonNull()) {
             context.onAbort();
         }
-        onProcessed(Failed(new AbortError("aborted")));
+        finish(Failed(new AbortError("aborted")));
     }
 
     #if js
@@ -156,10 +110,38 @@ class Future<T> {
         }
     }
     #end
+
+    public inline static function apply<T>(executor: FutureContext<T> -> Void): Future<T> {
+        var future = new Future(Maybe.empty());
+        #if js
+        setImmediate(future.invoke.bind(executor));
+        #else
+        Thread.create(future.invoke.bind(executor));
+        #end
+        return future;
+    }
+
+    public inline static function applySync<T>(executor: FutureContext<T> -> Void): Future<T> {
+        var future = new Future(Maybe.empty());
+        future.invoke(executor);
+        return future;
+    }
+
+    public static inline function successful<T>(?value: T): Future<T> {
+        return new Future(Maybe.of(Success(value)));
+    }
+
+    public static inline function failed<T>(error: Dynamic): Future<T> {
+        return new Future(Maybe.of(Failed(error)));
+    }
+
+    public static inline function processed<T>(result: Result<T>): Future<T> {
+        return new Future(Maybe.of(result));
+    }
 }
 
 typedef FutureContext<T> = {
-    function fulfill(value: T): Void;
-    function reject(error: Dynamic): Void;
+    function successful(value: T): Void;
+    function failed(error: Dynamic): Void;
     dynamic function onAbort(): Void;
 }

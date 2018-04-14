@@ -11,245 +11,474 @@ class FutureTest extends BuddySuite {
     public function new() {
         describe("Future is Abortable", {
             it("should can compile", {
-                var future: Abortable = new Future(function (_) {});
+                var future: Abortable = Future.successful(0);
             });
         });
 
-        describe("Future.new()", {
-            timeoutMs = 1000;
-
-            it("should call", function (done) {
-                new Future(function (ctx) {
-                    done();
-                }, false);
-            });
-
-            it("should be empty", {
-                var future = new Future(function (ctx) {
-                }, false);
-                future.isActive.should.be(true);
-                future.result.isEmpty().should.be(true);
-            });
-
-            it("should rejected", {
-                var future = new Future(function (ctx) {
-                    throw "error";
-                }, false);
+        describe("Future.successful()", {
+            it("should pass when it has given void", {
+                var future = Future.successful();
                 future.isActive.should.be(false);
+                future.result.nonEmpty().should.be(true);
+                future.result.same(Maybe.of(Success(null))).should.be(true);
+            });
+
+            it("should pass when it has given value", {
+                var future = Future.successful(1);
+                future.isActive.should.be(false);
+                future.result.nonEmpty().should.be(true);
+                future.result.same(Maybe.of(Success(1))).should.be(true);
+            });
+
+            describe(".then()", {
+                it("should call callback", function (done) {
+                    var future = Future.successful(1);
+                    future.then(function (x: Result<Int>) {
+                        x.same(Success(1)).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+            });
+
+            describe(".abort()", {
+                it("should pass", {
+                    var future = Future.successful(1);
+                    future.abort();
+                });
+            });
+        });
+
+        describe("Future.failed()", {
+            it("should pass", {
+                var future = Future.failed("error");
+                future.isActive.should.be(false);
+                future.result.nonEmpty().should.be(true);
                 future.result.same(Maybe.of(Failed("error"))).should.be(true);
             });
+
+            describe(".then()", {
+                it("should call callback", function (done) {
+                    var future = Future.failed("error");
+                    future.then(function (x: Result<Int>) {
+                        x.same(Failed("error")).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+            });
+
+            describe(".abort()", {
+                it("should pass", {
+                    var future = Future.failed("error");
+                    future.abort();
+                });
+            });
         });
-        describe("Future(async).new()", {
-            timeoutMs = 1000;
 
+        describe("Future.processed()", {
+            it("should pass when it has given Success", {
+                var future = Future.processed(Success(1));
+                future.isActive.should.be(false);
+                future.result.nonEmpty().should.be(true);
+                future.result.same(Maybe.of(Success(1))).should.be(true);
+            });
+
+            it("should pass when it has given Failed", {
+                var future = Future.processed(Failed("error"));
+                future.isActive.should.be(false);
+                future.result.nonEmpty().should.be(true);
+                future.result.same(Maybe.of(Failed("error"))).should.be(true);
+            });
+
+            describe(".then()", {
+                it("should call callback when it has given Success", function (done) {
+                    var future = Future.processed(Success(1));
+                    future.then(function (x: Result<Int>) {
+                        x.same(Success(1)).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+
+                it("should call callback when it has given Failed", function (done) {
+                    var future = Future.processed(Failed("error"));
+                    future.then(function (x: Result<Int>) {
+                        x.same(Failed("error")).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+            });
+
+            describe(".abort()", {
+                it("should pass when it has given Success", {
+                    var future = Future.processed(Success(1));
+                    future.abort();
+                });
+
+                it("should pass when it has given Failed", {
+                    var future = Future.processed(Failed("error"));
+                    future.abort();
+                });
+            });
+        });
+
+        describe("Future.apply()", {
             it("should call", function (done) {
-                new Future(function (ctx) {
+                Future.apply(function (ctx) {
                     done();
-                }, false);
+                });
             });
 
-            it("should be empty", {
-                var future = new Future(function (ctx) {
-                }, true);
-                future.isActive.should.be(true);
-                future.result.isEmpty().should.be(true);
+            it("should be active", function (done) {
+                var future = Future.apply(function (ctx) {
+                });
+                wait(10, function () {
+                    future.isActive.should.be(true);
+                    future.result.isEmpty().should.be(true);
+                    done();
+                });
             });
 
-            it("should rejected", function (done) {
-                var future = new Future(function (ctx) {
+            it("should be Success", function (done) {
+                var future = Future.apply(function (ctx) {
+                    ctx.successful(1);
+                });
+                wait(10, function () {
+                    future.isActive.should.be(false);
+                    future.result.same(Maybe.of(Success(1))).should.be(true);
+                    done();
+                });
+            });
+
+            it("should be Failed", function (done) {
+                var future = Future.apply(function (ctx) {
+                    ctx.failed("error");
+                });
+                wait(10, function () {
+                    future.isActive.should.be(false);
+                    future.result.same(Failed("error")).should.be(true);
+                    done();
+                });
+            });
+
+            it("should be Failed when it throw", function (done) {
+                var future = Future.apply(function (ctx) {
                     #if neko
                     Sys.sleep(0.01);
                     #end
                     throw "error";
-                }, true);
-                future.isActive.should.be(true);
-                future.result.isEmpty().should.be(true);
-
-                future.then(function (result: Result<Dynamic>) {
-                    result.same(Failed("error")).should.be(true);
-                    result.same(future.result).should.be(true);
-                    future.isActive.should.be(false);
-                    done();
                 });
-            });
-        });
-
-        describe("Future.then() : already complated", {
-            timeoutMs = 1000;
-
-            it("should completed", function (done) {
-                var future = new Future(function (ctx) {
-                    ctx.fulfill(1);
-                }, false);
-                future.then(function (x: Result<Int>) {
-                    x.same(Success(1)).should.be(true);
-                    x.same(future.result).should.be(true);
+                wait(20, function () {
                     future.isActive.should.be(false);
+                    future.result.same(Failed("error")).should.be(true);
                     done();
                 });
             });
 
-            it("should aborted", function (done) {
-                var future = new Future(function (ctx) {
-                    ctx.reject("error");
-                }, false);
-                future.then(function (x: Result<Int>) {
-                    x.same(Failed("error")).should.be(true);
-                    x.same(future.result).should.be(true);
-                    future.isActive.should.be(false);
-                    done();
+            describe(".then()", {
+                it("should call callback when it has given Success", function (done) {
+                    var future = Future.apply(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+                    future.then(function (x: Result<Int>) {
+                        x.same(Success(1)).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+
+                it("should call callback when it has given Failed", function (done) {
+                    var future = Future.apply(function (ctx) {
+                        wait(5, function () ctx.failed("error"));
+                    });
+                    future.then(function (x: Result<Int>) {
+                        x.same(Failed("error")).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+
+                it("should call 2 callbacks", function (done) {
+                    var future = Future.apply(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+
+                    var count = 0;
+                    future.then(function (x: Result<Int>) {
+                        count++;
+                    });
+                    future.then(function (x: Result<Int>) {
+                        count++;
+                        count.should.be(2);
+                        done();
+                    });
+                });
+
+                it("should call after processed", function (done) {
+                    var future = Future.apply(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+
+                    wait(10, function () {
+                        future.then(function (x: Result<Int>) {
+                            done();
+                        });
+                    });
+                });
+
+                it("should not call again", function (done) {
+                    var future = Future.apply(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+                    var count = 0;
+                    future.then(function (x: Result<Int>) {
+                        count++;
+                    });
+
+                    wait(10, function () {
+                        future.then(function (x: Result<Int>) {
+                            count.should.be(1);
+                            done();
+                        });
+                    });
                 });
             });
-        });
 
-        describe("Future.then() : async", {
-            timeoutMs = 1000;
-
-            it("should completed", function (done) {
-                var future = new Future(function (ctx) {
-                    wait(5, function () ctx.fulfill(1));
-                }, false);
-                future.result.isEmpty().should.be(true);
-                future.isActive.should.be(true);
-                future.then(function (x: Result<Int>) {
-                    x.same(Success(1)).should.be(true);
-                    x.same(future.result).should.be(true);
+            describe(".abort()", {
+                it("should abort", {
+                    var future = Future.apply(function (ctx) {
+                    });
+                    future.abort();
                     future.isActive.should.be(false);
-                    done();
-                });
-            });
-
-            it("should aborted", function (done) {
-                var future = new Future(function (ctx) {
-                    wait(5, function () ctx.reject("error"));
-                }, false);
-                future.result.isEmpty().should.be(true);
-                future.isActive.should.be(true);
-                future.then(function (x: Result<Int>) {
-                    x.same(Failed("error")).should.be(true);
-                    x.same(future.result).should.be(true);
-                    future.isActive.should.be(false);
-                    done();
-                });
-            });
-        });
-        describe("Future(async).then() : async", {
-            timeoutMs = 1000;
-
-            it("should completed", function (done) {
-                var future = new Future(function (ctx) {
-                    wait(5, function () ctx.fulfill(1));
-                }, true);
-                future.result.isEmpty().should.be(true);
-                future.isActive.should.be(true);
-                future.then(function (x: Result<Int>) {
-                    x.same(Success(1)).should.be(true);
-                    x.same(future.result).should.be(true);
-                    future.isActive.should.be(false);
-                    done();
-                });
-            });
-
-            it("should aborted", function (done) {
-                var future = new Future(function (ctx) {
-                    wait(5, function () ctx.reject("error"));
-                }, true);
-                future.result.isEmpty().should.be(true);
-                future.isActive.should.be(true);
-                future.then(function (x: Result<Int>) {
-                    x.same(Failed("error")).should.be(true);
-                    x.same(future.result).should.be(true);
-                    future.isActive.should.be(false);
-                    done();
-                });
-            });
-        });
-
-        describe("Future.abort()", {
-            timeoutMs = 1000;
-
-            it("should call cancel callback", {
-                var called = false;
-                var future = new Future(function (ctx) {
-                    ctx.onAbort = function () {
-                        called = true;
-                    };
-                }, false);
-
-                future.abort();
-                future.isActive.should.be(false);
-                switch (future.result) {
-                    case Failed(e): Std.is(e, AbortError).should.be(true);
-                    case _: fail();
-                }
-                called.should.be(true);
-            });
-
-            it("should call then() as aborted", function (done) {
-                var future = new Future(function (ctx) {
-                }, false);
-
-                future.then(function (x) {
-                    future.result.same(x).should.be(true);
-                    future.isActive.should.be(false);
-                    switch (x) {
-                        case Failed(e):
-                            Std.is(e, AbortError).should.be(true);
-                        case _:
-                            fail();
+                    switch (future.result) {
+                        case Failed(e): Std.is(e, AbortError).should.be(true);
+                        case _: fail();
                     }
-                    done();
                 });
 
-                future.abort();
+                #if js
+                it("should not call onAbort", {
+                    var called = false;
+                    var future = Future.apply(function (ctx) {
+                        ctx.onAbort = function () {
+                            called = true;
+                        };
+                    });
+
+                    future.abort();
+                    called.should.be(false);
+                });
+                #end
+
+                it("should call onAbort", {
+                    var called = false;
+                    var future = Future.apply(function (ctx) {
+                        ctx.onAbort = function () {
+                            called = true;
+                        };
+                    });
+
+                    wait(10, function () {
+                        future.abort();
+                        called.should.be(true);
+                    });
+                });
+
+                it("should call then callback", function (done) {
+                    var future = Future.apply(function (ctx) {
+                    });
+
+                    future.then(function (x) {
+                        future.result.same(x).should.be(true);
+                        future.isActive.should.be(false);
+                        switch (x) {
+                            case Failed(e):
+                                Std.is(e, AbortError).should.be(true);
+                            case _:
+                                fail();
+                        }
+                        done();
+                    });
+
+                    future.abort();
+                });
             });
         });
-        describe("Future(async).abort()", {
-            timeoutMs = 1000;
 
-            it("should not call executor", {
-                var future = new Future(function (ctx) {
-                    #if neko
-                    wait(100, function () fail());
-                    #else
-                    fail();
-                    #end
-                    return function () {
-                        fail();
-                    };
-                }, true);
-
-                future.abort();
-                future.isActive.should.be(false);
-                switch (future.result) {
-                    case Failed(e): Std.is(e, AbortError).should.be(true);
-                    case _: fail();
-                }
-            });
-
-            it("should call then() as aborted", function (done) {
-                var future = new Future(function (ctx) {
-                    #if neko
-                    wait(100, function () fail());
-                    #else
-                    fail();
-                    #end
-                    return function () {};
-                }, true);
-
-                future.then(function (x) {
-                    future.result.same(x).should.be(true);
-                    future.isActive.should.be(false);
-                    switch (x) {
-                        case Failed(e):
-                            Std.is(e, AbortError).should.be(true);
-                        case _:
-                            fail();
-                    }
+        describe("Future.applySync()", {
+            it("should call", function (done) {
+                Future.applySync(function (ctx) {
                     done();
                 });
+            });
 
-                future.abort();
+            it("should be active", function (done) {
+                var future = Future.applySync(function (ctx) {
+                });
+                wait(10, function () {
+                    future.isActive.should.be(true);
+                    future.result.isEmpty().should.be(true);
+                    done();
+                });
+            });
+
+            it("should be Success", function (done) {
+                var future = Future.applySync(function (ctx) {
+                    ctx.successful(1);
+                });
+                wait(10, function () {
+                    future.isActive.should.be(false);
+                    future.result.same(Maybe.of(Success(1))).should.be(true);
+                    done();
+                });
+            });
+
+            it("should be Failed", function (done) {
+                var future = Future.applySync(function (ctx) {
+                    ctx.failed("error");
+                });
+                wait(10, function () {
+                    future.isActive.should.be(false);
+                    future.result.same(Failed("error")).should.be(true);
+                    done();
+                });
+            });
+
+            it("should be Failed when it throw", function (done) {
+                var future = Future.applySync(function (ctx) {
+                    #if neko
+                    Sys.sleep(0.01);
+                    #end
+                    throw "error";
+                });
+                wait(20, function () {
+                    future.isActive.should.be(false);
+                    future.result.same(Failed("error")).should.be(true);
+                    done();
+                });
+            });
+
+            describe(".then()", {
+                it("should call callback when it has given Success", function (done) {
+                    var future = Future.applySync(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+                    future.then(function (x: Result<Int>) {
+                        x.same(Success(1)).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+
+                it("should call callback when it has given Failed", function (done) {
+                    var future = Future.applySync(function (ctx) {
+                        wait(5, function () ctx.failed("error"));
+                    });
+                    future.then(function (x: Result<Int>) {
+                        x.same(Failed("error")).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+
+                it("should call 2 callbacks", function (done) {
+                    var future = Future.applySync(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+
+                    var count = 0;
+                    future.then(function (x: Result<Int>) {
+                        count++;
+                    });
+                    future.then(function (x: Result<Int>) {
+                        count++;
+                        count.should.be(2);
+                        done();
+                    });
+                });
+
+                it("should call after processed", function (done) {
+                    var future = Future.applySync(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+
+                    wait(10, function () {
+                        future.then(function (x: Result<Int>) {
+                            done();
+                        });
+                    });
+                });
+
+                it("should not call again", function (done) {
+                    var future = Future.applySync(function (ctx) {
+                        wait(5, function () ctx.successful(1));
+                    });
+                    var count = 0;
+                    future.then(function (x: Result<Int>) {
+                        count++;
+                    });
+
+                    wait(10, function () {
+                        future.then(function (x: Result<Int>) {
+                            count.should.be(1);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe(".abort()", {
+                it("should abort", {
+                    var future = Future.applySync(function (ctx) {
+                    });
+                    future.abort();
+                    future.isActive.should.be(false);
+                    switch (future.result) {
+                        case Failed(e): Std.is(e, AbortError).should.be(true);
+                        case _: fail();
+                    }
+                });
+
+                it("should call onAbort", {
+                    var called = false;
+                    var future = Future.applySync(function (ctx) {
+                        ctx.onAbort = function () {
+                            called = true;
+                        };
+                    });
+
+                    future.abort();
+                    called.should.be(true);
+                });
+
+                it("should call then callback", function (done) {
+                    var future = Future.applySync(function (ctx) {
+                    });
+
+                    future.then(function (x) {
+                        future.result.same(x).should.be(true);
+                        future.isActive.should.be(false);
+                        switch (x) {
+                            case Failed(e):
+                                Std.is(e, AbortError).should.be(true);
+                            case _:
+                                fail();
+                        }
+                        done();
+                    });
+
+                    future.abort();
+                });
             });
         });
     }
