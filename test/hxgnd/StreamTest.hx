@@ -1,16 +1,18 @@
 package hxgnd;
 
-import hxgnd.Stream;
 import buddy.BuddySuite;
 import TestTools.wait;
 using buddy.Should;
+
+import hxgnd.Stream;
+import hxgnd.Result;
 using hxgnd.LangTools;
 
 class StreamTest extends BuddySuite {
     public function new() {
         describe("Stream is Abortable", {
             it("should can compile", {
-                var stream: Abortable = new Stream(function (ctx) {
+                var stream: Abortable = Stream.apply(function (ctx) {
                     ctx.emit(End);
                 });
             });
@@ -20,7 +22,7 @@ class StreamTest extends BuddySuite {
             timeoutMs = 1000;
 
             it("should emit Error", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     throw "error";
                 });
                 #if js
@@ -43,7 +45,7 @@ class StreamTest extends BuddySuite {
 
             #if js
             it("should invoke middleware defer", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     ctx.emit(End);
                 });
 
@@ -63,7 +65,7 @@ class StreamTest extends BuddySuite {
             #end
 
             it("should wait delayed End", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(End);
                     });
@@ -84,7 +86,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should notify single End when executor emits End 2-times", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(End);
                         ctx.emit(End);
@@ -108,7 +110,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should subscribe 1 Data and End", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(Data(1));
                     });
@@ -141,7 +143,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should notify single End when executor emits End and Data", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(End);
                         ctx.emit(Data(1));
@@ -165,7 +167,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should notify single End when executor emits End and Error", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(End);
                         ctx.emit(Error("error"));
@@ -189,7 +191,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should notify single Error when executor emits Error and End", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(Error("error"));
                         ctx.emit(End);
@@ -213,7 +215,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should notify single End when executor emits Error and Data", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(Error("error"));
                         ctx.emit(Data(1));
@@ -237,7 +239,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should notify single Error when executor emits Error 2-times", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(Error("error"));
                         ctx.emit(Error("error2"));
@@ -261,7 +263,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should subscribe 1 Data and Error", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(Data(1));
                     });
@@ -294,7 +296,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should subscribe 2 Data and End", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(Data(1));
                     });
@@ -334,7 +336,7 @@ class StreamTest extends BuddySuite {
             });
 
             it("should notify to 2 subscribers", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(Data(1));
                     });
@@ -400,7 +402,7 @@ class StreamTest extends BuddySuite {
             timeoutMs = 1000;
 
             it("should not subscribe", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     wait(5, function () {
                         ctx.emit(End);
                     });
@@ -424,7 +426,7 @@ class StreamTest extends BuddySuite {
             timeoutMs = 1000;
 
             it("should abort event loop", function (done) {
-                var stream = new Stream(function (ctx) {
+                var stream = Stream.apply(function (ctx) {
                     var i = 0;
                     function loop() {
                         ctx.emit(Data(i++));
@@ -448,10 +450,9 @@ class StreamTest extends BuddySuite {
             it("should call onAbort", function (done) {
                 var isCalled = false;
 
-                var stream = new Stream(function (ctx) {
-                    ctx.onAbort = function (done) {
+                var stream = Stream.apply(function (ctx) {
+                    ctx.onAbort = function () {
                         isCalled = true;
-                        done();
                     }
 
                     function loop() {
@@ -472,6 +473,53 @@ class StreamTest extends BuddySuite {
                     });
                     stream.abort();
                 });
+            });
+        });
+
+        describe("Stream.end", {
+            it("should be singleton", {
+                var stream = Stream.apply(function (ctx) {
+                });
+                var end = stream.end;
+                (end == stream.end).should.be(true);
+            });
+
+            it("should subscribe End", function (done) {
+                var stream = Stream.apply(function (ctx) {
+                    wait(5, ctx.emit.bind(End));
+                });
+                stream.end.then(function (result) {
+                    result.same(Success(new Unit())).should.be(true);
+                    done();
+                });
+            });
+
+            it("should subscribe Error", function (done) {
+                var stream = Stream.apply(function (ctx) {
+                    wait(5, ctx.emit.bind(Error("error")));
+                });
+                stream.end.then(function (result) {
+                    result.same(Failure("error")).should.be(true);
+                    done();
+                });
+            });
+
+            it("should not subscribe Data", function (done) {
+                var stream = Stream.apply(function (ctx) {
+                    wait(5, ctx.emit.bind(Data(1)));
+                });
+                stream.end.then(function (result) {
+                    fail();
+                    done();
+                });
+                wait(10, done);
+            });
+
+            it("should abort stream", function (done) {
+                var stream = Stream.apply(function (ctx) {
+                    ctx.onAbort = done;
+                });
+                wait(10, stream.end.abort);
             });
         });
     }

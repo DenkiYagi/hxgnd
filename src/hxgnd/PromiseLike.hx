@@ -79,7 +79,7 @@ class PromiseLike<T> {
             if (LangTools.nonNull(fulfilled)) onFulfilledHanlders.push(handleFulfilled);
             if (LangTools.nonNull(rejected)) onRejectedHanlders.push(handleRejected);
         } else {
-            switch (result.getOrNull()) {
+            switch (result.get()) {
                 case Success(v): handleFulfilled(v);
                 case Failure(e): handleRejected(e);
             }

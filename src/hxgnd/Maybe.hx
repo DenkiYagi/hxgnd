@@ -16,8 +16,7 @@ abstract Maybe<T>(Null<T>) from Null<T> {
         return null;
     }
 
-    public inline function get(): T {
-        if (isEmpty()) throw new Error("No value");
+    public inline function get(): Null<T> {
         return this;
     }
 
@@ -29,7 +28,8 @@ abstract Maybe<T>(Null<T>) from Null<T> {
         }
     }
 
-    public inline function getOrNull(): Null<T> {
+    public inline function getOrThrow(): T {
+        if (isEmpty()) throw new Error("No value");
         return this;
     }
 
@@ -73,7 +73,7 @@ abstract Maybe<T>(Null<T>) from Null<T> {
         return if (nonEmpty()) {
             fn(this);
         } else {
-            elseFn(); 
+            elseFn();
         }
     }
 }

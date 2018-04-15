@@ -1,37 +1,19 @@
 package hxgnd;
 
 using hxgnd.LangTools;
-#if neko
-using neko.vm.Thread;
-#end
 
 class Stream<T> {
     public var isActive(default, null): Bool;
+    public var end(get, never): Future<Unit>;
 
     var subscribers: Array<StreamSubscriber<T>>;
     var context: StreamContext<T>;
-    #if neko
-    var thread: Thread;
-    #end
+    var _end: Maybe<Future<Unit>>;
 
-    public function new(executor: StreamContext<T> -> Void) {
+    function new() {
+        isActive = true;
         subscribers = [];
         context = { emit: emit, onAbort: null };
-        isActive = true;
-
-        inline function invoke() {
-            try {
-                executor(context);
-            } catch (e: Dynamic) {
-                emit(Error(e));
-            }
-        }
-
-        #if js
-        hxgnd.js.JsNative.setImmediate(function () invoke());
-        #else
-        thread = Thread.create(function () invoke());
-        #end
     }
 
     public function subscribe(fn: StreamSubscriber<T>): Void {
@@ -47,36 +29,83 @@ class Stream<T> {
     public function abort(): Void {
         if (!isActive) return;
 
-        var done = emit.bind(Error(new AbortError("aborted")));
+        inline function done() {
+            emit(Error(new AbortError("aborted")));
+        }
+
         if (context.onAbort.nonNull()) {
-            context.onAbort(done);
+            try {
+                context.onAbort();
+            } catch (e: Dynamic) {
+                #if js
+                js.Browser.console.error(e);
+                #else
+                trace(e);
+                #end
+            }
+            done();
         } else {
             done();
         }
     }
 
+    inline function get_end(): Future<Unit> {
+        if (_end.isEmpty()) {
+            _end = Future.applySync(function (ctx) {
+                ctx.onAbort = abort;
+                subscribe(function (e) {
+                    switch (e) {
+                        case End: ctx.successful(new Unit());
+                        case Error(err): ctx.failed(err);
+                        case _:
+                    }
+                });
+            });
+        }
+        return _end.get();
+    }
+
     function emit(event: StreamEvent<T>): Void {
         if (!isActive) return;
-
-        inline function cleanup() {
-            isActive = false;
-            subscribers = null;
-            context = null;
-        }
 
         var _subscribers = this.subscribers;
         switch (event) {
             case End | Error(_):
-                cleanup();
+                isActive = false;
+                subscribers = null;
+                context = null;
+                _end = null;
             case _:
         }
         for (fn in _subscribers) fn(event);
+    }
+
+    public static function apply<T>(executor: StreamContext<T> -> Void): Stream<T> {
+        var stream = new Stream<T>();
+
+        function invoke() {
+            try {
+                executor(stream.context);
+            } catch (e: Dynamic) {
+                stream.emit(Error(e));
+            }
+        }
+
+        #if js
+        hxgnd.js.JsNative.setImmediate(invoke);
+        #elseif neko
+        neko.vm.Thread.create(invoke);
+        #else
+        haxe.Timer.delay(invoke, 0);
+        #end
+
+        return stream;
     }
 }
 
 typedef StreamContext<T> = {
     function emit(event: StreamEvent<T>): Void;
-    dynamic function onAbort(done: Void -> Void): Void;
+    dynamic function onAbort(): Void;
 }
 
 typedef StreamSubscriber<T> = StreamEvent<T> -> Void;

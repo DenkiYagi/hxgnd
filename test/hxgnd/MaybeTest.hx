@@ -55,7 +55,7 @@ class MaybeTest extends BuddySuite {
                 #end
             });
         });
- 
+
         describe("Maybe.empty()", {
             it("should be success", {
                 Maybe.empty().isEmpty().should.be(true);
@@ -63,11 +63,11 @@ class MaybeTest extends BuddySuite {
         });
 
         describe("Maybe.get()", {
-            it("should be success", {
+            it("should return value", {
                 Maybe.of(1).get().should.be(1);
             });
-            it("should be failure", {
-                function () { Maybe.empty().get(); }.should.throwAnything();
+            it("should return null", {
+                (Maybe.empty(): Maybe<Int>).get().should.be(null);
             });
         });
 
@@ -80,12 +80,12 @@ class MaybeTest extends BuddySuite {
             });
         });
 
-        describe("Maybe.getOrNull()", {
-            it("should return value", {
-                Maybe.of(1).getOrNull().should.be(1);
+        describe("Maybe.getOrThrow()", {
+            it("should be success", {
+                Maybe.of(1).getOrThrow().should.be(1);
             });
-            it("should return null", {
-                (Maybe.empty(): Maybe<Int>).getOrNull().should.be(null);
+            it("should be failure", {
+                function () { Maybe.empty().getOrThrow(); }.should.throwAnything();
             });
         });
 

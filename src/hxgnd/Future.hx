@@ -63,7 +63,7 @@ class Future<T> {
         if (isActive) {
             handlers.push(handler);
         } else {
-            handler(result.getOrNull());
+            handler(result.get());
         }
     }
 
