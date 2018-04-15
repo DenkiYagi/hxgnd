@@ -130,6 +130,10 @@ class Future<T> {
         return new Future(Maybe.of(Success(value)));
     }
 
+    public static inline function successfulUnit(): Future<Unit> {
+        return new Future(Maybe.of(Success(Unit._)));
+    }
+
     public static inline function failed<T>(error: Dynamic): Future<T> {
         return new Future(Maybe.of(Failure(error)));
     }

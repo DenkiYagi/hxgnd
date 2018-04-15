@@ -43,6 +43,35 @@ class FutureTest extends BuddySuite {
             });
         });
 
+
+        describe("Future.successfulUnit()", {
+            it("should pass", {
+                var future = Future.successfulUnit();
+                future.isActive.should.be(false);
+                future.result.nonEmpty().should.be(true);
+                future.result.same(Maybe.of(Success(Unit._))).should.be(true);
+            });
+
+            describe(".then()", {
+                it("should call callback", function (done) {
+                var future = Future.successfulUnit();
+                    future.then(function (x: Result<Unit>) {
+                        x.same(Success(Unit._)).should.be(true);
+                        x.same(future.result).should.be(true);
+                        future.isActive.should.be(false);
+                        done();
+                    });
+                });
+            });
+
+            describe(".abort()", {
+                it("should pass", {
+                    var future = Future.successfulUnit();
+                    future.abort();
+                });
+            });
+        });
+
         describe("Future.failed()", {
             it("should pass", {
                 var future = Future.failed("error");
