@@ -49,7 +49,7 @@ class Stream<T> {
         }
     }
 
-    inline function get_end(): Future<Unit> {
+    function get_end(): Future<Unit> {
         if (_end.isEmpty()) {
             _end = Future.applySync(function (ctx) {
                 ctx.onAbort = abort;
