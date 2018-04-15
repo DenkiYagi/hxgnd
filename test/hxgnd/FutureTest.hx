@@ -16,14 +16,7 @@ class FutureTest extends BuddySuite {
         });
 
         describe("Future.successful()", {
-            it("should pass when it has given void", {
-                var future = Future.successful();
-                future.isActive.should.be(false);
-                future.result.nonEmpty().should.be(true);
-                future.result.same(Maybe.of(Success(null))).should.be(true);
-            });
-
-            it("should pass when it has given value", {
+            it("should pass", {
                 var future = Future.successful(1);
                 future.isActive.should.be(false);
                 future.result.nonEmpty().should.be(true);

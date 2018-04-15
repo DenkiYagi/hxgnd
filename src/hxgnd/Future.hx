@@ -126,7 +126,7 @@ class Future<T> {
         return future;
     }
 
-    public static inline function successful<T>(?value: T): Future<T> {
+    public static inline function successful<T>(value: T): Future<T> {
         return new Future(Maybe.of(Success(value)));
     }
 
