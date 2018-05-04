@@ -316,7 +316,7 @@ class PromiseLikeTest extends BuddySuite {
             it("should be instanceof PromiseLike", {
                 var promise = PromiseLike.resolve(1).toPromise(false);
                 Std.is(promise, PromiseLike).should.be(true);
-                Std.is(promise, js.Promise).should.be(false);
+                Std.is(promise, js.Promise).should.be(true);
             });
 
             it("should call then()", function (done) {

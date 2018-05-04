@@ -13,6 +13,12 @@ class PromiseLike<T> {
     var onFulfilledHanlders: Array<T -> Void> = [];
     var onRejectedHanlders: Array<Dynamic -> Void> = [];
 
+    #if js
+    static function __init__() {
+        untyped __js__("{0}.prototype.__proto__ = Promise.prototype", PromiseLike);
+    }
+    #end
+
     public function new(executor: (T -> Void) -> (Dynamic -> Void) -> Void) {
         try {
             executor(onFulfill, onReject);
