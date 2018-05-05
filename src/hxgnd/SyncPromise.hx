@@ -52,9 +52,8 @@ class SyncPromise<T> {
         var promise = new SyncPromise<TOut>(function (_, _) {});
 
         function handleFulfilled(value: T) {
-            var callback: T -> Dynamic = cast fulfilled;
             try {
-                var next = callback(value);
+                var next = (fulfilled: T -> Dynamic)(value);
                 if (Std.is(next, SyncPromise) #if js || Std.is(next, js.Promise) #end) {
                     var nextPromise: Thenable<TOut> = cast next;
                     nextPromise.then(promise.onFulfill, promise.onReject);
@@ -67,9 +66,8 @@ class SyncPromise<T> {
         }
 
         function handleRejected(error: Dynamic) {
-            var callback: Dynamic -> Dynamic = cast rejected;
             try {
-                var next = callback(error);
+                var next = (rejected: Dynamic -> Dynamic)(error);
                 if (Std.is(next, SyncPromise) #if js || Std.is(next, js.Promise) #end) {
                     var nextPromise: Thenable<TOut> = cast next;
                     nextPromise.then(promise.onFulfill, promise.onReject);
