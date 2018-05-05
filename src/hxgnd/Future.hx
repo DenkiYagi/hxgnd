@@ -1,7 +1,7 @@
 package hxgnd;
 
 import hxgnd.Result;
-import hxgnd.PromiseLike;
+import hxgnd.SyncPromise;
 #if js
 import hxgnd.js.JsNative.setImmediate;
 #elseif neko
@@ -98,7 +98,7 @@ class Future<T> {
                 });
             });
         } else {
-            new PromiseLike(function (resolve, reject) {
+            new SyncPromise(function (resolve, reject) {
                 then(function (result) {
                     switch (result) {
                         case Success(v): resolve(v);

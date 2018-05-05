@@ -7,7 +7,7 @@ import externtype.Mixed2;
 import externtype.Mixed3;
 #end
 
-class PromiseLike<T> {
+class SyncPromise<T> {
     public var result(default, null): Maybe<Result<T>> = Maybe.empty();
 
     var onFulfilledHanlders: Array<T -> Void> = [];
@@ -15,7 +15,7 @@ class PromiseLike<T> {
 
     #if js
     static function __init__() {
-        untyped __js__("{0}.prototype.__proto__ = Promise.prototype", PromiseLike);
+        untyped __js__("{0}.prototype.__proto__ = Promise.prototype", SyncPromise);
     }
     #end
 
@@ -48,14 +48,14 @@ class PromiseLike<T> {
     }
 
     public function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>,
-            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): PromiseLike<TOut> {
-        var promise = new PromiseLike<TOut>(function (_, _) {});
+            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): SyncPromise<TOut> {
+        var promise = new SyncPromise<TOut>(function (_, _) {});
 
         function handleFulfilled(value: T) {
             var callback: T -> Dynamic = cast fulfilled;
             try {
                 var next = callback(value);
-                if (Std.is(next, PromiseLike) #if js || Std.is(next, js.Promise) #end) {
+                if (Std.is(next, SyncPromise) #if js || Std.is(next, js.Promise) #end) {
                     var nextPromise: Thenable<TOut> = cast next;
                     nextPromise.then(promise.onFulfill, promise.onReject);
                 } else {
@@ -70,7 +70,7 @@ class PromiseLike<T> {
             var callback: Dynamic -> Dynamic = cast rejected;
             try {
                 var next = callback(error);
-                if (Std.is(next, PromiseLike) #if js || Std.is(next, js.Promise) #end) {
+                if (Std.is(next, SyncPromise) #if js || Std.is(next, js.Promise) #end) {
                     var nextPromise: Thenable<TOut> = cast next;
                     nextPromise.then(promise.onFulfill, promise.onReject);
                 } else {
@@ -94,7 +94,7 @@ class PromiseLike<T> {
         return promise;
     }
 
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): PromiseLike<TOut> {
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): SyncPromise<TOut> {
         return then(null, rejected);
     }
 
@@ -111,21 +111,21 @@ class PromiseLike<T> {
     }
     #end
 
-    public static function resolve<T>(?value: T): PromiseLike<T> {
-        return new PromiseLike(function (f, _) {
+    public static function resolve<T>(?value: T): SyncPromise<T> {
+        return new SyncPromise(function (f, _) {
             return f(value);
         });
     }
 
-    public static function reject(error: Dynamic): PromiseLike<Void> {
-        return new PromiseLike(function (_, f) {
+    public static function reject(error: Dynamic): SyncPromise<Void> {
+        return new SyncPromise(function (_, f) {
             return f(error);
         });
     }
 }
 
 #if js
-typedef PromiseCallback<T, TOut> = Mixed3<T -> TOut, T -> PromiseLike<TOut>, T -> js.Promise<TOut>>;
+typedef PromiseCallback<T, TOut> = Mixed3<T -> TOut, T -> SyncPromise<TOut>, T -> js.Promise<TOut>>;
 #else
-typedef PromiseCallback<T, TOut> = Mixed2<T -> TOut, T -> PromiseLike<TOut>>;
+typedef PromiseCallback<T, TOut> = Mixed2<T -> TOut, T -> SyncPromise<TOut>>;
 #end
