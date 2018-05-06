@@ -3,6 +3,7 @@ package hxgnd.js;
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
+import externtype.Mixed2;
 
 using hxgnd.ArrayTools;
 #end
@@ -23,7 +24,7 @@ class PromiseTools {
                 var cb = macro function (error) {
                     if (untyped error) reject(error) else resolve();
                 };
-                
+
                 macro new js.Promise<Void>(function (resolve: haxe.Constraints.Function, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
                 });
@@ -40,8 +41,8 @@ class PromiseTools {
                 var init = macro function (resolve, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
                 }
-                
-                { 
+
+                {
                     expr: ENew({ pack: ["js"], name: "Promise", params: [TPType(t)] }, [init]),
                     pos: fn.pos
                 };
@@ -69,7 +70,7 @@ class PromiseTools {
                         })),
                         pos: fn.pos
                     }]),
-                    pos: fn.pos 
+                    pos: fn.pos
                 };
                 var cb = EFunction(null, {
                     args: [{ name: "error", type: null }].concat(argTypes.slice(1).mapWithIndex(function (a, i): FunctionArg {
@@ -83,12 +84,12 @@ class PromiseTools {
                 });
                 var init = macro function (resolve, reject) {
                     $e{ {
-                        pos: fn.pos, 
+                        pos: fn.pos,
                         expr: ExprDef.ECall(fn, args.concat([{expr: cb, pos: fn.pos}]))
                     } };
                 }
-                
-                { 
+
+                {
                     expr: ENew({ pack: ["js"], name: "Promise", params: [TPType(t)] }, [init]),
                     pos: fn.pos
                 };
@@ -111,7 +112,7 @@ class PromiseTools {
                 var cb = macro function (error) {
                     if (untyped error) reject(error) else resolve();
                 };
-                
+
                 macro new js.Promise<Void>(function (resolve: haxe.Constraints.Function, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
                 });
@@ -127,8 +128,8 @@ class PromiseTools {
                 var init = macro function (resolve, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
                 }
-                
-                { 
+
+                {
                     expr: ENew({ pack: ["js"], name: "Promise", params: [] }, [init]),
                     pos: fn.pos
                 };
@@ -145,10 +146,10 @@ class PromiseTools {
                         resolve(hxgnd.js.JsArray.from(hxgnd.js.JsNative.nativeArguments).slice(1));
                      }
                 };
-                
+
                 macro new js.Promise<Array<Dynamic>>(function (resolve, reject) {
                     $e{ {
-                        pos: fn.pos, 
+                        pos: fn.pos,
                         expr: ExprDef.ECall(fn, args.concat([cb]))
                     } };
                 });
@@ -167,28 +168,39 @@ class PromiseTools {
         };
         return {
             pos: expr.pos,
-            expr: ECheckType(macro untyped __js__("(await {0})", ${expr}), type) 
+            expr: ECheckType(macro untyped __js__("(await {0})", ${expr}), type)
         };
     }
 
-    public static macro function async<T>(expr: ExprOf<haxe.Constraints.Function>): Expr {
-        var expr = resolveEMetaExpr(expr);
-        
+    public static macro function async<T>(body: Expr): Expr {
+        var body = resolveEMetaExpr(body);
+
         var funcName: Null<String>;
         var funcDef: Function;
         var retType: ComplexType;
-        switch (expr.expr) {
+        switch (body.expr) {
             case EFunction(n, f):
                 funcName = n;
                 funcDef = f;
-                retType = inferReturnType(expr, []);
+                retType = inferReturnType(body, []);
+            case EBlock(_):
+                funcName = null;
+                funcDef = {
+                    args: [],
+                    ret: null,
+                    expr: body
+                }
+                retType = inferReturnType({
+                    pos: body.pos,
+                    expr: EFunction(funcName, funcDef)
+                }, []);
             case _:
-                Context.error("expr must be a function expr", expr.pos);
+                Context.error("body must be a expr that is Function or Block", body.pos);
                 throw "";
         }
 
         return macro $e{ {
-            pos: expr.pos,
+            pos: body.pos,
             expr: EFunction(funcName, {
                 args: funcDef.args,
                 ret: TPath({ pack: ["js"], name: "Promise", params: [TPType(retType)] }),
@@ -197,24 +209,36 @@ class PromiseTools {
         } };
     }
 
-    public static macro function asyncCall<T>(expr: ExprOf<haxe.Constraints.Function>, args: Array<Expr>): ExprOf<js.Promise<T>> {
-        var expr = resolveEMetaExpr(expr);
-        
-        var retType = inferReturnType(expr, args);
+    public static macro function asyncCall<T>(body: Expr, args: Array<Expr>): ExprOf<js.Promise<T>> {
+        var body = resolveEMetaExpr(body);
+
         var funcName: Null<String>;
         var funcDef: Function;
-        switch (expr.expr) {
+        var retType: ComplexType;
+        switch (body.expr) {
             case EFunction(n, f):
                 funcName = n;
                 funcDef = f;
+                retType = inferReturnType(body, args);
+            case EBlock(_):
+                funcName = null;
+                funcDef = {
+                    args: [],
+                    ret: null,
+                    expr: body
+                }
+                retType = inferReturnType({
+                    pos: body.pos,
+                    expr: EFunction(funcName, funcDef)
+                }, []);
             case _:
-                Context.error("expr must be a function expr", expr.pos);
+                Context.error("expr must be a function expr", body.pos);
                 throw "";
         }
         return {
-            pos: expr.pos,
+            pos: body.pos,
             expr: ECall({
-                pos: expr.pos,
+                pos: body.pos,
                 expr: EFunction(null, {
                     args: funcDef.args,
                     ret: TPath({ pack: ["js"], name: "Promise", params: [TPType(retType)] }),
@@ -285,7 +309,7 @@ class PromiseTools {
         return TPath({pack: [], name: "Dynamic", params: []});
     }
 
-    public static function resolveEMetaExpr(expr: Expr): Expr {
+    static function resolveEMetaExpr(expr: Expr): Expr {
         return switch (expr.expr) {
             case EMeta({name: ":this"}, _):
                 var posInfo = Context.getPosInfos(expr.pos);
@@ -301,7 +325,7 @@ class PromiseTools {
         var js = switch (func.expr.expr) {
             case EBlock(exprs) if (exprs.length >= 2):
                 '(async function ${n}() {0})()';
-            case _: 
+            case _:
                 '(async function ${n}() { {0}; })()';
         }
         return macro untyped __js__($v{js}, ${func.expr});
