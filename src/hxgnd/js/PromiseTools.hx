@@ -3,7 +3,6 @@ package hxgnd.js;
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
-import externtype.Mixed2;
 
 using hxgnd.ArrayTools;
 #end
