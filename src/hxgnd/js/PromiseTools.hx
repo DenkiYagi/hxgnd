@@ -231,7 +231,7 @@ class PromiseTools {
                     expr: EFunction(funcName, funcDef)
                 }, []);
             case _:
-                Context.error("expr must be a function expr", body.pos);
+                Context.error("body must be a expr that is Function or Block", body.pos);
                 throw "";
         }
         return {
