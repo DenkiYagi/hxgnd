@@ -20,6 +20,11 @@ class SyncPromise<T> {
     #end
 
     public function new(executor: (T -> Void) -> (Dynamic -> Void) -> Void) {
+        // compatible JS Promise
+        #if js
+        Reflect.setField(this, "catch", catchError);
+        #end
+
         try {
             executor(onFulfill, onReject);
         } catch (e: Dynamic) {
@@ -103,7 +108,6 @@ class SyncPromise<T> {
                 then(resolve, reject);
             });
         } else {
-            Reflect.setField(this, "catch", catchError);
             cast this;
         }
     }

@@ -1,5 +1,7 @@
 package hxgnd.js;
 
+import externtype.Mixed2;
+
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
@@ -24,7 +26,7 @@ class PromiseTools {
                     if (untyped error) reject(error) else resolve();
                 };
 
-                macro new js.Promise<Void>(function (resolve: haxe.Constraints.Function, reject) {
+                macro new hxgnd.SyncPromise<Void>(function (resolve: haxe.Constraints.Function, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
                 });
             case 2:
@@ -42,7 +44,7 @@ class PromiseTools {
                 }
 
                 {
-                    expr: ENew({ pack: ["js"], name: "Promise", params: [TPType(t)] }, [init]),
+                    expr: ENew({ pack: ["hxgnd"], name: "SyncPromise", params: [TPType(t)] }, [init]),
                     pos: fn.pos
                 };
             case _:
@@ -89,7 +91,7 @@ class PromiseTools {
                 }
 
                 {
-                    expr: ENew({ pack: ["js"], name: "Promise", params: [TPType(t)] }, [init]),
+                    expr: ENew({ pack: ["hxgnd"], name: "SyncPromise", params: [TPType(t)] }, [init]),
                     pos: fn.pos
                 };
         }
@@ -112,7 +114,7 @@ class PromiseTools {
                     if (untyped error) reject(error) else resolve();
                 };
 
-                macro new js.Promise<Void>(function (resolve: haxe.Constraints.Function, reject) {
+                macro new hxgnd.SyncPromise<Void>(function (resolve: haxe.Constraints.Function, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
                 });
             case 2:
@@ -129,7 +131,7 @@ class PromiseTools {
                 }
 
                 {
-                    expr: ENew({ pack: ["js"], name: "Promise", params: [] }, [init]),
+                    expr: ENew({ pack: ["hxgnd"], name: "SyncPromise", params: [] }, [init]),
                     pos: fn.pos
                 };
             case _:
@@ -146,7 +148,7 @@ class PromiseTools {
                      }
                 };
 
-                macro new js.Promise<Array<Dynamic>>(function (resolve, reject) {
+                macro new hxgnd.SyncPromise<Array<Dynamic>>(function (resolve, reject) {
                     $e{ {
                         pos: fn.pos,
                         expr: ExprDef.ECall(fn, args.concat([cb]))
@@ -155,15 +157,15 @@ class PromiseTools {
         }
     }
 
-    public static macro function await<T>(expr: ExprOf<js.Promise<T>>): ExprOf<T> {
+    public static macro function await<T>(expr: ExprOf<Mixed2<js.Promise<T>, hxgnd.SyncPromise<T>>>): ExprOf<T> {
         var type = switch (Context.toComplexType(Context.typeof(expr))) {
-            case TPath({ name: "Promise", pack: ["js"], params: params }):
+            case TPath({ name: "Promise", pack: ["js"], params: params }) | TPath({ name: "SyncPromise", pack: ["hxgnd"], params: params }):
                 switch (params[0]) {
                     case TPType(t): t;
                     case TPExpr(e): Context.toComplexType(Context.typeof(e));
                 }
             default:
-                Context.error("argument must be js.Promsise<T>", expr.pos);
+                Context.error("argument must be js.Promsise<T> or hxgnd.SyncPromise<T>", expr.pos);
         };
         return {
             pos: expr.pos,
