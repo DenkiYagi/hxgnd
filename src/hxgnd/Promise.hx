@@ -3,7 +3,7 @@ package hxgnd;
 import externtype.Mixed2;
 
 @:generic
-abstract Promise<T>(IPromise<T>) from IPromise<T> {
+abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     public function new(executor: (T -> Void) -> (Dynamic -> Void) -> Void): Void {
         #if js
         this = cast new js.Promise(executor);
@@ -95,11 +95,15 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
 
 #if !js
 class DelayPromise<T> implements IPromise<T> {
-    var result: Maybe<Result<T>> = Maybe.empty();
-    var onFulfilledHanlders: Array<T -> Void> = [];
-    var onRejectedHanlders: Array<Error -> Void> = [];
+    var result: Maybe<Result<T>>;
+    var onFulfilledHanlders: Delegate<T>;
+    var onRejectedHanlders: Delegate<Dynamic>;
 
     public function new(executor: (T -> Void) -> (Dynamic -> Void) -> Void): Void {
+        this.result = Maybe.empty();
+        this.onFulfilledHanlders = new Delegate();
+        this.onRejectedHanlders = new Delegate();
+
         function invoke() {
             try {
                 executor(onFulfill, onReject);
@@ -121,41 +125,29 @@ class DelayPromise<T> implements IPromise<T> {
         #end
     }
 
-    function onFulfill(value: T): Void {
-        if (result.nonEmpty()) return;
-
-        result = Maybe.of(Result.Success(value));
-        for (f in onFulfilledHanlders) f(value);
-
-        disposeHandlers();
+    public function then<TOut>(
+            fulfilled: Null<PromiseCallback<T, TOut>>,
+            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+        return _then(fulfilled, rejected);
     }
 
-    function onReject(error: Dynamic): Void {
-        if (result.nonEmpty()) return;
-
-        result = Maybe.of(Result.Failure(error));
-        for (f in onRejectedHanlders) f(error);
-
-        disposeHandlers();
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+        return _then(null, rejected);
     }
 
-    inline function disposeHandlers(): Void {
-        onFulfilledHanlders = null;
-        onRejectedHanlders = null;
-    }
-
-    public function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>,
+    inline function _then<TOut>(
+            fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         var promise = new DelayPromise<TOut>(function (_, _) {});
 
         function handleFulfilled(value: T) {
             try {
-                var next = (fulfilled: T -> Dynamic)(value);
-                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                    var nextPromise: Thenable<TOut> = cast next;
+                var nextValue = (fulfilled: T -> Dynamic)(value);
+                if (#if js Std.is(nextValue, js.Promise) #else Std.is(nextValue, IPromise) #end) {
+                    var nextPromise: Thenable<TOut> = cast nextValue;
                     nextPromise.then(promise.onFulfill, promise.onReject);
                 } else {
-                    promise.onFulfill(next);
+                    promise.onFulfill(nextValue);
                 }
             } catch (e: Error) {
                 promise.onReject(e);
@@ -166,12 +158,12 @@ class DelayPromise<T> implements IPromise<T> {
 
         function handleRejected(error: Dynamic) {
             try {
-                var next = (rejected: Dynamic -> Dynamic)(error);
-                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                    var nextPromise: Thenable<TOut> = cast next;
+                var nextValue = (rejected: Dynamic -> Dynamic)(error);
+                if (#if js Std.is(nextValue, js.Promise) #else Std.is(nextValue, IPromise) #end) {
+                    var nextPromise: Thenable<TOut> = cast nextValue;
                     nextPromise.then(promise.onFulfill, promise.onReject);
                 } else {
-                    promise.onFulfill(next);
+                    promise.onFulfill(nextValue);
                 }
             } catch (e: Error) {
                 promise.onReject(e);
@@ -181,8 +173,8 @@ class DelayPromise<T> implements IPromise<T> {
         }
 
         if (result.isEmpty()) {
-            if (LangTools.nonNull(fulfilled)) onFulfilledHanlders.push(handleFulfilled);
-            if (LangTools.nonNull(rejected)) onRejectedHanlders.push(handleRejected);
+            if (LangTools.nonNull(fulfilled)) onFulfilledHanlders.add(handleFulfilled);
+            if (LangTools.nonNull(rejected)) onRejectedHanlders.add(handleRejected);
         } else {
             switch (result.get()) {
                 case Success(v): handleFulfilled(v);
@@ -193,8 +185,25 @@ class DelayPromise<T> implements IPromise<T> {
         return promise;
     }
 
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return then(null, rejected);
+    function onFulfill(value: T): Void {
+        if (result.nonEmpty()) return;
+
+        result = Maybe.of(Result.Success(value));
+        onFulfilledHanlders.invoke(value);
+        removeAllHandlers();
+    }
+
+    function onReject(error: Dynamic): Void {
+        if (result.nonEmpty()) return;
+
+        result = Maybe.of(Result.Failure(error));
+        onRejectedHanlders.invoke(error);
+        removeAllHandlers();
+    }
+
+    inline function removeAllHandlers(): Void {
+        onFulfilledHanlders.removeAll();
+        onRejectedHanlders.removeAll();
     }
 
     public static inline function resolve<T>(?value: T): Promise<T> {
