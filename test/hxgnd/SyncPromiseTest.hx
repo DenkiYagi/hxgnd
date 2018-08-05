@@ -2,7 +2,6 @@ package hxgnd;
 
 import buddy.BuddySuite;
 import TestTools.wait;
-import hxgnd.Result;
 using hxgnd.LangTools;
 using buddy.Should;
 
@@ -17,34 +16,74 @@ class SyncPromiseTest extends BuddySuite {
                 });
             });
 
-            it("should be empty", {
-                var promise = new SyncPromise(function (_, _) {});
-                promise.result.isEmpty().should.be(true);
+            it("should be not completed", function (done) {
+                new SyncPromise(function (_, _) {}).then(
+                    function (_) { fail(); done(); },
+                    function (_) { fail(); done(); }
+                );
+                wait(5, function () done());
             });
 
-            it("should rejected", {
-                var promise = new SyncPromise(function (_, _) {
+            it("should be fulfilled when it call fulfill()", function (done) {
+                new SyncPromise(function (fulfill, _) {
+                    fulfill(1);
+                }).then(
+                    function (x) {
+                        x.should.be(1);
+                        done();
+                    },
+                    function (_) { fail(); done(); }
+                );
+                wait(5, function () done());
+            });
+
+            it("should be rejected when it call reject()", function (done) {
+                new SyncPromise(function (_, reject) {
+                    reject("error");
+                }).then(
+                    function (_) { fail(); done(); },
+                    function (e) {
+                        LangTools.same(e, "error").should.be(true);
+                        done();
+                    }
+                );
+                wait(5, function () done());
+            });
+
+            it("should be rejected when it is thrown error", function (done) {
+                new SyncPromise(function (_, _) {
                     throw "error";
-                });
-                promise.result.same(Maybe.of(Failure("error"))).should.be(true);
+                }).then(
+                    function (_) { fail(); done(); },
+                    function (e) {
+                        Std.is(e, Error).should.be(true);
+                        (e: Error).message.should.be("error");
+                        done();
+                    }
+                );
+                wait(5, function () done());
             });
+
+            #if js
+            it("should be js.Promise", {
+                var promise = new SyncPromise(function (_, _) {});
+                promise.should.beType(js.Promise);
+            });
+            #end
         });
 
-        describe("Promise.resolve()", {
+        describe("SyncPromise.resolve()", {
             timeoutMs = 1000;
 
-            it("should be resolved", {
-                var promise = SyncPromise.resolve(1);
-                promise.result.same(Maybe.of(Success(1))).should.be(true);
-            });
-        });
-
-        describe("Promise.reject()", {
-            timeoutMs = 1000;
-
-            it("should be rejected", {
-                var promise = SyncPromise.reject("error");
-                promise.result.same(Maybe.of(Failure("error"))).should.be(true);
+            it("should be resolved", function (done) {
+                SyncPromise.resolve(1).then(
+                    function (x) {
+                        x.should.be(1);
+                        done();
+                    },
+                    function (_) { fail(); done(); }
+                );
+                wait(5, function () done());
             });
         });
 
@@ -52,7 +91,7 @@ class SyncPromiseTest extends BuddySuite {
             timeoutMs = 1000;
 
             it("should call", function (done) {
-                SyncPromise.resolve(1).then(function (x: Int) {
+                SyncPromise.resolve(1).then(function (x) {
                     x.should.be(1);
                     done();
                 });
@@ -79,7 +118,7 @@ class SyncPromiseTest extends BuddySuite {
                     wait(5, function () {
                         resolve(1);
                     });
-                }).then(function (x: Int) {
+                }).then(function (x) {
                     x.should.be(1);
                     done();
                 });
@@ -101,6 +140,21 @@ class SyncPromiseTest extends BuddySuite {
                     done();
                 });
                 wait(10, function () done());
+            });
+        });
+
+        describe("SyncPromise.reject()", {
+            timeoutMs = 1000;
+
+            it("should be rejected", function (done) {
+                SyncPromise.reject("error").then(
+                    function (_) { fail(); done(); },
+                    function (e) {
+                        LangTools.same(e, "error").should.be(true);
+                        done();
+                    }
+                );
+                wait(5, function () done());
             });
         });
 
@@ -171,7 +225,8 @@ class SyncPromiseTest extends BuddySuite {
                 SyncPromise.resolve(1).then(function (x) {
                     throw "error";
                 }).catchError(function (e) {
-                    LangTools.same(e, "error").should.be(true);
+                    Std.is(e, Error).should.be(true);
+                    (e: Error).message.should.be("error");
                     done();
                 });
             });
@@ -184,7 +239,8 @@ class SyncPromiseTest extends BuddySuite {
                 SyncPromise.reject("foo").catchError(function (x) {
                     throw "error";
                 }).catchError(function (e) {
-                    LangTools.same(e, "error").should.be(true);
+                    Std.is(e, Error).should.be(true);
+                    (e: Error).message.should.be("error");
                     done();
                 });
             });
@@ -196,22 +252,22 @@ class SyncPromiseTest extends BuddySuite {
             it("should be rejected", function (done) {
                 SyncPromise.reject("foo").catchError(function (x) {
                     return 100;
-                }).then(function (x: Int) {
+                }).then(function (x) {
                     x.should.be(100);
                     done();
                 });
             });
         });
 
-        describe("SyncPromise.then() : chain", {
+        describe("SyncPromise.then() : chain callback", {
             timeoutMs = 1000;
 
             it("should chain value", function (done) {
                 SyncPromise.resolve(1).then(function (x) {
                     return x + 1;
-                }).then(function (x: Int) {
+                }).then(function (x) {
                     return x + 100;
-                }).then(function (x: Int) {
+                }).then(function (x) {
                     x.should.be(102);
                     done();
                 });
@@ -220,7 +276,7 @@ class SyncPromiseTest extends BuddySuite {
             it("should chain resolved SyncPromise", function (done) {
                 SyncPromise.resolve(1).then(function (x) {
                     return SyncPromise.resolve("hello");
-                }).then(function (x: String) {
+                }).then(function (x) {
                     x.should.be("hello");
                     done();
                 });
@@ -239,7 +295,7 @@ class SyncPromiseTest extends BuddySuite {
             it("should chain resolved js.Promise", function (done) {
                 SyncPromise.resolve(1).then(function (x) {
                     return js.Promise.resolve("hello");
-                }).then(function (x: String) {
+                }).then(function (x) {
                     x.should.be("hello");
                     done();
                 });
@@ -256,15 +312,15 @@ class SyncPromiseTest extends BuddySuite {
             #end
         });
 
-        describe("SyncPromise.catchError() : chain", {
+        describe("SyncPromise.catchError() : chain callback", {
             timeoutMs = 1000;
 
             it("should chain value", function (done) {
                 SyncPromise.reject("error").catchError(function (e) {
                     return 1;
-                }).then(function (x: Int) {
+                }).then(function (x) {
                     return x + 100;
-                }).then(function (x: Int) {
+                }).then(function (x) {
                     x.should.be(101);
                     done();
                 });
@@ -273,7 +329,7 @@ class SyncPromiseTest extends BuddySuite {
             it("should chain resolved SyncPromise", function (done) {
                 SyncPromise.reject("error").catchError(function (e) {
                     return SyncPromise.resolve("hello");
-                }).then(function (x: String) {
+                }).then(function (x) {
                     x.should.be("hello");
                     done();
                 });
@@ -281,9 +337,19 @@ class SyncPromiseTest extends BuddySuite {
 
             it("should chain rejected SyncPromise", function (done) {
                 SyncPromise.reject("error").catchError(function (e) {
-                    return SyncPromise.reject("error");
+                    return SyncPromise.reject("error chained");
                 }).catchError(function (e) {
-                    LangTools.same(e, "error").should.be(true);
+                    LangTools.same(e, "error chained").should.be(true);
+                    done();
+                });
+            });
+
+            it("should chain rejected Promise : throw error", function (done) {
+                SyncPromise.reject("error").catchError(function (e) {
+                    throw "error chained";
+                }).catchError(function (e) {
+                    Std.is(e, Error).should.be(true);
+                    (e: Error).message.should.be("error chained");
                     done();
                 });
             });
@@ -292,7 +358,7 @@ class SyncPromiseTest extends BuddySuite {
             it("should chain resolved js.Promise", function (done) {
                 SyncPromise.reject("error").catchError(function (e) {
                     return js.Promise.resolve("hello");
-                }).then(function (x: String) {
+                }).then(function (x) {
                     x.should.be("hello");
                     done();
                 });
@@ -300,63 +366,212 @@ class SyncPromiseTest extends BuddySuite {
 
             it("should chain rejected js.Promise", function (done) {
                 SyncPromise.reject("error").catchError(function (e) {
-                    return js.Promise.reject("error");
+                    return js.Promise.reject("error chained");
                 }).catchError(function (e) {
-                    LangTools.same(e, "error").should.be(true);
+                    LangTools.same(e, "error chained").should.be(true);
                     done();
                 });
             });
             #end
         });
 
-        #if js
-        describe("SyncPromise.toPromise(native = false)", {
+        describe("SyncPromise.all()", {
             timeoutMs = 1000;
 
-            it("should be instanceof SyncPromise", {
-                var promise = SyncPromise.resolve(1).toPromise(false);
-                Std.is(promise, SyncPromise).should.be(true);
-                Std.is(promise, js.Promise).should.be(true);
-            });
-
-            it("should call then()", function (done) {
-                SyncPromise.resolve(1).toPromise(false).then(function (x: Int) {
-                    x.should.be(1);
+            it("empty", function (done) {
+                SyncPromise.all([]).then(function (values) {
+                    LangTools.same(values, []).should.be(true);
+                    done();
+                }, function (_) {
+                    fail();
                     done();
                 });
             });
 
-            it("should call catchError()", function (done) {
-                SyncPromise.reject("error").toPromise(false).catchError(function (e) {
+            it("single resolved", function (done) {
+                SyncPromise.all([
+                    SyncPromise.resolve(1)
+                ]).then(function (values) {
+                    LangTools.same(values, [1]).should.be(true);
+                    done();
+                }, function (_) {
+                    fail();
+                    done();
+                });
+            });
+
+            it("single rejected", function (done) {
+                SyncPromise.all([
+                    SyncPromise.reject("error")
+                ]).then(function (values) {
+                    fail();
+                    done();
+                }, function (e) {
                     LangTools.same(e, "error").should.be(true);
+                    done();
+                });
+            });
+
+            it("multipule resolved", function (done) {
+                SyncPromise.all([
+                    new SyncPromise(function (f, _) {
+                        wait(5, f.bind(1));
+                    }),
+                    SyncPromise.resolve(2),
+                    SyncPromise.resolve(3)
+                ]).then(function (values) {
+                    LangTools.same(values, [1, 2, 3]).should.be(true);
+                    done();
+                }, function (_) {
+                    fail();
+                    done();
+                });
+            });
+
+            it("multipule rejected", function (done) {
+                SyncPromise.all([
+                    new SyncPromise(function (_, r) {
+                        wait(5, r.bind("error1"));
+                    }),
+                    SyncPromise.reject("error2"),
+                    new SyncPromise(function (_, r) {
+                        wait(10, r.bind("error3"));
+                    })
+                ]).then(function (values) {
+                    fail();
+                    done();
+                }, function (e) {
+                    LangTools.same(e, "error2").should.be(true);
+                    done();
+                });
+            });
+
+            it("mixed", function (done) {
+                SyncPromise.all([
+                    SyncPromise.resolve(1),
+                    SyncPromise.resolve(2),
+                    SyncPromise.reject("error3")
+                ]).then(function (values) {
+                    fail();
+                    done();
+                }, function (e) {
+                    LangTools.same(e, "error3").should.be(true);
+                    done();
+                });
+            });
+
+            it("should process when it is mixed by Promise and SyncPromise", function(done) {
+                SyncPromise.all([
+                    Promise.resolve(1),
+                    SyncPromise.resolve(2)
+                ]).then(function (values) {
+                    LangTools.same(values, [1, 2]).should.be(true);
+                    done();
+                }, function (_) {
+                    fail();
                     done();
                 });
             });
         });
 
-        describe("SyncPromise.toPromise(native = true)", {
+        describe("SyncPromise.race()", {
             timeoutMs = 1000;
 
-            it("should be instanceof Promise", {
-                var promise = SyncPromise.resolve(1).toPromise(true);
-                Std.is(promise, js.Promise).should.be(true);
-                Std.is(promise, SyncPromise).should.be(false);
+            it("should be pending", function (done) {
+                SyncPromise.race([]).then(function (value) {
+                    fail();
+                    done();
+                }, function (_) {
+                    fail();
+                    done();
+                });
+                wait(50, done);
             });
 
-            it("should call then()", function (done) {
-                SyncPromise.resolve(1).toPromise(true).then(function (x: Int) {
-                    x.should.be(1);
+            it("should resolve", function (done) {
+                SyncPromise.race([
+                    SyncPromise.resolve(1)
+                ]).then(function (value) {
+                    LangTools.same(value, 1).should.be(true);
+                    done();
+                }, function (_) {
+                    fail();
                     done();
                 });
             });
 
-            it("should call catchError()", function (done) {
-                SyncPromise.reject("error").toPromise(true).catchError(function (e) {
+            it("should reject", function (done) {
+                SyncPromise.race([
+                    SyncPromise.reject("error")
+                ]).then(function (value) {
+                    fail();
+                    done();
+                }, function (e) {
                     LangTools.same(e, "error").should.be(true);
                     done();
                 });
             });
+
+            it("should resolve by 2nd promise", function (done) {
+                SyncPromise.race([
+                    new SyncPromise(function (f, _) {
+                        wait(5, f.bind(1));
+                    }),
+                    SyncPromise.resolve(2),
+                    SyncPromise.resolve(3)
+                ]).then(function (value) {
+                    LangTools.same(value, 2).should.be(true);
+                    done();
+                }, function (_) {
+                    fail();
+                    done();
+                });
+            });
+
+            it("should reject by 2nd promise", function (done) {
+                SyncPromise.race([
+                    new SyncPromise(function (_, r) {
+                        wait(5, r.bind("error1"));
+                    }),
+                    SyncPromise.reject("error2"),
+                    new SyncPromise(function (_, r) {
+                        wait(10, r.bind("error3"));
+                    })
+                ]).then(function (value) {
+                    fail();
+                    done();
+                }, function (e) {
+                    LangTools.same(e, "error2").should.be(true);
+                    done();
+                });
+            });
+
+            it("should resolve by 1st promise", function (done) {
+                SyncPromise.race([
+                    SyncPromise.resolve(1),
+                    SyncPromise.resolve(2),
+                    SyncPromise.reject("error3")
+                ]).then(function (value) {
+                    LangTools.same(value, 1).should.be(true);
+                    done();
+                }, function (e) {
+                    fail();
+                    done();
+                });
+            });
+
+            it("should process when it is mixed by Promise and SyncPromise", function(done) {
+                SyncPromise.race([
+                    Promise.resolve(1),
+                    SyncPromise.resolve(2)
+                ]).then(function (values) {
+                    LangTools.same(values, 1).should.be(true);
+                    done();
+                }, function (_) {
+                    fail();
+                    done();
+                });
+            });
         });
-        #end
     }
 }

@@ -7,6 +7,7 @@ class TestMain implements Buddy<[
     hxgnd.ArrayToolsTest,
     hxgnd.MaybeTest,
     hxgnd.StreamTest,
+    hxgnd.PromiseTest,
     hxgnd.SyncPromiseTest,
     hxgnd.FutureTest,
     #if js

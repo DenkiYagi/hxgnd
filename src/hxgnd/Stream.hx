@@ -56,7 +56,7 @@ class Stream<T> {
                 subscribe(function (e) {
                     switch (e) {
                         case End: ctx.successful(new Unit());
-                        case Error(err): ctx.failed(err);
+                        case Error(x): ctx.failed(x);
                         case _:
                     }
                 });

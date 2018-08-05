@@ -34,8 +34,10 @@ class Future<T> {
     inline function invoke(executor: FutureContext<T> -> Void) {
         try {
             executor(context);
-        } catch (e: Dynamic) {
+        } catch (e: Error) {
             finish(Failure(e));
+        } catch (e: Dynamic) {
+            finish(Failure(new Error(Std.string(e))));
         }
     }
 
@@ -86,31 +88,18 @@ class Future<T> {
         finish(Failure(new AbortError("aborted")));
     }
 
-    #if js
-    public function toPromise(native = true): js.Promise<T> {
-        return if (native) {
-            new js.Promise(function (resolve, reject) {
-                then(function (result) {
-                    switch (result) {
-                        case Success(v): resolve(v);
-                        case Failure(e): reject(e);
-                    }
-                });
+    public function toPromise(): Promise<T> {
+        return new SyncPromise(function (fulfill, reject) {
+            then(function (result) {
+                switch (result) {
+                    case Success(v): fulfill(v);
+                    case Failure(e): reject(e);
+                }
             });
-        } else {
-            new SyncPromise(function (resolve, reject) {
-                then(function (result) {
-                    switch (result) {
-                        case Success(v): resolve(v);
-                        case Failure(e): reject(e);
-                    }
-                });
-            }).toPromise(false);
-        }
+        });
     }
-    #end
 
-    public inline static function apply<T>(executor: FutureContext<T> -> Void): Future<T> {
+    public static function apply<T>(executor: FutureContext<T> -> Void): Future<T> {
         var future = new Future(Maybe.empty());
         #if js
         setImmediate(future.invoke.bind(executor));
@@ -120,7 +109,7 @@ class Future<T> {
         return future;
     }
 
-    public inline static function applySync<T>(executor: FutureContext<T> -> Void): Future<T> {
+    public static function applySync<T>(executor: FutureContext<T> -> Void): Future<T> {
         var future = new Future(Maybe.empty());
         future.invoke(executor);
         return future;

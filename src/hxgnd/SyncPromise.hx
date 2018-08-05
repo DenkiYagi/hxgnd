@@ -3,15 +3,11 @@ package hxgnd;
 import hxgnd.Maybe;
 import hxgnd.Result;
 import externtype.Mixed2;
-#if js
-import externtype.Mixed3;
-#end
 
-class SyncPromise<T> {
-    public var result(default, null): Maybe<Result<T>> = Maybe.empty();
-
+class SyncPromise<T> implements IPromise<T> {
+    var result: Maybe<Result<T>> = Maybe.empty();
     var onFulfilledHanlders: Array<T -> Void> = [];
-    var onRejectedHanlders: Array<Dynamic -> Void> = [];
+    var onRejectedHanlders: Array<Error -> Void> = [];
 
     #if js
     static function __init__() {
@@ -27,8 +23,14 @@ class SyncPromise<T> {
 
         try {
             executor(onFulfill, onReject);
-        } catch (e: Dynamic) {
+        } catch (e: Error) {
             onReject(e);
+        } catch (e: Dynamic) {
+            #if js
+            onReject(new Error(Std.string(e)));
+            #else
+            onReject(Error.create(e));
+            #end
         }
     }
 
@@ -46,41 +48,45 @@ class SyncPromise<T> {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(Failure(error));
-
         for (f in onRejectedHanlders) f(error);
+
         onFulfilledHanlders = null;
         onRejectedHanlders = null;
     }
 
     public function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>,
-            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): SyncPromise<TOut> {
+            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         var promise = new SyncPromise<TOut>(function (_, _) {});
 
         function handleFulfilled(value: T) {
             try {
                 var next = (fulfilled: T -> Dynamic)(value);
-                if (#if js Std.is(next, js.Promise) #else Std.is(next, SyncPromise) #end) {
+                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
                     var nextPromise: Thenable<TOut> = cast next;
                     nextPromise.then(promise.onFulfill, promise.onReject);
                 } else {
                     promise.onFulfill(next);
                 }
-            } catch (e: Dynamic) {
+            } catch (e: Error) {
                 promise.onReject(e);
+            } catch (e: Dynamic) {
+                promise.onReject(new Error(Std.string(e)));
             }
         }
 
         function handleRejected(error: Dynamic) {
             try {
                 var next = (rejected: Dynamic -> Dynamic)(error);
-                if (#if js Std.is(next, js.Promise) #else Std.is(next, SyncPromise) #end) {
+                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
                     var nextPromise: Thenable<TOut> = cast next;
                     nextPromise.then(promise.onFulfill, promise.onReject);
                 } else {
                     promise.onFulfill(next);
                 }
-            } catch (e: Dynamic) {
+            } catch (e: Error) {
                 promise.onReject(e);
+            } catch (e: Dynamic) {
+                promise.onReject(new Error(Std.string(e)));
             }
         }
 
@@ -97,37 +103,27 @@ class SyncPromise<T> {
         return promise;
     }
 
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): SyncPromise<TOut> {
+    public inline function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         return then(null, rejected);
     }
 
-    #if js
-    public function toPromise(native = true): js.Promise<T> {
-        return if (native) {
-            new js.Promise(function (resolve, reject) {
-                then(resolve, reject);
-            });
-        } else {
-            cast this;
-        }
-    }
-    #end
-
-    public static function resolve<T>(?value: T): SyncPromise<T> {
+    public static inline function resolve<T>(?value: T): Promise<T> {
         return new SyncPromise(function (f, _) {
             return f(value);
         });
     }
 
-    public static function reject(error: Dynamic): SyncPromise<Void> {
+    public static inline function reject<T>(error: Dynamic): Promise<T> {
         return new SyncPromise(function (_, f) {
             return f(error);
         });
     }
-}
 
-#if js
-typedef PromiseCallback<T, TOut> = Mixed3<T -> TOut, T -> SyncPromise<TOut>, T -> js.Promise<TOut>>;
-#else
-typedef PromiseCallback<T, TOut> = Mixed2<T -> TOut, T -> SyncPromise<TOut>>;
-#end
+    public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
+        return Promise.all(iterable);
+    }
+
+    public static inline function race<T>(iterable: Array<Promise<T>>): Promise<T> {
+        return Promise.race(iterable);
+    }
+}

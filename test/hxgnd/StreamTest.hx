@@ -499,8 +499,14 @@ class StreamTest extends BuddySuite {
                     wait(5, ctx.emit.bind(Error("error")));
                 });
                 stream.end.then(function (result) {
-                    result.same(Failure("error")).should.be(true);
-                    done();
+                    switch (result) {
+                        case Failure(e):
+                            LangTools.same(e, "error").should.be(true);
+                            done();
+                        case _:
+                            fail();
+                            done();
+                    }
                 });
             });
 

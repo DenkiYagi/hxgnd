@@ -77,14 +77,24 @@ class FutureTest extends BuddySuite {
                 var future = Future.failed("error");
                 future.isActive.should.be(false);
                 future.result.nonEmpty().should.be(true);
-                future.result.same(Maybe.of(Failure("error"))).should.be(true);
+                switch (future.result.get()) {
+                    case Failure(e):
+                        LangTools.same(e, "error").should.be(true);
+                    case _:
+                        fail();
+                }
             });
 
             describe(".then()", {
                 it("should call callback", function (done) {
                     var future = Future.failed("error");
                     future.then(function (x: Result<Int>) {
-                        x.same(Failure("error")).should.be(true);
+                        switch (x) {
+                            case Failure(e):
+                                LangTools.same(e, "error").should.be(true);
+                            case _:
+                                fail();
+                        }
                         x.same(future.result).should.be(true);
                         future.isActive.should.be(false);
                         done();
@@ -184,7 +194,13 @@ class FutureTest extends BuddySuite {
                 });
                 wait(10, function () {
                     future.isActive.should.be(false);
-                    future.result.same(Failure("error")).should.be(true);
+                    future.result.nonEmpty().should.be(true);
+                    switch (future.result.get()) {
+                        case Failure(e):
+                            LangTools.same(e, "error").should.be(true);
+                        case _:
+                            fail();
+                    }
                     done();
                 });
             });
@@ -198,7 +214,14 @@ class FutureTest extends BuddySuite {
                 });
                 wait(20, function () {
                     future.isActive.should.be(false);
-                    future.result.same(Failure("error")).should.be(true);
+                    future.result.nonEmpty().should.be(true);
+                    switch (future.result.get()) {
+                        case Failure(e):
+                            Std.is(e, Error).should.be(true);
+                            LangTools.same(e.message, "error").should.be(true);
+                        case _:
+                            fail();
+                    }
                     done();
                 });
             });
@@ -383,7 +406,13 @@ class FutureTest extends BuddySuite {
                 });
                 wait(20, function () {
                     future.isActive.should.be(false);
-                    future.result.same(Failure("error")).should.be(true);
+                    switch (future.result.get()) {
+                        case Failure(e):
+                            Std.is(e, Error).should.be(true);
+                            LangTools.same(e.message, "error").should.be(true);
+                        case _:
+                            fail();
+                    }
                     done();
                 });
             });
