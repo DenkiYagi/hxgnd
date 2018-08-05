@@ -7,12 +7,32 @@ using hxgnd.LangTools;
 
 class ArrayToolsTest extends BuddySuite {
     public function new() {
+        describe("ArrayTools.isEmpty()", {
+            it("should be true", {
+                [].isEmpty().should.be(true);
+            });
+
+            it("should be false", {
+                [1].isEmpty().should.be(false);
+            });
+        });
+
+        describe("ArrayTools.nonEmpty()", {
+            it("should be false", {
+                [].nonEmpty().should.be(false);
+            });
+
+            it("should be true", {
+                [1].nonEmpty().should.be(true);
+            });
+        });
+
         describe("ArrayTools.toArray()", {
             it("can convert empty iterable", {
                 var result = ({ iterator: function () return 0...-1 }).toArray();
                 result.same([]).should.be(true);
             });
-            
+
             it("can convert some values iterable", {
                 var result = ({ iterator: function () return 0...3 }).toArray();
                 result.same([0, 1, 2]).should.be(true);
@@ -61,6 +81,48 @@ class ArrayToolsTest extends BuddySuite {
                     index++;
                 });
                 index.should.be(3);
+            });
+        });
+
+        describe("ArrayTools.exists()", {
+            it("should be false when it is given empty array", {
+                [].exists(1).should.be(false);
+            });
+
+            it("should be true when a matched value exists in the array", {
+                [0, 1, 2].exists(1).should.be(true);
+            });
+
+            it("should be false when no matched values exist in the array", {
+                [0, -1, 2].exists(1).should.be(false);
+            });
+        });
+
+        describe("ArrayTools.notExists()", {
+            it("should be true when it is given empty array", {
+                [].notExists(1).should.be(true);
+            });
+
+            it("should be false when a matched value exists in the array", {
+                [0, 1, 2].notExists(1).should.be(false);
+            });
+
+            it("should be true when no matched values exist in the array", {
+                [0, -1, 2].notExists(1).should.be(true);
+            });
+        });
+
+        describe("ArrayTools.find()", {
+            it("should be false when it is given empty array", {
+                [].find(function (x) return x == 1).should.be(false);
+            });
+
+            it("should be true when a matched value exists in the array", {
+                [0, 1, 2].find(function (x) return x == 1).should.be(true);
+            });
+
+            it("should be false when no matched values exist in the array", {
+                [0, -1, 2].find(function (x) return x == 1).should.be(false);
             });
         });
 
