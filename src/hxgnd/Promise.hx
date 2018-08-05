@@ -142,33 +142,39 @@ class DelayPromise<T> implements IPromise<T> {
 
         function handleFulfilled(value: T) {
             try {
-                var nextValue = (fulfilled: T -> Dynamic)(value);
-                if (#if js Std.is(nextValue, js.Promise) #else Std.is(nextValue, IPromise) #end) {
-                    var nextPromise: Thenable<TOut> = cast nextValue;
-                    nextPromise.then(promise.onFulfill, promise.onReject);
+                var next: Dynamic = (fulfilled: T -> Dynamic)(value);
+                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                    next.then(promise.onFulfill, promise.onReject);
                 } else {
-                    promise.onFulfill(nextValue);
+                    promise.onFulfill(next);
                 }
             } catch (e: Error) {
                 promise.onReject(e);
             } catch (e: Dynamic) {
+                #if js
                 promise.onReject(new Error(Std.string(e)));
+                #else
+                promise.onReject(Error.create(e));
+                #end
             }
         }
 
         function handleRejected(error: Dynamic) {
             try {
-                var nextValue = (rejected: Dynamic -> Dynamic)(error);
-                if (#if js Std.is(nextValue, js.Promise) #else Std.is(nextValue, IPromise) #end) {
-                    var nextPromise: Thenable<TOut> = cast nextValue;
-                    nextPromise.then(promise.onFulfill, promise.onReject);
+                var next: Dynamic = (rejected: Dynamic -> Dynamic)(error);
+                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                    next.then(promise.onFulfill, promise.onReject);
                 } else {
-                    promise.onFulfill(nextValue);
+                    promise.onFulfill(next);
                 }
             } catch (e: Error) {
                 promise.onReject(e);
             } catch (e: Dynamic) {
+                #if js
                 promise.onReject(new Error(Std.string(e)));
+                #else
+                promise.onReject(Error.create(e));
+                #end
             }
         }
 
