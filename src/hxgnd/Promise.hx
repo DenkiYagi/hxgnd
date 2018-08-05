@@ -25,7 +25,9 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         #if js
         return js.Promise.resolve(value);
         #else
-        return DelayPromise.resolve(value);
+        return new SyncPromise(function (f, _) {
+            return f(value);
+        });
         #end
     }
 
@@ -33,23 +35,48 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         #if js
         return js.Promise.reject(error);
         #else
-        return DelayPromise.reject(error);
+        return new SyncPromise(function (_, f) {
+            return f(error);
+        });
         #end
     }
 
-    public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
+    public static function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
         #if js
         return cast js.Promise.all(iterable);
         #else
-        return DelayPromise.all(iterable);
+        var length = iterable.length;
+        return if (length <= 0) {
+            SyncPromise.resolve([]);
+        } else {
+            new Promise(function (fulfill, reject) {
+                var values = [for (i in 0...length) null];
+                var count = 0;
+                for (i in 0...length) {
+                    var p = iterable[i];
+                    p.then(function (v) {
+                        values[i] = v;
+                        if (++count >= length) fulfill(values);
+                    }, reject);
+                }
+            });
+        }
         #end
     }
 
-    public static inline function race<T>(iterable: Array<Promise<T>>): Promise<T> {
+    public static function race<T>(iterable: Array<Promise<T>>): Promise<T> {
         #if js
         return cast js.Promise.race(iterable);
         #else
-        return DelayPromise.race(iterable);
+        return if (iterable.length <= 0) {
+            new Promise(function (_, _) {});
+        } else {
+            new Promise(function (fulfill, reject) {
+                for (p in iterable) {
+                    p.then(fulfill, reject);
+                }
+            });
+        }
         #end
     }
 
@@ -98,10 +125,9 @@ class DelayPromise<T> implements IPromise<T> {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(Result.Success(value));
-
         for (f in onFulfilledHanlders) f(value);
-        onFulfilledHanlders = null;
-        onRejectedHanlders = null;
+
+        disposeHandlers();
     }
 
     function onReject(error: Dynamic): Void {
@@ -110,6 +136,10 @@ class DelayPromise<T> implements IPromise<T> {
         result = Maybe.of(Result.Failure(error));
         for (f in onRejectedHanlders) f(error);
 
+        disposeHandlers();
+    }
+
+    inline function disposeHandlers(): Void {
         onFulfilledHanlders = null;
         onRejectedHanlders = null;
     }
@@ -167,47 +197,20 @@ class DelayPromise<T> implements IPromise<T> {
         return then(null, rejected);
     }
 
-    public static function resolve<T>(?value: T): Promise<T> {
-        return new DelayPromise(function (f, _) {
-            return f(value);
-        });
+    public static inline function resolve<T>(?value: T): Promise<T> {
+        return Promise.resolve(value);
     }
 
-    public static function reject<T>(error: Dynamic): Promise<T> {
-        return new DelayPromise(function (_, f) {
-            return f(error);
-        });
+    public static inline function reject<T>(error: Dynamic): Promise<T> {
+        return Promise.reject(error);
     }
 
-    public static function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
-        var length = iterable.length;
-        return if (length <= 0) {
-            Promise.resolve([]);
-        } else {
-            new Promise(function (fulfill, reject) {
-                var values = [for (i in 0...length) null];
-                var count = 0;
-                for (i in 0...length) {
-                    var p = iterable[i];
-                    p.then(function (v) {
-                        values[i] = v;
-                        if (++count >= length) fulfill(values);
-                    }, reject);
-                }
-            });
-        }
+    public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
+        return Promise.all(iterable);
     }
 
-    public static function race<T>(iterable: Array<Promise<T>>): Promise<T> {
-        return if (iterable.length <= 0) {
-            new Promise(function (_, _) {});
-        } else {
-            new Promise(function (fulfill, reject) {
-                for (p in iterable) {
-                    p.then(fulfill, reject);
-                }
-            });
-        }
+    public static inline function race<T>(iterable: Array<Promise<T>>): Promise<T> {
+        return Promise.race(iterable);
     }
 }
 #end
