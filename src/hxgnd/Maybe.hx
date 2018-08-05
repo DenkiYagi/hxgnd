@@ -33,6 +33,14 @@ abstract Maybe<T>(Null<T>) from Null<T> {
         return this;
     }
 
+    public inline function orElse(f: Void -> T): T {
+        return if (nonEmpty()) {
+            this;
+        } else {
+            f();
+        }
+    }
+
     public inline function isEmpty(): Bool {
         return this.isNull();
     }

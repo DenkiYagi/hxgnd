@@ -89,6 +89,15 @@ class MaybeTest extends BuddySuite {
             });
         });
 
+        describe("Maybe.orElse()", {
+            it("should return value", {
+                Maybe.of(1).orElse(function() return -5).should.be(1);
+            });
+            it("should return alt value", {
+                Maybe.empty().orElse(function() return -5).should.be(-5);
+            });
+        });
+
         describe("Maybe.isEmpty()", {
             it("should be true", {
                 Maybe.empty().isEmpty().should.be(true);
