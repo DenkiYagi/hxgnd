@@ -3,6 +3,7 @@ package hxgnd;
 import Type.ValueType;
 import haxe.io.Bytes;
 import haxe.Constraints.IMap;
+import hxgnd.Tuple;
 #if js
 import hxgnd.js.JsNative;
 import hxgnd.js.JsObject;
