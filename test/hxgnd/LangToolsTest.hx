@@ -305,7 +305,7 @@ class LangToolsTest extends BuddySuite {
             });
             it("can compare Paramed Enum", {
                 Success(1).same(Success(1)).should.be(true);
-                Failure(new Error("error")).same(Failure(new Error("error"))).should.be(true);
+                Failure("error").same(Failure("error")).should.be(true);
                 Some(1).same(Some(1)).should.be(true);
                 Some(1).same(Some(2)).should.be(false);
                 Some(1).same(null).should.be(false);
