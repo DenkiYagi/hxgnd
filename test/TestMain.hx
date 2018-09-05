@@ -11,7 +11,5 @@ class TestMain implements Buddy<[
     hxgnd.PromiseTest,
     hxgnd.SyncPromiseTest,
     hxgnd.FutureTest,
-    #if js
-    hxgnd.js.PromiseToolsTest,
-    #end
+    hxgnd.PromiseToolsTest,
 ]> {}

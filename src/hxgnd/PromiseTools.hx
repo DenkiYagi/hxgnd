@@ -1,4 +1,4 @@
-package hxgnd.js;
+package hxgnd;
 
 import externtype.Mixed2;
 
@@ -23,7 +23,7 @@ class PromiseTools {
                 //     });
                 // });
                 var cb = macro function (error) {
-                    if (untyped error) reject(error) else resolve();
+                    if (LangTools.nonNull(error)) reject(error) else resolve();
                 };
 
                 macro new hxgnd.SyncPromise<Void>(function (resolve: haxe.Constraints.Function, reject) {
@@ -37,7 +37,7 @@ class PromiseTools {
                 // });
                 var t = Context.toComplexType(argTypes[1].t);
                 var cb = macro function (error, data) {
-                    if (untyped error) reject(error) else resolve(data);
+                    if (LangTools.nonNull(error)) reject(error) else resolve(data);
                 };
                 var init = macro function (resolve, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
@@ -81,7 +81,7 @@ class PromiseTools {
                         };
                     })),
                     ret: null,
-                    expr: macro { if (untyped error) reject(error) else ${resolve}; }
+                    expr: macro { if (LangTools.nonNull(error)) reject(error) else ${resolve}; }
                 });
                 var init = macro function (resolve, reject) {
                     $e{ {
@@ -111,7 +111,7 @@ class PromiseTools {
                 //     });
                 // });
                 var cb = macro function (error) {
-                    if (untyped error) reject(error) else resolve();
+                    if (LangTools.nonNull(error)) reject(error) else resolve();
                 };
 
                 macro new hxgnd.SyncPromise<Void>(function (resolve: haxe.Constraints.Function, reject) {
@@ -124,7 +124,7 @@ class PromiseTools {
                 //     });
                 // });
                 var cb = macro function (error, data) {
-                    if (untyped error) reject(error) else resolve(data);
+                    if (LangTools.nonNull(error)) reject(error) else resolve(data);
                 };
                 var init = macro function (resolve, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
@@ -140,32 +140,44 @@ class PromiseTools {
                 //         if (error) reject(error) else resolve([a, b, ..., z]);
                 //     });
                 // });
-                var cb = macro untyped function (error) {
-                    if (untyped error) {
-                        reject(error);
-                     } else {
-                        resolve(hxgnd.js.JsArray.from(hxgnd.js.JsNative.nativeArguments).slice(1));
-                     }
+                var resolve = {
+                    expr: ECall(macro resolve, [{
+                        expr: EArrayDecl((0...argTypes.length-1).toArray().map(function (i) {
+                            return { expr: EConst(CIdent('value$i')), pos: fn.pos };
+                        })),
+                        pos: fn.pos
+                    }]),
+                    pos: fn.pos
                 };
-
+                var cb = EFunction(null, {
+                    args: [{ name: "error", type: null }].concat(argTypes.slice(1).mapWithIndex(function (a, i): FunctionArg {
+                        return {
+                            name: 'value$i',
+                            type: Context.toComplexType(a.t)
+                        };
+                    })),
+                    ret: null,
+                    expr: macro { if (LangTools.nonNull(error)) reject(error) else ${resolve}; }
+                });
                 macro new hxgnd.SyncPromise<Array<Dynamic>>(function (resolve, reject) {
                     $e{ {
-                        pos: fn.pos,
-                        expr: ExprDef.ECall(fn, args.concat([cb]))
+                        expr: ExprDef.ECall(fn, args.concat([{expr: cb, pos: fn.pos}])),
+                        pos: fn.pos
                     } };
                 });
         }
     }
 
-    public static macro function await<T>(expr: ExprOf<Mixed2<js.Promise<T>, hxgnd.SyncPromise<T>>>): ExprOf<T> {
+    #if (js || macro)
+    public static macro function await<T>(expr: ExprOf<Promise<T>>): ExprOf<T> {
         var type = switch (Context.toComplexType(Context.typeof(expr))) {
-            case TPath({ name: "Promise", pack: ["js"], params: params }) | TPath({ name: "SyncPromise", pack: ["hxgnd"], params: params }):
+            case TPath({ name: _, pack: _, params: params }):
                 switch (params[0]) {
                     case TPType(t): t;
                     case TPExpr(e): Context.toComplexType(Context.typeof(e));
                 }
             default:
-                Context.error("argument must be js.Promsise<T> or hxgnd.SyncPromise<T>", expr.pos);
+                Context.error("argument must be hxgnd.Promsise<T>", expr.pos);
         };
         return {
             pos: expr.pos,
@@ -204,13 +216,13 @@ class PromiseTools {
             pos: body.pos,
             expr: EFunction(funcName, {
                 args: funcDef.args,
-                ret: TPath({ pack: ["js"], name: "Promise", params: [TPType(retType)] }),
+                ret: TPath({ pack: ["hxgnd"], name: "Promise", params: [TPType(retType)] }),
                 expr: macro return ${toAsyncFuncCall(null, funcDef)}
             })
         } };
     }
 
-    public static macro function asyncCall<T>(body: Expr, args: Array<Expr>): ExprOf<js.Promise<T>> {
+    public static macro function asyncCall<T>(body: Expr, args: Array<Expr>): ExprOf<Promise<T>> {
         var body = resolveEMetaExpr(body);
 
         var funcName: Null<String>;
@@ -242,12 +254,13 @@ class PromiseTools {
                 pos: body.pos,
                 expr: EFunction(null, {
                     args: funcDef.args,
-                    ret: TPath({ pack: ["js"], name: "Promise", params: [TPType(retType)] }),
+                    ret: TPath({ pack: ["hxgnd"], name: "Promise", params: [TPType(retType)] }),
                     expr: macro return ${toAsyncFuncCall(funcName, funcDef)}
                 })
             }, args)
         };
     }
+    #end
 
     #if macro
     static function getCallbackArgTypes(fn: Expr, args: Array<Expr>): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
