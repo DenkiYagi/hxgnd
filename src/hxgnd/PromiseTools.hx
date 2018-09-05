@@ -23,7 +23,7 @@ class PromiseTools {
                 //     });
                 // });
                 var cb = macro function (error) {
-                    if (LangTools.nonNull(error)) reject(error) else resolve();
+                    if (hxgnd.LangTools.nonNull(error)) reject(error) else resolve();
                 };
 
                 macro new hxgnd.SyncPromise<Void>(function (resolve: haxe.Constraints.Function, reject) {
@@ -37,7 +37,7 @@ class PromiseTools {
                 // });
                 var t = Context.toComplexType(argTypes[1].t);
                 var cb = macro function (error, data) {
-                    if (LangTools.nonNull(error)) reject(error) else resolve(data);
+                    if (hxgnd.LangTools.nonNull(error)) reject(error) else resolve(data);
                 };
                 var init = macro function (resolve, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
@@ -81,7 +81,7 @@ class PromiseTools {
                         };
                     })),
                     ret: null,
-                    expr: macro { if (LangTools.nonNull(error)) reject(error) else ${resolve}; }
+                    expr: macro { if (hxgnd.LangTools.nonNull(error)) reject(error) else ${resolve}; }
                 });
                 var init = macro function (resolve, reject) {
                     $e{ {
@@ -111,7 +111,7 @@ class PromiseTools {
                 //     });
                 // });
                 var cb = macro function (error) {
-                    if (LangTools.nonNull(error)) reject(error) else resolve();
+                    if (hxgnd.LangTools.nonNull(error)) reject(error) else resolve();
                 };
 
                 macro new hxgnd.SyncPromise<Void>(function (resolve: haxe.Constraints.Function, reject) {
@@ -124,7 +124,7 @@ class PromiseTools {
                 //     });
                 // });
                 var cb = macro function (error, data) {
-                    if (LangTools.nonNull(error)) reject(error) else resolve(data);
+                    if (hxgnd.LangTools.nonNull(error)) reject(error) else resolve(data);
                 };
                 var init = macro function (resolve, reject) {
                     $e{ {pos: fn.pos, expr: ExprDef.ECall(fn, args.concat([cb]))} };
@@ -157,7 +157,7 @@ class PromiseTools {
                         };
                     })),
                     ret: null,
-                    expr: macro { if (LangTools.nonNull(error)) reject(error) else ${resolve}; }
+                    expr: macro { if (hxgnd.LangTools.nonNull(error)) reject(error) else ${resolve}; }
                 });
                 macro new hxgnd.SyncPromise<Array<Dynamic>>(function (resolve, reject) {
                     $e{ {
