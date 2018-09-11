@@ -100,7 +100,7 @@ typedef Builder = {
     var buildReturn: Expr -> Expr;
 }
 
-typedef BindedExpr = {
+private typedef BindedExpr = {
     @:optional var name: Maybe<String>;
     @:optional var type: Maybe<ComplexType>;
     var expr: Expr;
