@@ -29,7 +29,7 @@ class ArrayToolsTest extends BuddySuite {
 
         describe("ArrayTools.toArray()", {
             it("can convert empty iterable", {
-                var result = ({ iterator: function () return 0...-1 }).toArray();
+                var result = ({ iterator: function () return 0...0 }).toArray();
                 result.same([]).should.be(true);
             });
 

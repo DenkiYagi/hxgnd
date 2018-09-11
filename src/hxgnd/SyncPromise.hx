@@ -15,7 +15,7 @@ class SyncPromise<T> implements IPromise<T> {
     }
     #end
 
-    public function new(executor: (T -> Void) -> (Dynamic -> Void) -> Void) {
+    public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void) {
         // compatible JS Promise
         #if js
         Reflect.setField(this, "catch", catchError);
@@ -34,7 +34,7 @@ class SyncPromise<T> implements IPromise<T> {
         }
     }
 
-    function onFulfill(value: T): Void {
+    function onFulfill(?value: T): Void {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(Success(value));
@@ -44,7 +44,7 @@ class SyncPromise<T> implements IPromise<T> {
         onRejectedHanlders = null;
     }
 
-    function onReject(error: Dynamic): Void {
+    function onReject(?error: Dynamic): Void {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(Failure(error));
@@ -107,12 +107,12 @@ class SyncPromise<T> implements IPromise<T> {
         return then(null, rejected);
     }
 
-    public static inline function resolve<T>(?value: T): Promise<T> {
-        return Promise.resolve(value);
+    public static function resolve<T>(?value: T): Promise<T> {
+        return new SyncPromise(function (f, _) f(value));
     }
 
-    public static inline function reject<T>(error: Dynamic): Promise<T> {
-        return Promise.reject(error);
+    public static function reject<T>(error: Dynamic): Promise<T> {
+        return new SyncPromise(function (_, r) r(error));
     }
 
     public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {

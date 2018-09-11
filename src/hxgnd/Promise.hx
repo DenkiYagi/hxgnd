@@ -4,9 +4,9 @@ import externtype.Mixed2;
 
 @:generic
 abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
-    public function new(executor: (T -> Void) -> (Dynamic -> Void) -> Void): Void {
+    public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void): Void {
         #if js
-        this = cast new js.Promise(executor);
+        this = untyped __js__("new Promise({0})", executor);
         #else
         this = new DelayPromise(executor);
         #end
@@ -23,7 +23,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
 
     public static inline function resolve<T>(?value: T): Promise<T> {
         #if js
-        return js.Promise.resolve(value);
+        return untyped __js__("Promise.resolve({0})", value);
         #else
         return new SyncPromise(function (f, _) {
             return f(value);
@@ -31,9 +31,9 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         #end
     }
 
-    public static inline function reject<T>(error: Dynamic): Promise<T> {
+    public static inline function reject<T>(?error: Dynamic): Promise<T> {
         #if js
-        return js.Promise.reject(error);
+        return untyped __js__("Promise.reject({0})", error);
         #else
         return new SyncPromise(function (_, f) {
             return f(error);
@@ -43,7 +43,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
 
     public static function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
         #if js
-        return cast js.Promise.all(iterable);
+        return untyped __js__("Promise.all({0})", iterable);
         #else
         var length = iterable.length;
         return if (length <= 0) {
@@ -66,7 +66,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
 
     public static function race<T>(iterable: Array<Promise<T>>): Promise<T> {
         #if js
-        return cast js.Promise.race(iterable);
+        return untyped __js__("Promise.race({0})", iterable);
         #else
         return if (iterable.length <= 0) {
             new Promise(function (_, _) {});
@@ -99,7 +99,7 @@ class DelayPromise<T> implements IPromise<T> {
     var onFulfilledHanlders: Delegate<T>;
     var onRejectedHanlders: Delegate<Dynamic>;
 
-    public function new(executor: (T -> Void) -> (Dynamic -> Void) -> Void): Void {
+    public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void): Void {
         this.result = Maybe.empty();
         this.onFulfilledHanlders = new Delegate();
         this.onRejectedHanlders = new Delegate();
@@ -191,7 +191,7 @@ class DelayPromise<T> implements IPromise<T> {
         return promise;
     }
 
-    function onFulfill(value: T): Void {
+    function onFulfill(?value: T): Void {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(Result.Success(value));
@@ -199,7 +199,7 @@ class DelayPromise<T> implements IPromise<T> {
         removeAllHandlers();
     }
 
-    function onReject(error: Dynamic): Void {
+    function onReject(?error: Dynamic): Void {
         if (result.nonEmpty()) return;
 
         result = Maybe.of(Result.Failure(error));
@@ -216,7 +216,7 @@ class DelayPromise<T> implements IPromise<T> {
         return Promise.resolve(value);
     }
 
-    public static inline function reject<T>(error: Dynamic): Promise<T> {
+    public static inline function reject<T>(?error: Dynamic): Promise<T> {
         return Promise.reject(error);
     }
 
