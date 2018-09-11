@@ -1,6 +1,10 @@
 package hxgnd;
 
 import externtype.Mixed2;
+#if macro
+import haxe.macro.Context;
+import haxe.macro.Expr;
+#end
 
 @:generic
 abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
@@ -89,6 +93,34 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     @:to
     public inline function toJsPromise(): js.Promise<T> {
         return cast this;
+    }
+    #end
+
+    public static macro function compute(blockExpr: Expr): Expr {
+        return Computation.perform(
+            {
+                buildBind: buildBind,
+                buildReturn: buildReturn
+            },
+            blockExpr
+        );
+    }
+
+    #if macro
+    static function buildBind(expr: Expr, fn: Expr): Expr {
+        return if (unifyPromise(expr)) {
+            macro ${expr}.then(${fn});
+        } else {
+            macro SyncPromise.resolve(${expr}).then(${fn});
+        }
+    }
+
+    static function buildReturn(expr: Expr): Expr {
+        return expr;
+    }
+
+    static function unifyPromise(expr: Expr): Bool {
+        return Context.unify(Context.typeof(expr), Context.getType("hxgnd.Promise"));
     }
     #end
 }
