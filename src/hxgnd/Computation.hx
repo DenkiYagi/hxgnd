@@ -48,11 +48,10 @@ class Computation {
         }
 
         // build expr from the inside to the outside
-        builders.reverse();
-
         var newExprs = buildReturn(builder, cexprs);
-        for (f in builders) {
-            newExprs = f(newExprs);
+        var i = builders.length;
+        while (--i >= 0) {
+            newExprs = builders[i](newExprs);
         }
 
         return if (newExprs.nonEmpty()) {
