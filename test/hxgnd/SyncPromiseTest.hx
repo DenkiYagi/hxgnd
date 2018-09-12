@@ -24,7 +24,19 @@ class SyncPromiseTest extends BuddySuite {
                 wait(5, function () done());
             });
 
-            it("should be fulfilled when it call fulfill()", function (done) {
+            it("should be fulfilled when it call fulfill(_)", function (done) {
+                new SyncPromise(function (fulfill, _) {
+                    fulfill();
+                }).then(
+                    function (_) {
+                        done();
+                    },
+                    function (_) { fail(); done(); }
+                );
+                wait(5, function () done());
+            });
+
+            it("should be fulfilled when it call fulfill(x)", function (done) {
                 new SyncPromise(function (fulfill, _) {
                     fulfill(1);
                 }).then(
@@ -37,7 +49,20 @@ class SyncPromiseTest extends BuddySuite {
                 wait(5, function () done());
             });
 
-            it("should be rejected when it call reject()", function (done) {
+            it("should be rejected when it call reject(_)", function (done) {
+                new SyncPromise(function (_, reject) {
+                    reject();
+                }).then(
+                    function (_) { fail(); done(); },
+                    function (e) {
+                        LangTools.isNull(e).should.be(true);
+                        done();
+                    }
+                );
+                wait(5, function () done());
+            });
+
+            it("should be rejected when it call reject(x)", function (done) {
                 new SyncPromise(function (_, reject) {
                     reject("error");
                 }).then(
@@ -75,7 +100,17 @@ class SyncPromiseTest extends BuddySuite {
         describe("SyncPromise.resolve()", {
             timeoutMs = 1000;
 
-            it("should be resolved", function (done) {
+            it("should be resolved when it call resolve(_)", function (done) {
+                SyncPromise.resolve().then(
+                    function (_) {
+                        done();
+                    },
+                    function (_) { fail(); done(); }
+                );
+                wait(5, function () done());
+            });
+
+            it("should be resolved when it call resolve(x)", function (done) {
                 SyncPromise.resolve(1).then(
                     function (x) {
                         x.should.be(1);
@@ -146,8 +181,19 @@ class SyncPromiseTest extends BuddySuite {
         describe("SyncPromise.reject()", {
             timeoutMs = 1000;
 
-            it("should be rejected", function (done) {
+           it("should be rejected when it call reject(x)", function (done) {
                 SyncPromise.reject("error").then(
+                    function (_) { fail(); done(); },
+                    function (e) {
+                        LangTools.same(e, "error").should.be(true);
+                        done();
+                    }
+                );
+                wait(5, function () done());
+            });
+
+            it("should be rejected when it call reject(_)", function (done) {
+                 SyncPromise.reject("error").then(
                     function (_) { fail(); done(); },
                     function (e) {
                         LangTools.same(e, "error").should.be(true);
