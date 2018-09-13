@@ -1,10 +1,11 @@
 package hxgnd;
 
-import externtype.Mixed2;
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 #end
+import hxgnd.Error;
+import externtype.Mixed2;
 
 @:generic
 abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
