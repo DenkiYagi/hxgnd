@@ -10,5 +10,9 @@ class MacroTools {
             case _: false;
         }
     }
+
+    public static function nop(): Expr {
+        return macro (function () {})();
+    }
 }
 #end

@@ -100,6 +100,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     public static macro function compute(blockExpr: Expr): Expr {
         return Computation.perform(
             {
+                keyword: "await",
                 buildBind: buildBind,
                 buildReturn: buildReturn
             },

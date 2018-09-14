@@ -7,9 +7,10 @@ class TestMain implements Buddy<[
     hxgnd.ArrayToolsTest,
     hxgnd.MaybeTest,
     hxgnd.DelegateTest,
+    hxgnd.ComputationTest,
     hxgnd.StreamTest,
     hxgnd.PromiseTest,
     hxgnd.SyncPromiseTest,
-    hxgnd.FutureTest,
     hxgnd.PromiseToolsTest,
+    hxgnd.FutureTest,
 ]> {}

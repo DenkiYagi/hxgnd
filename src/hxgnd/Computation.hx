@@ -6,11 +6,15 @@ import haxe.macro.Expr;
 using hxgnd.ArrayTools;
 
 class Computation {
+    static inline var DEFAULT_KEYWORD = "let";
+
     public static function perform(builder: Builder, blockExpr: Expr): Expr {
         var exprs: Array<Expr> = switch (blockExpr.expr) {
             case EBlock(e): e;
             case _: Context.error("Invalid argument: must be a block.", blockExpr.pos);
         }
+
+        var keyword = Maybe.ofNullable(builder.keyword).getOrElse(DEFAULT_KEYWORD);
 
         var builders = [];
         var cexprs = [];
@@ -21,7 +25,7 @@ class Computation {
                 case EVars(vars):
                     for (v in vars) {
                         switch (v.expr) {
-                            case {expr: EMeta({name: "await"}, e)}:
+                            case {expr: EMeta({name: keyword}, e)}:
                                 builders.push(cexprs.concat);
                                 cexprs = [];
                                 builders.push(buildBind.bind(builder, {name: v.name, type: v.type, expr: e}));
@@ -31,7 +35,7 @@ class Computation {
                     }
 
                 // action
-                case EMeta({name: "await"}, e):
+                case EMeta({name: keyword}, e):
                     builders.push(cexprs.concat);
                     cexprs = [];
                     builders.push(buildBind.bind(builder, {expr: e}));
@@ -57,14 +61,17 @@ class Computation {
         return if (newExprs.nonEmpty()) {
             macro (function () return $b{newExprs})();
         } else {
-            macro (function () return)();
+            MacroTools.nop();
         };
     }
 
     static function buildBind(builder: Builder, binded: BindedExpr, cexpr: Array<Expr>): Array<Expr> {
         return [builder.buildBind(binded.expr, {
             expr: EFunction(null, {
-                args: [{name: binded.name.getOrElse("_"), type: binded.type.getOrElse(null)}],
+                args: [{
+                    name: Maybe.ofNullable(binded.name).getOrElse("_"),
+                    type: binded.type
+                }],
                 ret: null,
                 expr:
                     if (cexpr.nonEmpty()) {
@@ -89,6 +96,7 @@ class Computation {
 }
 
 typedef Builder = {
+    @:optional var keyword: String;
     /**
      * M<T> -> (T -> M<U>) -> M<U>
      */
@@ -100,8 +108,8 @@ typedef Builder = {
 }
 
 private typedef BindedExpr = {
-    @:optional var name: Maybe<String>;
-    @:optional var type: Maybe<ComplexType>;
+    @:optional var name: String;
+    @:optional var type: ComplexType;
     var expr: Expr;
 }
 #end
