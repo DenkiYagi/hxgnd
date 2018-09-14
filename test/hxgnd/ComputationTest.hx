@@ -83,14 +83,6 @@ class ComputationTest extends BuddySuite {
                 it("should pass when it is changed keyword and it is given { var a = @foo 1; a; }", {
                     ComputationTest_EVars_transform_with_EMeta.perform_single_var_return_foo().should.be(10);
                 });
-
-                // it("should pass when it is given { var a = 1; expr; }", function (done) {
-                //     ComputationTest_EVars_transform_with_EMeta.perform_expr({
-                //         var a = 1;
-                //         a.should.be(1);
-                //         done();
-                //     });
-                // });
             });
         });
 
@@ -110,9 +102,6 @@ class ComputationTest extends BuddySuite {
             it("should pass when it is changed keyword and it is given { @foo 1; done(); }", function (done) {
                 ComputationTest_EMeta_transform.perform_done_foo(done);
             });
-
-            // meta action
-            // { @await 1 + @await 2 } が変換できるけど、特に何も起きない
         });
     }
 }
