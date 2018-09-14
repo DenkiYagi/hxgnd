@@ -1,11 +1,7 @@
 package hxgnd;
 
-import TestTools.wait;
-import hxgnd.Computation;
 import buddy.BuddySuite;
-import buddy.CompilationShould;
 using buddy.Should;
-import haxe.macro.Expr;
 import hxgnd.ComputationTest_Partial;
 
 class ComputationTest extends BuddySuite {
