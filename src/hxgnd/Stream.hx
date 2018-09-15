@@ -83,21 +83,13 @@ class Stream<T> {
     public static function apply<T>(executor: StreamContext<T> -> Void): Stream<T> {
         var stream = new Stream<T>();
 
-        function invoke() {
+        Dispatcher.dispatch(function exec() {
             try {
                 executor(stream.context);
             } catch (e: Dynamic) {
                 stream.emit(Error(e));
             }
-        }
-
-        #if js
-        hxgnd.js.JsNative.setImmediate(invoke);
-        #elseif neko
-        neko.vm.Thread.create(invoke);
-        #else
-        haxe.Timer.delay(invoke, 0);
-        #end
+        });
 
         return stream;
     }

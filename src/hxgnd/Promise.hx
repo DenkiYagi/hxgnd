@@ -138,7 +138,7 @@ class DelayPromise<T> implements IPromise<T> {
         this.onFulfilledHanlders = new Delegate();
         this.onRejectedHanlders = new Delegate();
 
-        function invoke() {
+        Dispatcher.dispatch(function exec() {
             try {
                 executor(onFulfill, onReject);
             } catch (e: Error) {
@@ -150,13 +150,7 @@ class DelayPromise<T> implements IPromise<T> {
                 onReject(Error.create(e));
                 #end
             }
-        }
-
-        #if neko
-        neko.vm.Thread.create(invoke);
-        #else
-        haxe.Timer.delay(invoke, 0);
-        #end
+        });
     }
 
     public function then<TOut>(
