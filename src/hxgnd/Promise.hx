@@ -3,6 +3,8 @@ package hxgnd;
 #if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
+import haxe.macro.Type;
+import haxe.macro.TypeTools;
 #end
 import hxgnd.Error;
 import externtype.Mixed2;
@@ -110,7 +112,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
 
     #if macro
     static function buildBind(expr: Expr, fn: Expr): Expr {
-        return if (unifyPromise(expr)) {
+        return if (isUnifiable(expr)) {
             macro ${expr}.then(${fn});
         } else {
             macro SyncPromise.resolve(${expr}).then(${fn});
@@ -118,11 +120,21 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     }
 
     static function buildReturn(expr: Expr): Expr {
-        return expr;
+        return if (isUnifiable(expr)) {
+            expr;
+        } else {
+            macro new SyncPromise(function (f, _) {
+                f(${expr});
+            });
+        }
     }
 
-    static function unifyPromise(expr: Expr): Bool {
-        return Context.unify(Context.typeof(expr), Context.getType("hxgnd.Promise"));
+    static function isUnifiable(expr: Expr): Bool {
+        var type = Context.typeof(expr);
+        return switch (type) {
+            case TMono(_): false;  // workaround for Promise.compute({ throw xxx; })
+            case _: Context.unify(type, Context.getType("hxgnd.Promise"));
+        }
     }
     #end
 }
