@@ -114,12 +114,4 @@ class SyncPromise<T> implements IPromise<T> {
     public static function reject<T>(error: Dynamic): Promise<T> {
         return new SyncPromise(function (_, r) r(error));
     }
-
-    public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
-        return Promise.all(iterable);
-    }
-
-    public static inline function race<T>(iterable: Array<Promise<T>>): Promise<T> {
-        return Promise.race(iterable);
-    }
 }
