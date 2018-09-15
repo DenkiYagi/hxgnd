@@ -32,7 +32,7 @@ class ComputationTest_no_transform {
     public static macro function perform_done(done: Expr): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) {
-                return macro haxe.Timer.delay(function () {
+                return macro Dispatcher.dispatch(function () {
                     ${fn}(${expr} * 10);
                 }, 0);
             },
@@ -178,9 +178,9 @@ class ComputationTest_EMeta_transform {
     public static macro function perform_done(done: Expr): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) {
-                return macro haxe.Timer.delay(function () {
+                return macro Dispatcher.dispatch(function () {
                     ${fn}(${expr} * 10);
-                }, 0);
+                });
             },
             buildReturn: function (expr: Expr) return expr
         }, macro {
@@ -193,14 +193,43 @@ class ComputationTest_EMeta_transform {
         return Computation.perform({
             keyword: "foo",
             buildBind: function (expr: Expr, fn: Expr) {
-                return macro haxe.Timer.delay(function () {
+                return macro Dispatcher.dispatch(function () {
                     ${fn}(${expr} * 10);
-                }, 0);
+                });
             },
             buildReturn: function (expr: Expr) return expr
         }, macro {
             @foo 1;
             ${done}();
         });
+    }
+}
+
+class ComputationTest_nested_transform {
+    public static function perform() {
+        return perform_outer({
+            var a = @let 10;                // a = 11
+            var b = @let 5;                 // b = 6
+            var c = @let perform_inner({    // +1
+                var x = @let 5;             // x = 50
+                var y = @let b;             // y = b * 10
+                x + y;
+            });
+            a + c;
+        });
+    }
+
+    static macro function perform_outer(expr: Expr): Expr {
+        return Computation.perform({
+            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} + 1),
+            buildReturn: function (expr: Expr) return expr
+        }, expr);
+    }
+
+    static macro function perform_inner(expr: Expr): Expr {
+        return Computation.perform({
+            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
+            buildReturn: function (expr: Expr) return expr
+        }, expr);
     }
 }
