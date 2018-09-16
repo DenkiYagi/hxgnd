@@ -4,35 +4,77 @@ package hxgnd;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
-import haxe.macro.TypeTools;
 #end
-import hxgnd.Error;
 import externtype.Mixed2;
+using hxgnd.LangTools;
 
 @:generic
 abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void): Void {
         #if js
-        this = untyped __js__("new Promise({0})", executor);
+        // workaround for js__$Boot_HaxeError
+        this = untyped __js__("new Promise({0})", function (fulfill, reject) {
+            try {
+                executor(fulfill, reject);
+            } catch (e: Dynamic) {
+                reject(e);
+            }
+        });
         #else
         this = new DelayPromise(executor);
         #end
     }
 
-    public inline function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>,
+    public function then<TOut>(
+            fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return this.then(fulfilled, rejected);
+        // workaround for js__$Boot_HaxeError
+        return this.then(
+            if (fulfilled.nonNull()) {
+                function (value) {
+                    try {
+                        return (fulfilled: T -> Dynamic)(value);
+                    } catch (e: Dynamic) {
+                        return SyncPromise.reject(e);
+                    }
+                }
+            } else {
+                null;
+            },
+            if (rejected.nonNull()) {
+                function (error) {
+                    try {
+                        return (rejected: Dynamic -> Dynamic)(error);
+                    } catch (e: Dynamic) {
+                        return SyncPromise.reject(e);
+                    }
+                }
+            } else {
+                null;
+            }
+        );
     }
 
-    public inline function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return this.then(null, rejected);
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+        // workaround for js__$Boot_HaxeError
+        return this.then(null, if (rejected.nonNull()) {
+            function (error) {
+                try {
+                    return (rejected: Dynamic -> Dynamic)(error);
+                } catch (e: Dynamic) {
+                    return SyncPromise.reject(e);
+                }
+            }
+        } else {
+            null;
+        });
     }
 
     public static inline function resolve<T>(?value: T): Promise<T> {
         #if js
         return untyped __js__("Promise.resolve({0})", value);
         #else
-        return new SyncPromise(function (f, _) {
+        return new Promise(function (f, _) {
             return f(value);
         });
         #end
@@ -42,7 +84,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         #if js
         return untyped __js__("Promise.reject({0})", error);
         #else
-        return new SyncPromise(function (_, f) {
+        return new Promise(function (_, f) {
             return f(error);
         });
         #end
@@ -56,7 +98,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         return if (length <= 0) {
             SyncPromise.resolve([]);
         } else {
-            new Promise(function (fulfill, reject) {
+            new SyncPromise(function (fulfill, reject) {
                 var values = [for (i in 0...length) null];
                 var count = 0;
                 for (i in 0...length) {
@@ -76,9 +118,9 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         return untyped __js__("Promise.race({0})", iterable);
         #else
         return if (iterable.length <= 0) {
-            new Promise(function (_, _) {});
+            new SyncPromise(function (_, _) {});
         } else {
-            new Promise(function (fulfill, reject) {
+            new SyncPromise(function (fulfill, reject) {
                 for (p in iterable) {
                     p.then(fulfill, reject);
                 }
@@ -153,14 +195,8 @@ class DelayPromise<T> implements IPromise<T> {
         Dispatcher.dispatch(function exec() {
             try {
                 executor(onFulfill, onReject);
-            } catch (e: Error) {
-                onReject(e);
             } catch (e: Dynamic) {
-                #if js
-                onReject(new Error(Std.string(e)));
-                #else
-                onReject(Error.create(e));
-                #end
+                onReject(e);
             }
         });
     }
@@ -168,59 +204,63 @@ class DelayPromise<T> implements IPromise<T> {
     public function then<TOut>(
             fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return _then(fulfilled, rejected);
-    }
-
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return _then(null, rejected);
-    }
-
-    inline function _then<TOut>(
-            fulfilled: Null<PromiseCallback<T, TOut>>,
-            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         var promise = new DelayPromise<TOut>(function (_, _) {});
 
-        function handleFulfilled(value: T) {
-            try {
-                var next: Dynamic = (fulfilled: T -> Dynamic)(value);
-                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                    next.then(promise.onFulfill, promise.onReject);
-                } else {
-                    promise.onFulfill(next);
-                }
-            } catch (e: Error) {
-                promise.onReject(e);
-            } catch (e: Dynamic) {
-                #if js
-                promise.onReject(new Error(Std.string(e)));
-                #else
-                promise.onReject(Error.create(e));
-                #end
+        var handleFulfilled = if (fulfilled.nonNull()) {
+            function transformValue(value: T) {
+                Dispatcher.dispatch(function () {
+                    try {
+                        var next = (fulfilled: T -> Dynamic)(value);
+                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                            var nextPromise: Promise<TOut> = cast next;
+                            nextPromise.then(promise.onFulfill, promise.onReject);
+                        } else {
+                            promise.onFulfill(next);
+                        }
+                    } catch (e: Dynamic) {
+                        promise.onReject(e);
+                    }
+                });
+            }
+        } else {
+            function passValue(value: T) {
+                Dispatcher.dispatch(function () {
+                    promise.onFulfill(cast value);
+                });
             }
         }
 
-        function handleRejected(error: Dynamic) {
-            try {
-                var next: Dynamic = (rejected: Dynamic -> Dynamic)(error);
-                if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                    next.then(promise.onFulfill, promise.onReject);
-                } else {
-                    promise.onFulfill(next);
-                }
-            } catch (e: Error) {
-                promise.onReject(e);
-            } catch (e: Dynamic) {
-                #if js
-                promise.onReject(new Error(Std.string(e)));
-                #else
-                promise.onReject(Error.create(e));
-                #end
+        var handleRejected = if (rejected.nonNull()) {
+            function transformError(error: Dynamic) {
+                Dispatcher.dispatch(function () {
+                    try {
+                        var next = (rejected: Dynamic -> Dynamic)(error);
+                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                            var nextPromise: Promise<TOut> = cast next;
+                            nextPromise.then(promise.onFulfill, promise.onReject);
+                        } else {
+                            promise.onFulfill(next);
+                        }
+                    } catch (e: Dynamic) {
+                        promise.onReject(e);
+                    }
+                });
+            }
+        } else {
+            function passError(error: Dynamic) {
+                Dispatcher.dispatch(function () {
+                    try {
+                        promise.onReject(error);
+                    } catch (e: Dynamic) {
+                        trace(e);
+                    }
+                });
             }
         }
 
         if (result.isEmpty()) {
-            if (LangTools.nonNull(fulfilled)) onFulfilledHanlders.add(handleFulfilled);
-            if (LangTools.nonNull(rejected)) onRejectedHanlders.add(handleRejected);
+            onFulfilledHanlders.add(handleFulfilled);
+            onRejectedHanlders.add(handleRejected);
         } else {
             switch (result.get()) {
                 case Success(v): handleFulfilled(v);
@@ -229,6 +269,10 @@ class DelayPromise<T> implements IPromise<T> {
         }
 
         return promise;
+    }
+
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+        return then(null, rejected);
     }
 
     function onFulfill(?value: T): Void {
