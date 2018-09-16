@@ -979,7 +979,9 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise#compute()", {
-            describe("simple expr", {
+            timeoutMs = 100;
+
+            describe("excluded expr", {
                 // TODO buildZero
                 it("should pass when it given {}", {
                     Promise.compute({});
@@ -1003,6 +1005,7 @@ class PromiseTest extends BuddySuite {
                     });
                 });
 
+                // TODO buildZero
                 // it("should pass it given { var a = 1; }", function (done) {
                 //     Promise.compute({
                 //         var a = 1;
@@ -1064,7 +1067,7 @@ class PromiseTest extends BuddySuite {
                     });
                 });
 
-                it("should pass when it given { @await Promise.resolve(3) }", function (done) {
+                it("should pass when it given { @await fn() }", function (done) {
                     function fn() {
                         return Promise.resolve(1);
                     }
@@ -1075,58 +1078,249 @@ class PromiseTest extends BuddySuite {
                         done();
                     });
                 });
+
+                it("should pass when it given { @await 1; @await 2; @await 3; }", function (done) {
+                    Promise.compute({
+                        @await 1;
+                        @await 2;
+                        @await 3;
+                    }).then(function (_) {
+                        done();
+                    });
+                });
+
+                it("should pass when it given { @await Promise.resolve(1); @await Promise.resolve(2); @await Promise.resolve(3); }", function (done) {
+                    Promise.compute({
+                        @await Promise.resolve(1);
+                        @await Promise.resolve(2);
+                        @await Promise.resolve(3);
+                    }).then(function (_) {
+                        done();
+                    });
+                });
+
+                it("should pass when it given { @await fn1(); @await fn2(); @await fn3(); }", function (done) {
+                    function fn1() {
+                        return Promise.resolve(1);
+                    }
+                    function fn2() {
+                        return Promise.resolve(2);
+                    }
+                    function fn3() {
+                        return Promise.resolve(3);
+                    }
+
+                    Promise.compute({
+                        @await fn1();
+                        @await fn2();
+                        @await fn3();
+                    }).then(function (_) {
+                        done();
+                    });
+                });
+            });
+
+            describe("bind", {
+                it("should pass when it given { var a = @await 2; a; }", function (done) {
+                    Promise.compute({
+                        var a = @await 2;
+                        a;
+                    }).then(function (x) {
+                        x.should.be(2);
+                        done();
+                    });
+                });
+
+                it("should pass when it given { var a = @await Promise.resolve(3); a; }", function (done) {
+                    Promise.compute({
+                        var a = @await Promise.resolve(3);
+                        a;
+                    }).then(function (x) {
+                        x.should.be(3);
+                        done();
+                    });
+                });
+
+                it("should pass when it given { var a = @await Promise.reject('error'); a; }", function (done) {
+                    Promise.compute({
+                        var a = @await Promise.reject("error");
+                        a;
+                    }).then(function (_) {
+                        fail();
+                        done();
+                    }).catchError(function (e) {
+                        LangTools.same(e, "error").should.be(true);
+                        done();
+                    });
+                });
+
+                it("should pass when it given { @await fn() }", function (done) {
+                    function fn() {
+                        return Promise.resolve(1);
+                    }
+
+                    Promise.compute({
+                        var a = @await fn();
+                        a;
+                    }).then(function (x) {
+                        x.should.be(1);
+                        done();
+                    });
+                });
+
+                it("should pass when it given { var a = @await 1; var b = @await 2; var c = @await 3; a + b + c; }", function (done) {
+                    Promise.compute({
+                        var a = @await 1;
+                        var b = @await 2;
+                        var c = @await 3;
+                        a + b + c;
+                    }).then(function (x) {
+                        x.should.be(6);
+                        done();
+                    });
+                });
+
+                it("should pass when it given { var a = @await Promise.resolve(1); var b = @await Promise.resolve(2); var c =@await Promise.resolve(3); }", function (done) {
+                    Promise.compute({
+                        var a = @await Promise.resolve(1);
+                        var b = @await Promise.resolve(2);
+                        var c = @await Promise.resolve(3);
+                        a + b + c;
+                    }).then(function (x) {
+                        x.should.be(6);
+                        done();
+                    });
+                });
+
+                it("should pass when it given { @await fn1(); @await fn2(); @await fn3(); }", function (done) {
+                    function fn1() {
+                        return Promise.resolve(1);
+                    }
+                    function fn2() {
+                        return Promise.resolve(2);
+                    }
+                    function fn3() {
+                        return Promise.resolve(3);
+                    }
+
+                    Promise.compute({
+                        var a = @await fn1();
+                        var b = @await fn2();
+                        var c = @await fn3();
+                        a + b + c;
+                    }).then(function (x) {
+                        x.should.be(6);
+                        done();
+                    });
+                });
             });
 
             describe("throw", {
                 it("should pass when it given { throw 'error' }", function (done) {
                     Promise.compute({
                         throw "error";
-                    }).then(function (_) {
-                        fail();
-                        done();
                     }).catchError(function (e) {
                         done();
                     });
                 });
 
-                // it("should pass when it given { @await 1; throw 'error' }", function (done) {
-                //     Promise.compute({
-                //         @await 1;
-                //         throw "error";
-                //     }).then(function (_) {
-                //         fail();
-                //         done();
-                //     }).catchError(function (e: Dynamic) {
-                //         trace(e);
-                //         trace(e.stack);
-                //         Std.is(e, Error).should.be(true);
-                //         (e: Error).message.should.be("error");
-                //         done();
-                //     });
-                // });
+                it("should pass when it given { @await 1; throw 'error' }", function (done) {
+                    Promise.compute({
+                        @await 1;
+                        throw "error";
+                    }).catchError(function (e) {
+                        (e: String).should.be("error");
+                        done();
+                    });
+                });
 
-                // it("should pass when it given { var a = @await 1; throw 'error' }", function (done) {
-                //     Promise.compute({
-                //         var a = @await 1;
-                //         throw "error";
-                //     }).then(function (_) {
-                //         fail();
-                //         done();
-                //     }).catchError(function (e) {
-                //         LangTools.same(e, "error").should.be(true);
-                //         done();
-                //     });
-                // });
+                it("should pass when it given { var a = @await 1; throw 'error' }", function (done) {
+                    Promise.compute({
+                        var a = @await 1;
+                        throw "error";
+                    }).catchError(function (e) {
+                        (e: String).should.be("error");
+                        done();
+                    });
+                });
 
                 it("should pass when it given { @await Promise.reject('rejected'); throw 'error' }", function (done) {
                     Promise.compute({
                         @await Promise.reject("rejected");
                         throw "error";
-                    }).then(function (_) {
-                        fail();
-                        done();
                     }).catchError(function (e) {
-                        LangTools.same(e, "rejected").should.be(true);
+                        (e: String).should.be("rejected");
+                        done();
+                    });
+                });
+
+                it("should pass when it given { var a = @await Promise.reject('rejected'); throw 'error' }", function (done) {
+                    Promise.compute({
+                        var a = @await Promise.reject("rejected");
+                        throw "error";
+                    }).catchError(function (e) {
+                        (e: String).should.be("rejected");
+                        done();
+                    });
+                });
+
+                it("should pass when it given { @await fn() }", function (done) {
+                    function fn(): Int {
+                        throw "error";
+                    }
+
+                    Promise.compute({
+                        @await fn();
+                    }).catchError(function (e) {
+                        (e: String).should.be("error");
+                        done();
+                    });
+                });
+            });
+
+            describe("mixed", {
+                it("should resolve", function (done) {
+                    Promise.compute({
+                        var a = 1;
+                        var b = @await Promise.resolve(2);
+                        var c = 3;
+                        var d = a + b + c;
+                        @await Promise.resolve(4);
+                        d * 2;
+                    }).then(function (x) {
+                        x.should.be(12);
+                        done();
+                    });
+                });
+
+                it("should reject", function (done) {
+                    Promise.compute({
+                        var a = 1;
+                        var b = @await Promise.resolve(2);
+                        var c = 3;
+                        // throw "error"  <- can not compile on Haxe 3.4.7
+                        if (b < 10) throw "error";
+                        var d = a + b + c;
+                        @await Promise.resolve(4);
+                        d * 2;
+                    }).catchError(function (e) {
+                        (e: String).should.be("error");
+                        done();
+                    });
+                });
+            });
+
+            describe("nest", {
+                it("should resolve", function (done) {
+                    Promise.compute({
+                        var a = @await 1;
+                        var b = @await Promise.compute({
+                            var x = @await 2;
+                            x + 1;
+                        });
+                        a + b;
+                    }).then(function (x) {
+                        x.should.be(4);
                         done();
                     });
                 });

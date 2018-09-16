@@ -1,8 +1,16 @@
 package hxgnd;
 
+import haxe.extern.EitherType;
+
 abstract PromiseCallback<T, TOut>(T -> Dynamic)
-    from T -> TOut
-    from T -> Promise<TOut>
-    #if js from T -> js.Promise<TOut> #end
+    #if js
+    from EitherType<T -> js.Promise<TOut>,
+            EitherType<T -> SyncPromise<TOut>,
+                EitherType<T -> IPromise<TOut>, T -> TOut>>>
+    #else
+    from EitherType<T -> SyncPromise<TOut>,
+            EitherType<T -> IPromise<TOut>,
+                EitherType<T -> Promise<TOut>, T -> TOut>>>
+    #end
     to T -> Dynamic
 {}

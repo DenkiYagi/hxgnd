@@ -100,19 +100,19 @@ class SyncPromise<T> implements IPromise<T> {
     }
 
     function onFulfill(?value: T): Void {
-        if (result.nonEmpty()) return;
-
-        result = Maybe.of(Success(value));
-        onFulfilledHanlders.invoke(value);
-        removeAllHandlers();
+        if (result.isEmpty()) {
+            result = Maybe.of(Success(value));
+            onFulfilledHanlders.invoke(value);
+            removeAllHandlers();
+        }
     }
 
     function onReject(?error: Dynamic): Void {
-        if (result.nonEmpty()) return;
-
-        result = Maybe.of(Failure(error));
-        onRejectedHanlders.invoke(error);
-        removeAllHandlers();
+        if (result.isEmpty()) {
+            result = Maybe.of(Failure(error));
+            onRejectedHanlders.invoke(error);
+            removeAllHandlers();
+        }
     }
 
     inline function removeAllHandlers(): Void {

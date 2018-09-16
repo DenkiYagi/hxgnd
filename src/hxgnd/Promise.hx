@@ -31,13 +31,13 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         // workaround for js__$Boot_HaxeError
         return this.then(
             if (fulfilled.nonNull()) {
-                function (value) {
+               (function (value) {
                     try {
                         return (fulfilled: T -> Dynamic)(value);
                     } catch (e: Dynamic) {
-                        return SyncPromise.reject(e);
+                        return cast SyncPromise.reject(e);
                     }
-                }
+                }: PromiseCallback<T, TOut>);
             } else {
                 null;
             },
@@ -58,13 +58,13 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         // workaround for js__$Boot_HaxeError
         return this.then(null, if (rejected.nonNull()) {
-            function (error) {
+            cast function (error) {
                 try {
                     return (rejected: Dynamic -> Dynamic)(error);
                 } catch (e: Dynamic) {
                     return SyncPromise.reject(e);
                 }
-            }
+            };
         } else {
             null;
         });
@@ -157,25 +157,27 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         return if (isUnifiable(expr)) {
             macro ${expr}.then(${fn});
         } else {
-            macro SyncPromise.resolve(${expr}).then(${fn});
+            macro new SyncPromise(function (f, _) {
+                f(${expr});
+            }).then(${fn});
         }
     }
 
     static function buildReturn(expr: Expr): Expr {
-        return if (isUnifiable(expr)) {
-            expr;
-        } else {
-            macro new SyncPromise(function (f, _) {
-                f(${expr});
-            });
-        }
+        return macro new SyncPromise(function (f, _) {
+            f(${expr});
+        });
     }
 
     static function isUnifiable(expr: Expr): Bool {
-        var type = Context.typeof(expr);
-        return switch (type) {
-            case TMono(_): false;  // workaround for Promise.compute({ throw xxx; })
-            case _: Context.unify(type, Context.getType("hxgnd.Promise"));
+        try {
+            var type = Context.typeof(expr);
+            return switch (type) {
+                case TMono(_): false;  // workaround for Promise.compute({ throw xxx; })
+                case _: Context.unify(type, Context.getType("hxgnd.Promise"));
+            }
+        } catch (e: Dynamic) {
+            return false;
         }
     }
     #end
@@ -276,19 +278,19 @@ class DelayPromise<T> implements IPromise<T> {
     }
 
     function onFulfill(?value: T): Void {
-        if (result.nonEmpty()) return;
-
-        result = Maybe.of(Result.Success(value));
-        onFulfilledHanlders.invoke(value);
-        removeAllHandlers();
+        if (result.isEmpty()) {
+            result = Maybe.of(Result.Success(value));
+            onFulfilledHanlders.invoke(value);
+            removeAllHandlers();
+        }
     }
 
     function onReject(?error: Dynamic): Void {
-        if (result.nonEmpty()) return;
-
-        result = Maybe.of(Result.Failure(error));
-        onRejectedHanlders.invoke(error);
-        removeAllHandlers();
+        if (result.isEmpty()) {
+            result = Maybe.of(Result.Failure(error));
+            onRejectedHanlders.invoke(error);
+            removeAllHandlers();
+        }
     }
 
     inline function removeAllHandlers(): Void {
