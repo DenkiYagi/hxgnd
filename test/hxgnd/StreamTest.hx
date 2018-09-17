@@ -19,7 +19,7 @@ class StreamTest extends BuddySuite {
         });
 
         describe("Stream.new()", {
-            timeoutMs = 1000;
+            timeoutMs = 5000;
 
             it("should emit Error", function (done) {
                 var stream = Stream.apply(function (ctx) {
@@ -41,7 +41,7 @@ class StreamTest extends BuddySuite {
         });
 
         describe("Stream.subscribe()", {
-            timeoutMs = 1000;
+            timeoutMs = 5000;
 
             #if js
             it("should invoke middleware defer", function (done) {
@@ -399,7 +399,7 @@ class StreamTest extends BuddySuite {
         });
 
         describe("Stream.unsubscribe()", {
-            timeoutMs = 1000;
+            timeoutMs = 5000;
 
             it("should not subscribe", function (done) {
                 var stream = Stream.apply(function (ctx) {
@@ -423,7 +423,7 @@ class StreamTest extends BuddySuite {
         });
 
         describe("Stream.abort()", {
-            timeoutMs = 1000;
+            timeoutMs = 5000;
 
             it("should abort event loop", function (done) {
                 var stream = Stream.apply(function (ctx) {

@@ -8,7 +8,7 @@ using buddy.Should;
 class SyncPromiseTest extends BuddySuite {
     public function new() {
         describe("SyncPromise.new()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             describe("executor", {
                 it("should call", function (done) {
@@ -233,7 +233,7 @@ class SyncPromiseTest extends BuddySuite {
         });
 
         describe("SyncPromise.resolve()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             it("should call resolved(_)", function (done) {
                 SyncPromise.resolve().then(
@@ -254,7 +254,7 @@ class SyncPromiseTest extends BuddySuite {
         });
 
         describe("SyncPromise.reject()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
            it("should call rejected(x)", function (done) {
                 SyncPromise.reject("error").then(
@@ -278,7 +278,7 @@ class SyncPromiseTest extends BuddySuite {
         });
 
         describe("SyncPromise.then()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             describe("sync", {
                 it("should call fulfilled", function (done) {
@@ -540,7 +540,7 @@ class SyncPromiseTest extends BuddySuite {
         });
 
         describe("SyncPromise.catchError()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             describe("sync", {
                 it("should not call", function (done) {

@@ -8,7 +8,7 @@ using buddy.Should;
 class PromiseTest extends BuddySuite {
     public function new() {
         describe("Promise.new()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             describe("executor", {
                 it("should call", function (done) {
@@ -233,7 +233,7 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.resolve()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             it("should call resolved(_)", function (done) {
                 Promise.resolve().then(
@@ -254,7 +254,7 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.reject()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
            it("should call rejected(x)", function (done) {
                 Promise.reject("error").then(
@@ -278,7 +278,7 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.then()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             describe("sync", {
                 it("should call fulfilled", function (done) {
@@ -540,7 +540,7 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.catchError()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             describe("sync", {
                 it("should not call", function (done) {
@@ -780,7 +780,7 @@ class PromiseTest extends BuddySuite {
         #end
 
         describe("Promise.all()", {
-            timeoutMs = 1000;
+            timeoutMs = 5000;
 
             it("should resolve empty array", function (done) {
                 Promise.all([]).then(function (values) {
@@ -879,7 +879,7 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.race()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             it("should be pending", function (done) {
                 Promise.race([]).then(function (value) {
@@ -979,7 +979,7 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise#compute()", {
-            timeoutMs = 100;
+            timeoutMs = 500;
 
             describe("excluded expr", {
                 it("should pass when it given {}", function (done) {
@@ -1326,6 +1326,7 @@ class PromiseTest extends BuddySuite {
                 });
             });
 
+            #if js
             describe("using js.Promise and SyncPromise", {
                 it("should pass", function (done) {
                     Promise.compute({
@@ -1339,6 +1340,7 @@ class PromiseTest extends BuddySuite {
                     });
                 });
             });
+            #end
         });
     }
 }
