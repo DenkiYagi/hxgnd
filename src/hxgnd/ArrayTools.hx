@@ -134,9 +134,13 @@ class ArrayTools {
         return Maybe.empty();
     }
 
-    // public static function lastOption<A>(array: Array<A>): Option<A> {
-    //     return if(array.length == 0) None else Some(array[array.length - 1]);
-    // }
+    public static function last<A>(array: Array<A>): Maybe<A> {
+        return if (nonEmpty(array)) {
+            Maybe.of(array[array.length - 1]);
+        } else {
+            Maybe.empty();
+        }
+    }
 
     // public static function flatten<A>(array: Array<Array<A>>): Array<A> {
     //     function concat<A>(a1: Array<A>, a2: Array<A>){ return a2.concat(a1); }

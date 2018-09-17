@@ -204,5 +204,14 @@ class ArrayToolsTest extends BuddySuite {
                 [1, 2, 3].head(function (x) return false).isEmpty().should.be(true);
             });
         });
+
+        describe("ArrayTools.last()", {
+            it("should take from empty", {
+                [].last().isEmpty().should.be(true);
+            });
+            it("should take from any", {
+                [1, 2, 3].last().should.be(3);
+            });
+        });
     }
 }
