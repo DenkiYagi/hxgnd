@@ -141,12 +141,13 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     }
     #end
 
-    public static macro function compute(blockExpr: Expr): Expr {
+    public static macro function compute<T>(blockExpr: Expr): ExprOf<Promise<T>> {
         return Computation.perform(
             {
                 keyword: "await",
                 buildBind: buildBind,
-                buildReturn: buildReturn
+                buildReturn: buildReturn,
+                buildZero: buildZero
             },
             blockExpr
         );
@@ -167,6 +168,10 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         return macro new SyncPromise(function (f, _) {
             f(${expr});
         });
+    }
+
+    static function buildZero(): Expr {
+        return macro SyncPromise.resolve();
     }
 
     static function isUnifiable(expr: Expr): Bool {

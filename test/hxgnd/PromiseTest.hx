@@ -982,9 +982,10 @@ class PromiseTest extends BuddySuite {
             timeoutMs = 100;
 
             describe("excluded expr", {
-                // TODO buildZero
-                it("should pass when it given {}", {
-                    Promise.compute({});
+                it("should pass when it given {}", function (done) {
+                    Promise.compute({}).then(function (_) {
+                        done();
+                    });
                 });
 
                 it("should pass it given { 1 }", function (done) {
@@ -1005,14 +1006,13 @@ class PromiseTest extends BuddySuite {
                     });
                 });
 
-                // TODO buildZero
-                // it("should pass it given { var a = 1; }", function (done) {
-                //     Promise.compute({
-                //         var a = 1;
-                //     }).then(function (_) {
-                //         done();
-                //     });
-                // });
+                it("should pass it given { var a = 1; }", function (done) {
+                    Promise.compute({
+                        var a = 1;
+                    }).then(function (_) {
+                        done();
+                    });
+                });
 
                 it("should pass it given { var a = 1; a + 1; }", function (done) {
                     Promise.compute({

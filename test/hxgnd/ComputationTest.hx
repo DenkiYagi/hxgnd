@@ -8,10 +8,6 @@ class ComputationTest extends BuddySuite {
     public function new() {
         describe("Computation#perform()", {
             describe("No transformation", {
-                it("should pass when it is given {}", {
-                    ComputationTest_no_transform.perform_empty_eblock();
-                });
-
                 it("should pass when it is given { 1 } ", {
                     ComputationTest_no_transform.perform_const_eblock()
                         .should.be(1);
@@ -27,14 +23,32 @@ class ComputationTest extends BuddySuite {
                 });
             });
 
+            describe("Zero transformation", {
+                it("should pass when it is given {}", {
+                    ComputationTest_zero_transform.perform_empty_eblock().should.be(0);
+                });
+
+
+                it("should pass when it is given { for (i in 0...0) {} }", {
+                    ComputationTest_zero_transform.perform_efor().should.be(0);
+                });
+
+                it("should pass when it is given { while (false) {} }", {
+                    ComputationTest_zero_transform.perform_ewhile().should.be(0);
+                });
+
+                // it("should pass when it is given { try { var a = 1; } catch (e: Dynamic) { } }", {
+                // });
+            });
+
             describe("EVars transformation", {
                 describe("widthout EMeta", {
                     it("should pass when it is given { var a = 1; }", {
-                        ComputationTest_EVars_transform_without_EMeta.perform_single_var();
+                        ComputationTest_EVars_transform_without_EMeta.perform_single_var().should.be(0);
                     });
 
                     it("should pass when it is given { var a = 1, b = 2; }", {
-                        ComputationTest_EVars_transform_without_EMeta.perform_multi_var();
+                        ComputationTest_EVars_transform_without_EMeta.perform_multi_var().should.be(0);
                     });
 
                     it("should pass when it is given { var a = 1; a; }", {

@@ -4,17 +4,11 @@ import hxgnd.Computation;
 import haxe.macro.Expr;
 
 class ComputationTest_no_transform {
-    public static macro function perform_empty_eblock(): Expr {
-        return Computation.perform({
-            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
-        }, macro {});
-    }
-
     public static macro function perform_const_eblock(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             1;
         });
@@ -23,7 +17,8 @@ class ComputationTest_no_transform {
     public static macro function perform_expr_eblock(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             1 + 2;
         });
@@ -36,9 +31,40 @@ class ComputationTest_no_transform {
                     ${fn}(${expr} * 10);
                 }, 0);
             },
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             ${done}();
+        });
+    }
+}
+
+class ComputationTest_zero_transform {
+    public static macro function perform_empty_eblock(): Expr {
+        return Computation.perform({
+            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
+        }, macro {});
+    }
+
+    public static macro function perform_efor(): Expr {
+        return Computation.perform({
+            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
+        }, macro {
+            for (i in 0...0) { }
+        });
+    }
+
+    public static macro function perform_ewhile(): Expr {
+        return Computation.perform({
+            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
+        }, macro {
+            while (false) { }
         });
     }
 }
@@ -47,7 +73,8 @@ class ComputationTest_EVars_transform_without_EMeta {
     public static macro function perform_single_var(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = 1;
         });
@@ -56,7 +83,8 @@ class ComputationTest_EVars_transform_without_EMeta {
     public static macro function perform_multi_var(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = 1, b = 2;
         });
@@ -65,7 +93,8 @@ class ComputationTest_EVars_transform_without_EMeta {
     public static macro function perform_single_var_return(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = 1;
             a;
@@ -75,10 +104,11 @@ class ComputationTest_EVars_transform_without_EMeta {
     public static macro function perform_multi_var_return(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = 1, b = 2;
-            return a + b;
+            a + b;
         });
     }
 }
@@ -87,7 +117,8 @@ class ComputationTest_EVars_transform_with_EMeta {
     public static macro function perform_single_var(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = @let 1;
         });
@@ -96,7 +127,8 @@ class ComputationTest_EVars_transform_with_EMeta {
     public static macro function perform_multi_var(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = @let 1, b = 2;
         });
@@ -105,7 +137,8 @@ class ComputationTest_EVars_transform_with_EMeta {
     public static macro function perform_single_var_return(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = @let 1;
             a;
@@ -115,31 +148,34 @@ class ComputationTest_EVars_transform_with_EMeta {
     public static macro function perform_multi_var_return_1(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = @let 1, b = 2;
-            return a + b;
+            a + b;
         });
     }
 
     public static macro function perform_multi_var_return_2(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = @let 1, b = @let 2;
-            return a + b;
+            a + b;
         });
     }
 
     public static macro function perform_multi_var_return_3(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var a = @let 1;
             var b = @let 2;
-            return a + b;
+            a + b;
         });
     }
 
@@ -147,7 +183,8 @@ class ComputationTest_EVars_transform_with_EMeta {
         return Computation.perform({
             keyword: "foo",
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             var  a = @let 1;
             a;
@@ -159,7 +196,8 @@ class ComputationTest_EMeta_transform {
     public static macro function perform_single(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return macro function (fn) fn(${expr})
+            buildReturn: function (expr: Expr) return macro function (fn) fn(${expr}),
+            buildZero: function () return macro 0
         }, macro {
             @let 1;
         });
@@ -168,7 +206,8 @@ class ComputationTest_EMeta_transform {
     public static macro function perform_multi(): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return macro function (fn) fn(${expr})
+            buildReturn: function (expr: Expr) return macro function (fn) fn(${expr}),
+            buildZero: function () return macro 0
         }, macro {
             @let 1;
             @let 2;
@@ -182,7 +221,8 @@ class ComputationTest_EMeta_transform {
                     ${fn}(${expr} * 10);
                 });
             },
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             @let 1;
             ${done}();
@@ -197,7 +237,8 @@ class ComputationTest_EMeta_transform {
                     ${fn}(${expr} * 10);
                 });
             },
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, macro {
             @foo 1;
             ${done}();
@@ -222,14 +263,16 @@ class ComputationTest_nested_transform {
     static macro function perform_outer(expr: Expr): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} + 1),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, expr);
     }
 
     static macro function perform_inner(expr: Expr): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
-            buildReturn: function (expr: Expr) return expr
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
         }, expr);
     }
 }

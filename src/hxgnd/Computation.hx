@@ -13,9 +13,9 @@ class Computation {
             case EBlock(e): e;
             case _: Context.error("Invalid argument: must be a block.", blockExpr.pos);
         }
+        if (exprs.isEmpty()) return builder.buildZero();
 
         var keyword = Maybe.ofNullable(builder.keyword).getOrElse(DEFAULT_KEYWORD);
-
         var builders = [];
         var cexprs = [];
 
@@ -52,17 +52,27 @@ class Computation {
         }
 
         // build expr from the inside to the outside
-        var newExprs = buildReturn(builder, cexprs);
+        var newExprs = if (isVoidExpr(exprs)) {
+            cexprs.concat([builder.buildZero()]);
+        } else {
+            buildReturn(builder, cexprs);
+        }
+
         var i = builders.length;
         while (--i >= 0) {
             newExprs = builders[i](newExprs);
         }
 
-        return if (newExprs.nonEmpty()) {
-            macro (function () return $b{newExprs})();
-        } else {
-            MacroTools.nop();
-        };
+        return macro (function () return $b{newExprs})();
+    }
+
+    static function isVoidExpr(exprs: Array<Expr>): Bool {
+        return switch (exprs.last().get().expr) {
+            case EVars(_) | EFor(_, _) | EWhile(_, _, _):
+                true;
+            case _:
+                false;
+        }
     }
 
     static function buildBind(builder: Builder, binded: BindedExpr, cexpr: Array<Expr>): Array<Expr> {
@@ -105,6 +115,10 @@ typedef Builder = {
      * T -> M<T>
      */
     var buildReturn: Expr -> Expr;
+    /**
+     * Void -> M<T>
+     */
+    var buildZero: Void -> Expr;
 }
 
 private typedef BindedExpr = {
