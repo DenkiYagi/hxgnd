@@ -9,13 +9,11 @@ class ComputationTest extends BuddySuite {
         describe("Computation#perform()", {
             describe("No transformation", {
                 it("should pass when it is given { 1 } ", {
-                    ComputationTest_no_transform.perform_const_eblock()
-                        .should.be(1);
+                    ComputationTest_no_transform.perform_const_eblock()should.be(1);
                 });
 
                 it("should pass when it is given { 1 + 2 }", {
-                    ComputationTest_no_transform.perform_expr_eblock()
-                        .should.be(3);
+                    ComputationTest_no_transform.perform_expr_eblock().should.be(3);
                 });
 
                 it("should pass when it is given { done() }", function (done) {
@@ -52,13 +50,11 @@ class ComputationTest extends BuddySuite {
                     });
 
                     it("should pass when it is given { var a = 1; a; }", {
-                        ComputationTest_EVars_transform_without_EMeta.perform_single_var_return()
-                            .should.be(1);
+                        ComputationTest_EVars_transform_without_EMeta.perform_single_var_return().should.be(1);
                     });
 
                     it("should pass when it is given { var a = 1, b = 2; a + b; }", {
-                        ComputationTest_EVars_transform_without_EMeta.perform_multi_var_return()
-                            .should.be(3);
+                        ComputationTest_EVars_transform_without_EMeta.perform_multi_var_return().should.be(3);
                     });
                 });
 
@@ -72,23 +68,19 @@ class ComputationTest extends BuddySuite {
                     });
 
                     it("should pass when it is given { var a = @let 1; a; }", {
-                        ComputationTest_EVars_transform_with_EMeta.perform_single_var_return()
-                            .should.be(10);
+                        ComputationTest_EVars_transform_with_EMeta.perform_single_var_return().should.be(10);
                     });
 
                     it("should pass when it is given { var a = @let 1, b = 2; a + b; }", {
-                        ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_1()
-                            .should.be(12);
+                        ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_1().should.be(12);
                     });
 
                     it("should pass when it is given { var a = @let 1, b = @let 2; a + b; }", {
-                        ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_2()
-                            .should.be(30);
+                        ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_2().should.be(30);
                     });
 
                     it("should pass when it is given { var a = @let 1; var b = @let 2; a + b; }", {
-                        ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_3()
-                            .should.be(30);
+                        ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_3().should.be(30);
                     });
 
                     it("should pass when it is changed keyword and it is given { var a = @foo 1; a; }", {
