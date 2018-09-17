@@ -1278,7 +1278,7 @@ class PromiseTest extends BuddySuite {
                 });
             });
 
-            describe("mixed", {
+            describe("mixed expr", {
                 it("should resolve", function (done) {
                     Promise.compute({
                         var a = 1;
@@ -1321,6 +1321,20 @@ class PromiseTest extends BuddySuite {
                         a + b;
                     }).then(function (x) {
                         x.should.be(4);
+                        done();
+                    });
+                });
+            });
+
+            describe("using js.Promise and SyncPromise", {
+                it("should pass", function (done) {
+                    Promise.compute({
+                        var a = @await js.Promise.resolve(1);
+                        var b = @await Promise.resolve(2);
+                        var c = @await SyncPromise.resolve(3);
+                        a + b + c;
+                    }).then(function (x) {
+                        x.should.be(6);
                         done();
                     });
                 });

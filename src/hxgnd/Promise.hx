@@ -156,7 +156,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
     #if macro
     static function buildBind(expr: Expr, fn: Expr): Expr {
         return if (isUnifiable(expr)) {
-            macro ${expr}.then(${fn});
+            macro hxgnd.internal.PromiseComputationHelper.implicitCast(${expr}).then(${fn});
         } else {
             macro new hxgnd.SyncPromise(function (f, _) {
                 f(${expr});
