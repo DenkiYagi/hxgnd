@@ -1,11 +1,9 @@
 package hxgnd;
 
 import externtype.Mixed2;
-
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
-
 using hxgnd.ArrayTools;
 #end
 
@@ -168,87 +166,6 @@ class PromiseTools {
         }
     }
 
-    #if (js || macro)
-    public static inline macro function await<T>(expr: ExprOf<Mixed2<js.Promise<T>, IPromise<T>>>): ExprOf<T> {
-        return macro untyped __js__("await {0}", ${expr});
-    }
-
-    public static macro function async<T>(body: Expr): Expr {
-        var body = resolveEMetaExpr(body);
-
-        var funcName: Null<String>;
-        var funcDef: Function;
-        var retType: ComplexType;
-        switch (body.expr) {
-            case EFunction(n, f):
-                funcName = n;
-                funcDef = f;
-                retType = inferReturnType(body, []);
-            case EBlock(_):
-                funcName = null;
-                funcDef = {
-                    args: [],
-                    ret: null,
-                    expr: body
-                }
-                retType = inferReturnType({
-                    pos: body.pos,
-                    expr: EFunction(funcName, funcDef)
-                }, []);
-            case _:
-                Context.error("body must be a expr that is Function or Block", body.pos);
-                throw "";
-        }
-
-        return macro $e{ {
-            pos: body.pos,
-            expr: EFunction(funcName, {
-                args: funcDef.args,
-                ret: TPath({ pack: ["hxgnd"], name: "Promise", params: [TPType(retType)] }),
-                expr: macro return ${toAsyncFuncCall(null, funcDef)}
-            })
-        } };
-    }
-
-    public static macro function asyncCall<T>(body: Expr, args: Array<Expr>): ExprOf<Promise<T>> {
-        var body = resolveEMetaExpr(body);
-
-        var funcName: Null<String>;
-        var funcDef: Function;
-        var retType: ComplexType;
-        switch (body.expr) {
-            case EFunction(n, f):
-                funcName = n;
-                funcDef = f;
-                retType = inferReturnType(body, args);
-            case EBlock(_):
-                funcName = null;
-                funcDef = {
-                    args: [],
-                    ret: null,
-                    expr: body
-                }
-                retType = inferReturnType({
-                    pos: body.pos,
-                    expr: EFunction(funcName, funcDef)
-                }, []);
-            case _:
-                Context.error("body must be a expr that is Function or Block", body.pos);
-                throw "";
-        }
-        return {
-            pos: body.pos,
-            expr: ECall({
-                pos: body.pos,
-                expr: EFunction(null, {
-                    args: funcDef.args,
-                    ret: TPath({ pack: ["hxgnd"], name: "Promise", params: [TPType(retType)] }),
-                    expr: macro return ${toAsyncFuncCall(funcName, funcDef)}
-                })
-            }, args)
-        };
-    }
-    #end
 
     #if macro
     static function getCallbackArgTypes(fn: Expr, args: Array<Expr>): Array<{ name : String, opt : Bool, t : haxe.macro.Type }> {
@@ -295,42 +212,6 @@ class PromiseTools {
                 Context.error("Specified expr is not function.", fn.pos);
                 throw "";
         }
-    }
-
-    static function inferReturnType(expr: Expr, args: Array<Expr>): ComplexType {
-        switch (Context.toComplexType(Context.typeof(expr))) {
-            case TFunction(fargs, fret):
-                if (fargs.length == args.length) {
-                    return Context.toComplexType(Context.typeof({expr: ECall(expr, args), pos: expr.pos}));
-                } else if (args.length == 0 && fret != null) {
-                    return fret;
-                }
-            case _:
-        }
-        Context.error("Cannot infer return type. You must set type to this function", expr.pos);
-        return TPath({pack: [], name: "Dynamic", params: []});
-    }
-
-    static function resolveEMetaExpr(expr: Expr): Expr {
-        return switch (expr.expr) {
-            case EMeta({name: ":this"}, _):
-                var posInfo = Context.getPosInfos(expr.pos);
-                var content = sys.io.File.getContent(posInfo.file).substring(posInfo.min, posInfo.max);
-                Context.parseInlineString(content, expr.pos);
-            case _:
-                expr;
-        }
-    }
-
-    static function toAsyncFuncCall(name: Null<String>, func: Function): Expr {
-        var n = if (name == null) "" else name;
-        var js = switch (func.expr.expr) {
-            case EBlock(exprs) if (exprs.length >= 2):
-                '(async function ${n}() {0})()';
-            case _:
-                '(async function ${n}() { {0}; })()';
-        }
-        return macro untyped __js__($v{js}, ${func.expr});
     }
     #end
 }

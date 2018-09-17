@@ -9,7 +9,7 @@ class ComputationTest extends BuddySuite {
         describe("Computation#perform()", {
             describe("No transformation", {
                 it("should pass when it is given { 1 } ", {
-                    ComputationTest_no_transform.perform_const_eblock()should.be(1);
+                    ComputationTest_no_transform.perform_const_eblock().should.be(1);
                 });
 
                 it("should pass when it is given { 1 + 2 }", {
