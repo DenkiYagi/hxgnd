@@ -1,6 +1,5 @@
 package hxgnd;
 
-import externtype.Mixed2;
 #if macro
 import haxe.macro.Expr;
 import haxe.macro.Context;
