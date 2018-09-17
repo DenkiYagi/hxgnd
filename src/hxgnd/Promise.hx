@@ -158,20 +158,20 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         return if (isUnifiable(expr)) {
             macro ${expr}.then(${fn});
         } else {
-            macro new SyncPromise(function (f, _) {
+            macro new hxgnd.SyncPromise(function (f, _) {
                 f(${expr});
             }).then(${fn});
         }
     }
 
     static function buildReturn(expr: Expr): Expr {
-        return macro new SyncPromise(function (f, _) {
+        return macro new hxgnd.SyncPromise(function (f, _) {
             f(${expr});
         });
     }
 
     static function buildZero(): Expr {
-        return macro SyncPromise.resolve();
+        return macro hxgnd.SyncPromise.resolve();
     }
 
     static function isUnifiable(expr: Expr): Bool {
