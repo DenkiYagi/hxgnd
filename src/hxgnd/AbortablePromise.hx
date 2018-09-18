@@ -28,10 +28,31 @@ class AbortablePromise<T> implements IPromise<T> {
         onRejectedHanlders = new Delegate();
 
         Dispatcher.dispatch(function exec() {
+            inline function removeAllHandlers(): Void {
+                onFulfilledHanlders.removeAll();
+                onRejectedHanlders.removeAll();
+            }
+
+            function fulfill(?value: T): Void {
+                if (result.isEmpty()) {
+                    result = Maybe.of(Result.Success(value));
+                    onFulfilledHanlders.invoke(value);
+                    removeAllHandlers();
+                }
+            }
+
+            function reject(?error: Dynamic): Void {
+                if (result.isEmpty()) {
+                    result = Maybe.of(Result.Failure(error));
+                    onRejectedHanlders.invoke(error);
+                    removeAllHandlers();
+                }
+            }
+
             try {
-                abortCallback = executor(onFulfill, onReject);
+                abortCallback = executor(fulfill, reject);
             } catch (e: Dynamic) {
-                onReject(e);
+                reject(e);
             }
         });
     }
@@ -98,27 +119,6 @@ class AbortablePromise<T> implements IPromise<T> {
 
     public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         return then(null, rejected);
-    }
-
-    function onFulfill(?value: T): Void {
-        if (result.isEmpty()) {
-            result = Maybe.of(Result.Success(value));
-            onFulfilledHanlders.invoke(value);
-            removeAllHandlers();
-        }
-    }
-
-    function onReject(?error: Dynamic): Void {
-        if (result.isEmpty()) {
-            result = Maybe.of(Result.Failure(error));
-            onRejectedHanlders.invoke(error);
-            removeAllHandlers();
-        }
-    }
-
-    inline function removeAllHandlers(): Void {
-        onFulfilledHanlders.removeAll();
-        onRejectedHanlders.removeAll();
     }
 
     /**
