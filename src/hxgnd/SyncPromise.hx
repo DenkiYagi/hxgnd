@@ -22,102 +22,100 @@ class SyncPromise<T> implements IPromise<T> {
         Reflect.setField(this, "catch", catchError);
         #end
 
-        this.result = Maybe.empty();
-        this.onFulfilledHanlders = new Delegate();
-        this.onRejectedHanlders = new Delegate();
+        result = Maybe.empty();
+        onFulfilledHanlders = new Delegate();
+        onRejectedHanlders = new Delegate();
+
+        inline function removeAllHandlers(): Void {
+            onFulfilledHanlders.removeAll();
+            onRejectedHanlders.removeAll();
+        }
+
+        function fulfill(?value: T): Void {
+            if (result.isEmpty()) {
+                result = Maybe.of(Success(value));
+                onFulfilledHanlders.invoke(value);
+                removeAllHandlers();
+            }
+        }
+
+        function reject(?error: Dynamic): Void {
+            if (result.isEmpty()) {
+                result = Maybe.of(Failure(error));
+                onRejectedHanlders.invoke(error);
+                removeAllHandlers();
+            }
+        }
 
         try {
-            executor(onFulfill, onReject);
+            executor(fulfill, reject);
         } catch (e: Dynamic) {
-            onReject(e);
+            reject(e);
         }
     }
 
     public function then<TOut>(
             fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        var promise = new SyncPromise<TOut>(function (_, _) {});
-
-        var handleFulfilled = if (fulfilled.nonNull()) {
-            function transformValue(value: T) {
-                try {
-                    var next = (fulfilled: T -> Dynamic)(value);
-                    if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                        var nextPromise: Promise<TOut> = cast next;
-                        nextPromise.then(promise.onFulfill, promise.onReject);
-                    } else {
-                        promise.onFulfill(next);
+        return new SyncPromise<TOut>(function (_fulfill, _reject) {
+            var handleFulfilled = if (fulfilled.nonNull()) {
+                function transformValue(value: T) {
+                    try {
+                        var next = (fulfilled: T -> Dynamic)(value);
+                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                            var nextPromise: Promise<TOut> = cast next;
+                            nextPromise.then(_fulfill, _reject);
+                        } else {
+                            _fulfill(next);
+                        }
+                    } catch (e: Dynamic) {
+                        _reject(e);
                     }
-                } catch (e: Dynamic) {
-                    promise.onReject(e);
+                }
+            } else {
+                function passValue(value: T) {
+                    _fulfill(cast value);
                 }
             }
-        } else {
-            function passValue(value: T) {
-                promise.onFulfill(cast value);
-            }
-        }
 
-        var handleRejected = if (rejected.nonNull()) {
-            function transformError(error: Dynamic) {
-                try {
-                    var next = (rejected: Dynamic -> Dynamic)(error);
-                    if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                        var nextPromise: Promise<TOut> = cast next;
-                        nextPromise.then(promise.onFulfill, promise.onReject);
-                    } else {
-                        promise.onFulfill(next);
+            var handleRejected = if (rejected.nonNull()) {
+                function transformError(error: Dynamic) {
+                    try {
+                        var next = (rejected: Dynamic -> Dynamic)(error);
+                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                            var nextPromise: Promise<TOut> = cast next;
+                            nextPromise.then(_fulfill, _reject);
+                        } else {
+                            _fulfill(next);
+                        }
+                    } catch (e: Dynamic) {
+                        _reject(e);
                     }
-                } catch (e: Dynamic) {
-                    promise.onReject(e);
+                }
+            } else {
+                function passError(error: Dynamic) {
+                    try {
+                        _reject(error);
+                    } catch (e: Dynamic) {
+                        trace(e);
+                    }
                 }
             }
-        } else {
-            function passError(error: Dynamic) {
-                try {
-                    promise.onReject(error);
-                } catch (e: Dynamic) {
-                    trace(e);
+
+            if (result.isEmpty()) {
+                onFulfilledHanlders.add(handleFulfilled);
+                onRejectedHanlders.add(handleRejected);
+            } else {
+                switch (result.get()) {
+                    case Success(v): handleFulfilled(v);
+                    case Failure(e): handleRejected(e);
                 }
             }
-        }
-
-        if (result.isEmpty()) {
-            onFulfilledHanlders.add(handleFulfilled);
-            onRejectedHanlders.add(handleRejected);
-        } else {
-            switch (result.get()) {
-                case Success(v): handleFulfilled(v);
-                case Failure(e): handleRejected(e);
-            }
-        }
-
-        return promise;
+        });
     }
 
     public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         return then(null, rejected);
-    }
-
-    function onFulfill(?value: T): Void {
-        if (result.isEmpty()) {
-            result = Maybe.of(Success(value));
-            onFulfilledHanlders.invoke(value);
-            removeAllHandlers();
-        }
-    }
-
-    function onReject(?error: Dynamic): Void {
-        if (result.isEmpty()) {
-            result = Maybe.of(Failure(error));
-            onRejectedHanlders.invoke(error);
-            removeAllHandlers();
-        }
-    }
-
-    inline function removeAllHandlers(): Void {
-        onFulfilledHanlders.removeAll();
-        onRejectedHanlders.removeAll();
     }
 
     public static function resolve<T>(?value: T): Promise<T> {
