@@ -11,6 +11,7 @@ class TestMain implements Buddy<[
     hxgnd.StreamTest,
     hxgnd.PromiseTest,
     hxgnd.SyncPromiseTest,
+    hxgnd.AbortablePromiseTest,
     hxgnd.PromiseToolsTest,
     hxgnd.FutureTest,
 ]> {}

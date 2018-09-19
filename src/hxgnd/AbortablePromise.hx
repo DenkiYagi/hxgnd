@@ -28,33 +28,33 @@ class AbortablePromise<T> implements IPromise<T> {
         onRejectedHanlders = new Delegate();
 
         Dispatcher.dispatch(function exec() {
-            inline function removeAllHandlers(): Void {
-                onFulfilledHanlders.removeAll();
-                onRejectedHanlders.removeAll();
-            }
-
-            function fulfill(?value: T): Void {
-                if (result.isEmpty()) {
-                    result = Maybe.of(Result.Success(value));
-                    onFulfilledHanlders.invoke(value);
-                    removeAllHandlers();
-                }
-            }
-
-            function reject(?error: Dynamic): Void {
-                if (result.isEmpty()) {
-                    result = Maybe.of(Result.Failure(error));
-                    onRejectedHanlders.invoke(error);
-                    removeAllHandlers();
-                }
-            }
-
             try {
-                abortCallback = executor(fulfill, reject);
+                abortCallback = executor(onFulfilled, onRejected);
             } catch (e: Dynamic) {
-                reject(e);
+                onRejected(e);
             }
         });
+    }
+
+    function onFulfilled(?value: T): Void {
+        if (result.isEmpty()) {
+            result = Maybe.of(Result.Success(value));
+            onFulfilledHanlders.invoke(value);
+            removeAllHandlers();
+        }
+    }
+
+    function onRejected(?error: Dynamic): Void {
+        if (result.isEmpty()) {
+            result = Maybe.of(Result.Failure(error));
+            onRejectedHanlders.invoke(error);
+            removeAllHandlers();
+        }
+    }
+
+    inline function removeAllHandlers(): Void {
+        onFulfilledHanlders.removeAll();
+        onRejectedHanlders.removeAll();
     }
 
     public function then<TOut>(
@@ -122,11 +122,26 @@ class AbortablePromise<T> implements IPromise<T> {
     }
 
     /**
-     * Abort this task.
+     * Abort this promise.
      */
     public function abort(): Void {
         if (result.isEmpty()) {
             abortCallback();
+            onRejected(new AbortError("aborted"));
         }
+    }
+
+    public static function resolve<T>(?value: T): Promise<T> {
+        return new AbortablePromise(function (f, _) {
+            f(value);
+            return LangTools.emptyFunction;
+        });
+    }
+
+    public static function reject<T>(error: Dynamic): Promise<T> {
+        return new AbortablePromise(function (_, r) {
+            r(error);
+            return LangTools.emptyFunction;
+        });
     }
 }
