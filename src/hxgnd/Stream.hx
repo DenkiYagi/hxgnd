@@ -4,11 +4,11 @@ using hxgnd.LangTools;
 
 class Stream<T> {
     public var isActive(default, null): Bool;
-    public var end(get, never): Future<Unit>;
+    public var end(get, never): Promise<Unit>;
 
     var subscribers: Array<StreamSubscriber<T>>;
     var context: StreamContext<T>;
-    var _end: Maybe<Future<Unit>>;
+    var _end: Maybe<Promise<Unit>>;
 
     function new() {
         isActive = true;
@@ -49,14 +49,13 @@ class Stream<T> {
         }
     }
 
-    function get_end(): Future<Unit> {
+    function get_end() {
         if (_end.isEmpty()) {
-            _end = Future.applySync(function (ctx) {
-                ctx.onAbort = abort;
+            _end = new SyncPromise(function (fulfill, reject) {
                 subscribe(function (e) {
                     switch (e) {
-                        case End: ctx.successful(new Unit());
-                        case Error(x): ctx.failed(x);
+                        case End: fulfill(new Unit());
+                        case Error(x): reject(x);
                         case _:
                     }
                 });

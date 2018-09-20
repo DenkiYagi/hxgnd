@@ -5,7 +5,6 @@ import TestTools.wait;
 using buddy.Should;
 
 import hxgnd.Stream;
-import hxgnd.Result;
 using hxgnd.LangTools;
 
 class StreamTest extends BuddySuite {
@@ -489,7 +488,6 @@ class StreamTest extends BuddySuite {
                     wait(5, ctx.emit.bind(End));
                 });
                 stream.end.then(function (result) {
-                    result.same(Success(new Unit())).should.be(true);
                     done();
                 });
             });
@@ -498,15 +496,9 @@ class StreamTest extends BuddySuite {
                 var stream = Stream.apply(function (ctx) {
                     wait(5, ctx.emit.bind(Error("error")));
                 });
-                stream.end.then(function (result) {
-                    switch (result) {
-                        case Failure(e):
-                            LangTools.same(e, "error").should.be(true);
-                            done();
-                        case _:
-                            fail();
-                            done();
-                    }
+                stream.end.catchError(function (e) {
+                    LangTools.same(e, "error").should.be(true);
+                    done();
                 });
             });
 
@@ -519,13 +511,6 @@ class StreamTest extends BuddySuite {
                     done();
                 });
                 wait(10, done);
-            });
-
-            it("should abort stream", function (done) {
-                var stream = Stream.apply(function (ctx) {
-                    ctx.onAbort = done;
-                });
-                wait(10, stream.end.abort);
             });
         });
     }
