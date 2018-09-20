@@ -756,5 +756,18 @@ class SyncPromiseTest extends BuddySuite {
                 });
             });
         });
+
+        describe("Promise.compute()", {
+            it("should use SyncPromise", function (done) {
+                Promise.compute({
+                    var a = @await SyncPromise.resolve(3);
+                    var b = @await Promise.resolve(2);
+                    a + b;
+                }).then(function (x) {
+                    x.should.be(5);
+                    done();
+                });
+            });
+        });
     }
 }

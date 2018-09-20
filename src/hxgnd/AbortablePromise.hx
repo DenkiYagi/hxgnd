@@ -9,7 +9,7 @@ class AbortablePromise<T> implements IPromise<T> {
     var result: Maybe<Result<T>>;
     var onFulfilledHanlders: Delegate<T>;
     var onRejectedHanlders: Delegate<Dynamic>;
-    var abortCallback: Void -> Void;
+    var abortCallback: Maybe<Void -> Void>;
 
     #if js
     static function __init__() {
@@ -26,10 +26,11 @@ class AbortablePromise<T> implements IPromise<T> {
         result = Maybe.empty();
         onFulfilledHanlders = new Delegate();
         onRejectedHanlders = new Delegate();
+        abortCallback = Maybe.empty();
 
         Dispatcher.dispatch(function exec() {
             try {
-                abortCallback = executor(onFulfilled, onRejected);
+                abortCallback = Maybe.ofNullable(executor(onFulfilled, onRejected));
             } catch (e: Dynamic) {
                 onRejected(e);
             }
@@ -63,45 +64,53 @@ class AbortablePromise<T> implements IPromise<T> {
         return new SyncPromise<TOut>(function (_fulfill, _reject) {
             var handleFulfilled = if (fulfilled.nonNull()) {
                 function chain(value: T) {
-                    try {
-                        var next = (fulfilled: T -> Dynamic)(value);
-                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                            var nextPromise: Promise<TOut> = cast next;
-                            nextPromise.then(_fulfill, _reject);
-                        } else {
-                            _fulfill(next);
+                    Dispatcher.dispatch(function () {
+                        try {
+                            var next = (fulfilled: T -> Dynamic)(value);
+                            if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                                var nextPromise: Promise<TOut> = cast next;
+                                nextPromise.then(_fulfill, _reject);
+                            } else {
+                                _fulfill(next);
+                            }
+                        } catch (e: Dynamic) {
+                            _reject(e);
                         }
-                    } catch (e: Dynamic) {
-                        _reject(e);
-                    }
+                    });
                 }
             } else {
                 function passValue(value: T) {
-                    _fulfill(cast value);
+                    Dispatcher.dispatch(function () {
+                        _fulfill(cast value);
+                    });
                 }
             }
 
             var handleRejected = if (rejected.nonNull()) {
                 function rescue(error: Dynamic) {
-                    try {
-                        var next = (rejected: Dynamic -> Dynamic)(error);
-                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                            var nextPromise: Promise<TOut> = cast next;
-                            nextPromise.then(_fulfill, _reject);
-                        } else {
-                            _fulfill(next);
+                    Dispatcher.dispatch(function () {
+                        try {
+                            var next = (rejected: Dynamic -> Dynamic)(error);
+                            if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                                var nextPromise: Promise<TOut> = cast next;
+                                nextPromise.then(_fulfill, _reject);
+                            } else {
+                                _fulfill(next);
+                            }
+                        } catch (e: Dynamic) {
+                            _reject(e);
                         }
-                    } catch (e: Dynamic) {
-                        _reject(e);
-                    }
+                    });
                 }
             } else {
                 function passError(error: Dynamic) {
-                    try {
-                        _reject(error);
-                    } catch (e: Dynamic) {
-                        trace(e);
-                    }
+                    Dispatcher.dispatch(function () {
+                        try {
+                            _reject(error);
+                        } catch (e: Dynamic) {
+                            trace(e);
+                        }
+                    });
                 }
             }
 
@@ -126,7 +135,11 @@ class AbortablePromise<T> implements IPromise<T> {
      */
     public function abort(): Void {
         if (result.isEmpty()) {
-            abortCallback();
+            if (abortCallback.nonEmpty()) {
+                var fn = abortCallback.get();
+                abortCallback = Maybe.empty();
+                fn();
+            }
             onRejected(new AbortError("aborted"));
         }
     }

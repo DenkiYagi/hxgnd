@@ -924,7 +924,7 @@ class PromiseTest extends BuddySuite {
                     Promise.resolve(2),
                     Promise.resolve(3)
                 ]).then(function (value) {
-                    LangTools.same(value, 2).should.be(true);
+                    value.should.be(2);
                     done();
                 }, function (_) {
                     fail();

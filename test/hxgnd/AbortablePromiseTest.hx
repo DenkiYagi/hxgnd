@@ -793,10 +793,270 @@ class AbortablePromiseTest extends BuddySuite {
         });
 
         describe("AbortablePromise.abort()", {
-            // 未完了で呼び出し
-            // resolve済み
-            // reject済み
-            // 2度abort
+            describe("before execution", {
+                it("should not call the abort callback", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {
+                            fail();
+                            done();
+                        }
+                    });
+                    promise.abort();
+                    wait(10, done);
+                });
+
+                it("should call rejected that is set before abort()", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {};
+                    });
+                    promise.catchError(function (e) {
+                        Std.is(e, AbortError).should.be(true);
+                        done();
+                    });
+                    promise.abort();
+                });
+
+                it("should call rejected that is set after abort()", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {};
+                    });
+                    promise.abort();
+                    promise.catchError(function (e) {
+                        Std.is(e, AbortError).should.be(true);
+                        done();
+                    });
+                });
+
+                it("should pass when it is called abort() 2-times", {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {};
+                    });
+                    promise.abort();
+                    promise.abort();
+                });
+
+                it("should not apply fulfill() when it is aborted", function (done) {
+                    var promise = new AbortablePromise(function (f, _) {
+                        wait(5, f.bind(1));
+                        return function () {};
+                    });
+                    promise.abort();
+                    wait(10, function () {
+                        promise.catchError(function (e) {
+                            Std.is(e, AbortError).should.be(true);
+                            done();
+                        });
+                    });
+                });
+
+                it("should not apply reject() when it is aborted", function (done) {
+                    var promise = new AbortablePromise(function (_, r) {
+                        wait(5, r.bind("error"));
+                        return function () {};
+                    });
+                    promise.abort();
+                    wait(10, function () {
+                        promise.catchError(function (e) {
+                            Std.is(e, AbortError).should.be(true);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("pending call the abort callback", {
+                it("should call onAbort", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {
+                            done();
+                        }
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                });
+
+                it("should call rejected that is set before abort()", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {};
+                    });
+                    promise.catchError(function (e) {
+                        Std.is(e, AbortError).should.be(true);
+                        done();
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                });
+
+                it("should call rejected that is set after abort()", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {};
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                        promise.catchError(function (e) {
+                            Std.is(e, AbortError).should.be(true);
+                            done();
+                        });
+                    });
+                });
+
+                it("should pass when it is called abort() 2-times", function (done) {
+                    var count = 0;
+                    var promise = new AbortablePromise(function (_, _) {
+                        return function () {
+                            count++;
+                        };
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                        count.should.be(1);
+                    });
+                    wait(10, function () {
+                        promise.abort();
+                        count.should.be(1);
+                        done();
+                    });
+                });
+            });
+
+            describe("fulfilled", {
+                it("should not call the abort callback", function (done) {
+                    var promise = new AbortablePromise(function (f, _) {
+                        f(1);
+                        return function () {
+                            fail();
+                            done();
+                        }
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                    wait(10, done);
+                });
+
+                it("should call resolved that is set before abort()", function (done) {
+                    var promise = new AbortablePromise(function (f, _) {
+                        f(1);
+                        return function () {};
+                    });
+                    promise.then(function (x) {
+                        (x: Int).should.be(1);
+                        done();
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                });
+
+                it("should call resolved that is set after abort()", function (done) {
+                    var promise = new AbortablePromise(function (f, _) {
+                        f(1);
+                        return function () {};
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                        promise.then(function (x) {
+                            (x: Int).should.be(1);
+                            done();
+                        });
+                    });
+                });
+
+                it("should pass when it is called abort() 2-times", function (done) {
+                    var promise = new AbortablePromise(function (f, _) {
+                        f(1);
+                        return function () {
+                            fail();
+                            done();
+                        };
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                    wait(10, function () {
+                        promise.abort();
+                        done();
+                    });
+                });
+            });
+
+            describe("rejected", {
+                it("should not call the abort callback", function (done) {
+                    var promise = new AbortablePromise(function (_, r) {
+                        r("error");
+                        return function () {
+                            fail();
+                            done();
+                        }
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                    wait(10, done);
+                });
+
+                it("should call rejected that is set before abort()", function (done) {
+                    var promise = new AbortablePromise(function (_, r) {
+                        r("error");
+                        return function () {};
+                    });
+                    promise.catchError(function (e) {
+                        Std.is(e, AbortError).should.be(false);
+                        (e: String).should.be("error");
+                        done();
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                });
+
+                it("should call rejected that is set after abort()", function (done) {
+                    var promise = new AbortablePromise(function (_, r) {
+                        r("error");
+                        return function () {};
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                        promise.catchError(function (e) {
+                            Std.is(e, AbortError).should.be(false);
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+                });
+
+                it("should pass when it is called abort() 2-times", function (done) {
+                    var promise = new AbortablePromise(function (_, r) {
+                        r("error");
+                        return function () {
+                            fail();
+                            done();
+                        };
+                    });
+                    wait(5, function () {
+                        promise.abort();
+                    });
+                    wait(10, function () {
+                        promise.abort();
+                        done();
+                    });
+                });
+            });
+        });
+
+        describe("Promise.compute()", {
+            it("should use AbortablePromise", function (done) {
+                Promise.compute({
+                    var a = @await AbortablePromise.resolve(3);
+                    var b = @await Promise.resolve(2);
+                    a + b;
+                }).then(function (x) {
+                    x.should.be(5);
+                    done();
+                });
+            });
         });
     }
 }
