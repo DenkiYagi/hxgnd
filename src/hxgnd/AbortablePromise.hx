@@ -144,14 +144,14 @@ class AbortablePromise<T> implements IPromise<T> {
         }
     }
 
-    public static function resolve<T>(?value: T): Promise<T> {
+    public static function resolve<T>(?value: T): AbortablePromise<T> {
         return new AbortablePromise(function (f, _) {
             f(value);
             return LangTools.emptyFunction;
         });
     }
 
-    public static function reject<T>(error: Dynamic): Promise<T> {
+    public static function reject<T>(error: Dynamic): AbortablePromise<T> {
         return new AbortablePromise(function (_, r) {
             r(error);
             return LangTools.emptyFunction;

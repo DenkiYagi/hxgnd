@@ -118,11 +118,11 @@ class SyncPromise<T> implements IPromise<T> {
         return then(null, rejected);
     }
 
-    public static function resolve<T>(?value: T): Promise<T> {
+    public static function resolve<T>(?value: T): SyncPromise<T> {
         return new SyncPromise(function (f, _) f(value));
     }
 
-    public static function reject<T>(error: Dynamic): Promise<T> {
+    public static function reject<T>(error: Dynamic): SyncPromise<T> {
         return new SyncPromise(function (_, r) r(error));
     }
 }
