@@ -2,7 +2,7 @@ package hxgnd;
 
 import hxgnd.Maybe;
 import hxgnd.Result;
-import externtype.Mixed2;
+import externtype.Mixed;
 using hxgnd.LangTools;
 
 class AbortablePromise<T> implements IPromise<T> {

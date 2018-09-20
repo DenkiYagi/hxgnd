@@ -1,17 +1,23 @@
 package hxgnd;
 
-import haxe.extern.EitherType;
+import externtype.Mixed;
 
 abstract PromiseCallback<T, TOut>(T -> Dynamic)
     #if js
-    from EitherType<T -> js.Promise<TOut>,
-            EitherType<T -> SyncPromise<TOut>,
-                EitherType<T -> AbortablePromise<TOut>,
-                    EitherType<T -> Promise<TOut>, T -> TOut>>>>
+    from Mixed5<
+        T -> js.Promise<TOut>,
+        T -> SyncPromise<TOut>,
+        T -> AbortablePromise<TOut>,
+        T -> Promise<TOut>,
+        T -> TOut
+    >
     #else
-    from EitherType<T -> SyncPromise<TOut>,
-            EitherType<T -> AbortablePromise<TOut>,
-                EitherType<T -> Promise<TOut>, T -> TOut>>>
+    from Mixed4<
+        T -> SyncPromise<TOut>,
+        T -> AbortablePromise<TOut>,
+        T -> Promise<TOut>,
+        T -> TOut
+    >
     #end
     to T -> Dynamic
 {}

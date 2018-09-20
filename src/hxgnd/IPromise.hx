@@ -1,6 +1,6 @@
 package hxgnd;
 
-import externtype.Mixed2;
+import externtype.Mixed;
 
 interface IPromise<T> {
     public function then<TOut>(fulfilled: Null<PromiseCallback<T, TOut>>,

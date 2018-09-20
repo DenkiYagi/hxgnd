@@ -5,7 +5,7 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 #end
-import externtype.Mixed2;
+import externtype.Mixed;
 using hxgnd.LangTools;
 
 @:generic
