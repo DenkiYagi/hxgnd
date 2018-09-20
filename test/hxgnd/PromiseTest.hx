@@ -1024,7 +1024,18 @@ class PromiseTest extends BuddySuite {
                     });
                 });
 
-                it("should pass it given { fn() }", function (done) {
+                it("should pass it given { (Void -> Void) }", function (done) {
+                    function fn() {
+                    }
+
+                    Promise.compute({
+                        fn();
+                    }).then(function (_) {
+                        done();
+                    });
+                });
+
+                it("should pass it given { (Void -> Int) }", function (done) {
                     function fn() {
                         return 1;
                     }

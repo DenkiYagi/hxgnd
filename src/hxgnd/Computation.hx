@@ -70,8 +70,27 @@ class Computation {
         return switch (exprs.last().get().expr) {
             case EVars(_) | EFor(_, _) | EWhile(_, _, _):
                 true;
+            case ECall(e, params):
+                isVoidReturnFunction(e);
             case _:
                 false;
+        }
+    }
+
+    static function isVoidReturnFunction(expr: Expr): Bool {
+        try {
+            switch (Context.typeof(expr)) {
+                case TFun(_, ret):
+                    switch (Context.toComplexType(ret)) {
+                        case TPath({name: "StdTypes", pack: [], params: [], sub: "Void"}):
+                            return true;
+                        case _:
+                    }
+                case _:
+            }
+            return false;
+        } catch (_: Dynamic) {
+            return false;
         }
     }
 
