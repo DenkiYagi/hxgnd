@@ -52,7 +52,7 @@ class Computation {
         }
 
         // build expr from the inside to the outside
-        var newExprs = if (isVoidExpr(exprs)) {
+        var newExprs = if (cexprs.isEmpty() || isVoidExpr(exprs)) {
             cexprs.concat([builder.buildZero()]);
         } else {
             buildReturn(builder, cexprs);
@@ -72,6 +72,8 @@ class Computation {
                 true;
             case ECall(e, params):
                 isVoidReturnFunction(e);
+            // case EMeta(_, e):
+            //     isVoidExpr([e]);
             case _:
                 false;
         }

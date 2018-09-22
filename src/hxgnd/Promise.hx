@@ -8,9 +8,8 @@ import haxe.macro.Type;
 import externtype.Mixed;
 using hxgnd.LangTools;
 
-@:generic
 abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
-    public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void): Void {
+    public inline function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void) {
         #if js
         // workaround for js__$Boot_HaxeError
         this = untyped __js__("new Promise({0})", function (fulfill, reject) {
@@ -25,49 +24,65 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         #end
     }
 
-    public function then<TOut>(
+    public inline function then<TOut>(
             fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        // workaround for js__$Boot_HaxeError
-        return this.then(
-            if (fulfilled.nonNull()) {
-               (function (value) {
-                    try {
-                        return (fulfilled: T -> Dynamic)(value);
-                    } catch (e: Dynamic) {
-                        return cast SyncPromise.reject(e);
+        #if js
+        return if (Std.is(this, js.Promise)) {
+            // workaround for js__$Boot_HaxeError
+            this.then(
+                if (fulfilled.nonNull()) {
+                    (function (value) {
+                        try {
+                            return (fulfilled: T -> Dynamic)(value);
+                        } catch (e: Dynamic) {
+                            return cast SyncPromise.reject(e);
+                        }
+                    }: PromiseCallback<T, TOut>);
+                } else {
+                    null;
+                },
+                if (rejected.nonNull()) {
+                    function (error) {
+                        try {
+                            return (rejected: Dynamic -> Dynamic)(error);
+                        } catch (e: Dynamic) {
+                            return SyncPromise.reject(e);
+                        }
                     }
-                }: PromiseCallback<T, TOut>);
-            } else {
-                null;
-            },
-            if (rejected.nonNull()) {
-                function (error) {
+                } else {
+                    null;
+                }
+            );
+        } else {
+            this.then(fulfilled, rejected);
+        }
+        #else
+        return this.then(fulfilled, rejected);
+        #end
+    }
+
+    public inline function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+        #if js
+        return if (Std.is(this, js.Promise)) {
+            // workaround for js__$Boot_HaxeError
+            this.then(null, if (rejected.nonNull()) {
+                cast function (error) {
                     try {
                         return (rejected: Dynamic -> Dynamic)(error);
                     } catch (e: Dynamic) {
                         return SyncPromise.reject(e);
                     }
-                }
+                };
             } else {
                 null;
-            }
-        );
-    }
-
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        // workaround for js__$Boot_HaxeError
-        return this.then(null, if (rejected.nonNull()) {
-            cast function (error) {
-                try {
-                    return (rejected: Dynamic -> Dynamic)(error);
-                } catch (e: Dynamic) {
-                    return SyncPromise.reject(e);
-                }
-            };
+            });
         } else {
-            null;
-        });
+            this.catchError(rejected);
+        }
+        #else
+        return this.catchError(rejected);
+        #end
     }
 
     public static inline function resolve<T>(?value: T): Promise<T> {
@@ -86,7 +101,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         #end
     }
 
-    public static function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
+    public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
         #if js
         return untyped __js__("Promise.all({0})", iterable);
         #else
