@@ -1104,6 +1104,35 @@ class AbortablePromiseTest extends BuddySuite {
                     });
                 });
             });
+
+            describe("chain", {
+                it("should pass when it is using then()", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return done;
+                    })
+                    .then(function (_) {});
+
+                    wait(5, promise.abort);
+                });
+
+                it("should pass when it is using catchError()", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return done;
+                    })
+                    .catchError(function (_) {});
+
+                    wait(5, promise.abort);
+                });
+
+                it("should pass when it is using finally()", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        return done;
+                    })
+                    .finally(function () {});
+
+                    wait(5, promise.abort);
+                });
+            });
         });
 
         describe("Promise.compute()", {

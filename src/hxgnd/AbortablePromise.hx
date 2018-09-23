@@ -60,57 +60,49 @@ class AbortablePromise<T> implements IPromise<T> {
 
     public function then<TOut>(
             fulfilled: Null<PromiseCallback<T, TOut>>,
-            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return new SyncPromise<TOut>(function (_fulfill, _reject) {
+            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): AbortablePromise<TOut> {
+        return new AbortablePromise<TOut>(function (_fulfill, _reject) {
             var handleFulfilled = if (fulfilled.nonNull()) {
                 function chain(value: T) {
-                    Dispatcher.dispatch(function () {
-                        try {
-                            var next = (fulfilled: T -> Dynamic)(value);
-                            if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                                var nextPromise: Promise<TOut> = cast next;
-                                nextPromise.then(_fulfill, _reject);
-                            } else {
-                                _fulfill(next);
-                            }
-                        } catch (e: Dynamic) {
-                            _reject(e);
+                    try {
+                        var next = (fulfilled: T -> Dynamic)(value);
+                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                            var nextPromise: Promise<TOut> = cast next;
+                            nextPromise.then(_fulfill, _reject);
+                        } else {
+                            _fulfill(next);
                         }
-                    });
+                    } catch (e: Dynamic) {
+                        _reject(e);
+                    }
                 }
             } else {
                 function passValue(value: T) {
-                    Dispatcher.dispatch(function () {
-                        _fulfill(cast value);
-                    });
+                    _fulfill(cast value);
                 }
             }
 
             var handleRejected = if (rejected.nonNull()) {
                 function rescue(error: Dynamic) {
-                    Dispatcher.dispatch(function () {
-                        try {
-                            var next = (rejected: Dynamic -> Dynamic)(error);
-                            if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                                var nextPromise: Promise<TOut> = cast next;
-                                nextPromise.then(_fulfill, _reject);
-                            } else {
-                                _fulfill(next);
-                            }
-                        } catch (e: Dynamic) {
-                            _reject(e);
+                    try {
+                        var next = (rejected: Dynamic -> Dynamic)(error);
+                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                            var nextPromise: Promise<TOut> = cast next;
+                            nextPromise.then(_fulfill, _reject);
+                        } else {
+                            _fulfill(next);
                         }
-                    });
+                    } catch (e: Dynamic) {
+                        _reject(e);
+                    }
                 }
             } else {
                 function passError(error: Dynamic) {
-                    Dispatcher.dispatch(function () {
-                        try {
-                            _reject(error);
-                        } catch (e: Dynamic) {
-                            trace(e);
-                        }
-                    });
+                    try {
+                        _reject(error);
+                    } catch (e: Dynamic) {
+                        trace(e);
+                    }
                 }
             }
 
@@ -123,14 +115,15 @@ class AbortablePromise<T> implements IPromise<T> {
                     case Failure(e): handleRejected(e);
                 }
             }
+            return abort;
         });
     }
 
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): AbortablePromise<TOut> {
         return then(null, rejected);
     }
 
-    public function finally(onFinally: Void -> Void): Promise<T> {
+    public function finally(onFinally: Void -> Void): AbortablePromise<T> {
         return then(
             function (x) { onFinally(); return x; },
             function (e) { onFinally(); return reject(e); }
