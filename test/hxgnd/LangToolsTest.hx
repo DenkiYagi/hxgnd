@@ -93,6 +93,18 @@ class LangToolsTest extends BuddySuite {
         });
         #end
 
+        describe("LangTools.getOrElse()", {
+            it("should return value", {
+                LangTools.getOrElse(1, 2).should.be(1);
+            });
+            it("should return default", {
+                LangTools.getOrElse(null, 2).should.be(2);
+                #if js
+                LangTools.getOrElse(js.Lib.undefined, 2).should.be(2);
+                #end
+            });
+        });
+
         describe("LangTools.toMaybe()", {
             it("should be some", {
                 var a: Null<Int> = 1;

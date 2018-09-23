@@ -1,6 +1,5 @@
 package hxgnd;
 
-import Type.ValueType;
 import haxe.io.Bytes;
 import haxe.Constraints.IMap;
 import hxgnd.Tuple;
@@ -48,6 +47,10 @@ class LangTools {
         return JsNative.strictEq(a, js.Lib.undefined);
     }
     #end
+
+    public static inline function getOrElse<T>(a: Null<T>, b: T): T {
+        return nonNull(a) ? a : b;
+    }
 
     public static inline function toMaybe<T>(a: Null<T>): Maybe<T> {
         return a;
