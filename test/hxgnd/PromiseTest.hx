@@ -724,6 +724,99 @@ class PromiseTest extends BuddySuite {
             });
         });
 
+        describe("Promise.finally()", {
+            timeoutMs = 500;
+
+            describe("sync", {
+                it("should call when it is fulfilled", function (done) {
+                    new Promise(function (fulfill, _) {
+                        fulfill(100);
+                    }).finally(function () {
+                        done();
+                    });
+                });
+
+                it("should call when it is rejected", function (done) {
+                    new Promise(function (_, reject) {
+                        reject("error");
+                    }).finally(function () {
+                        done();
+                    });
+                });
+            });
+
+            describe("async", {
+                it("should call when it is fulfilled", function (done) {
+                    new Promise(function (fulfill, _) {
+                        wait(5, function () {
+                            fulfill(100);
+                        });
+                    }).finally(function () {
+                        done();
+                    });
+                });
+
+                it("should call when it is rejected", function (done) {
+                    new Promise(function (_, reject) {
+                        wait(5, function () {
+                            reject("error");
+                        });
+                    }).finally(function () {
+                        done();
+                    });
+                });
+            });
+
+            describe("chain", {
+                describe("from resolved", {
+                    it("should chain", function (done) {
+                        Promise.resolve(1)
+                        .finally(function () {})
+                        .then(function (x) {
+                            return x + 100;
+                        })
+                        .then(function (x) {
+                            x.should.be(101);
+                            done();
+                        });
+                    });
+
+                    it("should chain using exception", function (done) {
+                        Promise.resolve(1)
+                        .finally(function () {
+                            throw "error";
+                        })
+                        .catchError(function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+                });
+
+                describe("from rejected", {
+                    it("should chain", function (done) {
+                        Promise.reject("error")
+                        .finally(function () {})
+                        .catchError(function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+
+                    it("should chain using exception", function (done) {
+                        Promise.reject("error")
+                        .finally(function () {
+                            throw "rewrited error";
+                        })
+                        .catchError(function (e) {
+                            (e: String).should.be("rewrited error");
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
         #if js
         describe("Promise cast", {
             it("should cast from js.Promise", function (done) {

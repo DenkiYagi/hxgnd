@@ -56,7 +56,7 @@ class SyncPromise<T> implements IPromise<T> {
 
     public function then<TOut>(
             fulfilled: Null<PromiseCallback<T, TOut>>,
-            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): SyncPromise<TOut> {
         return new SyncPromise<TOut>(function (_fulfill, _reject) {
             var handleFulfilled = if (fulfilled.nonNull()) {
                 function transformValue(value: T) {
@@ -114,8 +114,15 @@ class SyncPromise<T> implements IPromise<T> {
         });
     }
 
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): SyncPromise<TOut> {
         return then(null, rejected);
+    }
+
+    public function finally(onFinally: Void -> Void): SyncPromise<T> {
+        return then(
+            function (x) { onFinally(); return x; },
+            function (e) { onFinally(); return reject(e); }
+        );
     }
 
     public static function resolve<T>(?value: T): SyncPromise<T> {

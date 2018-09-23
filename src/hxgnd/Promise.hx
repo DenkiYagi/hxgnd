@@ -85,6 +85,13 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
         #end
     }
 
+    public function finally(onFinally: Void -> Void): Promise<T> {
+        return then(
+            function (x) { onFinally(); return x; },
+            function (e) { onFinally(); return reject(e); }
+        );
+    }
+
     public static inline function resolve<T>(?value: T): Promise<T> {
         #if js
         return untyped __js__("Promise.resolve({0})", value);
@@ -287,6 +294,13 @@ class DelayPromise<T> implements IPromise<T> {
 
     public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         return then(null, rejected);
+    }
+
+    public function finally(onFinally: Void -> Void): Promise<T> {
+        return then(
+            function (x) { onFinally(); return x; },
+            function (e) { onFinally(); return reject(e); }
+        );
     }
 
     public static inline function resolve<T>(?value: T): Promise<T> {

@@ -755,6 +755,103 @@ class AbortablePromiseTest extends BuddySuite {
             });
         });
 
+        describe("AbortablePromise.finally()", {
+            timeoutMs = 500;
+
+            describe("sync", {
+                it("should call when it is fulfilled", function (done) {
+                    new AbortablePromise(function (fulfill, _) {
+                        fulfill(100);
+                        return function () {};
+                    }).finally(function () {
+                        done();
+                    });
+                });
+
+                it("should call when it is rejected", function (done) {
+                    new AbortablePromise(function (_, reject) {
+                        reject("error");
+                        return function () {};
+                    }).finally(function () {
+                        done();
+                    });
+                });
+            });
+
+            describe("async", {
+                it("should call when it is fulfilled", function (done) {
+                    new AbortablePromise(function (fulfill, _) {
+                        wait(5, function () {
+                            fulfill(100);
+                        });
+                        return function () {};
+                    }).finally(function () {
+                        done();
+                    });
+                });
+
+                it("should call when it is rejected", function (done) {
+                    new AbortablePromise(function (_, reject) {
+                        wait(5, function () {
+                            reject("error");
+                        });
+                        return function () {};
+                    }).finally(function () {
+                        done();
+                    });
+                });
+            });
+
+            describe("chain", {
+                describe("from resolved", {
+                    it("should chain", function (done) {
+                        AbortablePromise.resolve(1)
+                        .finally(function () {})
+                        .then(function (x) {
+                            return x + 100;
+                        })
+                        .then(function (x) {
+                            x.should.be(101);
+                            done();
+                        });
+                    });
+
+                    it("should chain using exception", function (done) {
+                        AbortablePromise.resolve(1)
+                        .finally(function () {
+                            throw "error";
+                        })
+                        .catchError(function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+                });
+
+                describe("from rejected", {
+                    it("should chain", function (done) {
+                        AbortablePromise.reject("error")
+                        .finally(function () {})
+                        .catchError(function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+
+                    it("should chain using exception", function (done) {
+                        AbortablePromise.reject("error")
+                        .finally(function () {
+                            throw "rewrited error";
+                        })
+                        .catchError(function (e) {
+                            (e: String).should.be("rewrited error");
+                            done();
+                        });
+                    });
+                });
+            });
+        });
+
         describe("AbortablePromise.abort()", {
             describe("before execution", {
                 it("should not call the abort callback", function (done) {

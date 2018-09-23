@@ -724,52 +724,98 @@ class SyncPromiseTest extends BuddySuite {
             });
         });
 
-        // describe("SyncPromise.finally()", {
-        //     timeoutMs = 500;
+        describe("SyncPromise.finally()", {
+            timeoutMs = 500;
 
-        //     describe("sync", {
-        //         it("should call when it is fulfilled", function (done) {
-        //             new SyncPromise(function (fulfill, _) {
-        //                 fulfill(100);
-        //             }).finally(function () {
-        //                 done();
-        //             });
-        //         });
+            describe("sync", {
+                it("should call when it is fulfilled", function (done) {
+                    new SyncPromise(function (fulfill, _) {
+                        fulfill(100);
+                    }).finally(function () {
+                        done();
+                    });
+                });
 
-        //         it("should call when it is rejected", function (done) {
-        //             new SyncPromise(function (_, reject) {
-        //                 reject("error");
-        //             }).finally(function () {
-        //                 done();
-        //             });
-        //         });
-        //     });
+                it("should call when it is rejected", function (done) {
+                    new SyncPromise(function (_, reject) {
+                        reject("error");
+                    }).finally(function () {
+                        done();
+                    });
+                });
+            });
 
-        //     describe("async", {
-        //         it("should call when it is fulfilled", function (done) {
-        //             new SyncPromise(function (fulfill, _) {
-        //                 wait(5, function () {
-        //                     fulfill(100);
-        //                 });
-        //             }).finally(function () {
-        //                 done();
-        //             });
-        //         });
+            describe("async", {
+                it("should call when it is fulfilled", function (done) {
+                    new SyncPromise(function (fulfill, _) {
+                        wait(5, function () {
+                            fulfill(100);
+                        });
+                    }).finally(function () {
+                        done();
+                    });
+                });
 
-        //         it("should call when it is rejected", function (done) {
-        //             new SyncPromise(function (_, reject) {
-        //                 wait(5, function () {
-        //                     reject("error");
-        //                 });
-        //             }).finally(function () {
-        //                 done();
-        //             });
-        //         });
-        //     });
+                it("should call when it is rejected", function (done) {
+                    new SyncPromise(function (_, reject) {
+                        wait(5, function () {
+                            reject("error");
+                        });
+                    }).finally(function () {
+                        done();
+                    });
+                });
+            });
 
-        //     describe("chain", {
-        //     });
-        // });
+            describe("chain", {
+                describe("from resolved", {
+                    it("should chain", function (done) {
+                        SyncPromise.resolve(1)
+                        .finally(function () {})
+                        .then(function (x) {
+                            return x + 100;
+                        })
+                        .then(function (x) {
+                            x.should.be(101);
+                            done();
+                        });
+                    });
+
+                    it("should chain using exception", function (done) {
+                        SyncPromise.resolve(1)
+                        .finally(function () {
+                            throw "error";
+                        })
+                        .catchError(function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+                });
+
+                describe("from rejected", {
+                    it("should chain", function (done) {
+                        SyncPromise.reject("error")
+                        .finally(function () {})
+                        .catchError(function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+
+                    it("should chain using exception", function (done) {
+                        SyncPromise.reject("error")
+                        .finally(function () {
+                            throw "rewrited error";
+                        })
+                        .catchError(function (e) {
+                            (e: String).should.be("rewrited error");
+                            done();
+                        });
+                    });
+                });
+            });
+        });
 
         describe("Promise.compute()", {
             it("should use SyncPromise", function (done) {

@@ -130,6 +130,13 @@ class AbortablePromise<T> implements IPromise<T> {
         return then(null, rejected);
     }
 
+    public function finally(onFinally: Void -> Void): Promise<T> {
+        return then(
+            function (x) { onFinally(); return x; },
+            function (e) { onFinally(); return reject(e); }
+        );
+    }
+
     /**
      * Abort this promise.
      */
