@@ -1,4 +1,4 @@
-package hxgnd;
+package hxgnd.internal;
 
 import externtype.Mixed;
 

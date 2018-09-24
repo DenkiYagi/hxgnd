@@ -1,5 +1,6 @@
 package hxgnd;
 
+import hxgnd.internal.IPromise;
 import hxgnd.Maybe;
 import hxgnd.Result;
 import externtype.Mixed;
