@@ -9,7 +9,7 @@ import hxgnd.internal.IPromise;
 import externtype.Mixed;
 using hxgnd.LangTools;
 
-abstract Promise<T>(IPromise<T>) from IPromise<T> to IPromise<T> {
+abstract Promise<T>(IPromise<T>) from IPromise<T> {
     public inline function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void) {
         #if js
         // workaround for js__$Boot_HaxeError
