@@ -23,3 +23,25 @@ abstract Delegate<T>(Array<T -> Void>) to ReadOnlyArray<T -> Void> {
         for (f in this) f(x);
     }
 }
+
+abstract Delegate0(Array<Void -> Void>) to ReadOnlyArray<Void -> Void> {
+    public inline function new() {
+        this = [];
+    }
+
+    public inline function add(f: Void -> Void): Void {
+        if (this.notExists(f)) this.push(f);
+    }
+
+    public inline function remove(f: Void -> Void): Bool {
+        return this.remove(f);
+    }
+
+    public inline function removeAll(): Void {
+        this = [];
+    }
+
+    public inline function invoke(): Void {
+        for (f in this) f();
+    }
+}
