@@ -425,7 +425,7 @@ class PromiseTest extends BuddySuite {
 
                     it("should chain using exception", function (done) {
                         Promise.resolve(1)
-                        .then(function (x) {
+                        .then(function (x): Unit {
                             throw "error";
                         }).then(null, function (e) {
                             (e: String).should.be("error");
@@ -542,7 +542,7 @@ class PromiseTest extends BuddySuite {
 
                     it("should chain using exception", function (done) {
                         Promise.reject("error")
-                        .then(null, function (x) {
+                        .then(null, function (x): Unit {
                             throw "rewrited error";
                         }).then(null, function (e) {
                             (e: String).should.be("rewrited error");
@@ -713,7 +713,7 @@ class PromiseTest extends BuddySuite {
 
                     it("should chain using exception", function (done) {
                         Promise.reject("error")
-                        .catchError(function (e) {
+                        .catchError(function (e): Unit {
                             throw "rewrited error";
                         }).then(null, function (e) {
                             (e: String).should.be("rewrited error");
