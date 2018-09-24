@@ -870,7 +870,7 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     });
                     promise.catchError(function (e) {
-                        Std.is(e, AbortError).should.be(true);
+                        Std.is(e, AbortedError).should.be(true);
                         done();
                     });
                     promise.abort();
@@ -882,7 +882,7 @@ class AbortablePromiseTest extends BuddySuite {
                     });
                     promise.abort();
                     promise.catchError(function (e) {
-                        Std.is(e, AbortError).should.be(true);
+                        Std.is(e, AbortedError).should.be(true);
                         done();
                     });
                 });
@@ -903,7 +903,7 @@ class AbortablePromiseTest extends BuddySuite {
                     promise.abort();
                     wait(10, function () {
                         promise.catchError(function (e) {
-                            Std.is(e, AbortError).should.be(true);
+                            Std.is(e, AbortedError).should.be(true);
                             done();
                         });
                     });
@@ -917,7 +917,7 @@ class AbortablePromiseTest extends BuddySuite {
                     promise.abort();
                     wait(10, function () {
                         promise.catchError(function (e) {
-                            Std.is(e, AbortError).should.be(true);
+                            Std.is(e, AbortedError).should.be(true);
                             done();
                         });
                     });
@@ -941,7 +941,7 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     });
                     promise.catchError(function (e) {
-                        Std.is(e, AbortError).should.be(true);
+                        Std.is(e, AbortedError).should.be(true);
                         done();
                     });
                     wait(5, function () {
@@ -956,7 +956,7 @@ class AbortablePromiseTest extends BuddySuite {
                     wait(5, function () {
                         promise.abort();
                         promise.catchError(function (e) {
-                            Std.is(e, AbortError).should.be(true);
+                            Std.is(e, AbortedError).should.be(true);
                             done();
                         });
                     });
@@ -1063,7 +1063,7 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     });
                     promise.catchError(function (e) {
-                        Std.is(e, AbortError).should.be(false);
+                        Std.is(e, AbortedError).should.be(false);
                         (e: String).should.be("error");
                         done();
                     });
@@ -1080,7 +1080,7 @@ class AbortablePromiseTest extends BuddySuite {
                     wait(5, function () {
                         promise.abort();
                         promise.catchError(function (e) {
-                            Std.is(e, AbortError).should.be(false);
+                            Std.is(e, AbortedError).should.be(false);
                             (e: String).should.be("error");
                             done();
                         });

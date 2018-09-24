@@ -141,7 +141,7 @@ class AbortablePromise<T> implements IPromise<T> {
                 abortCallback = Maybe.empty();
                 fn();
             }
-            onRejected(new AbortError("aborted"));
+            onRejected(new AbortedError("aborted"));
         }
     }
 

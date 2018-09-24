@@ -1,8 +1,8 @@
 package hxgnd;
 
-class AbortError extends Error {
+class AbortedError extends Error {
     public function new(message: String = "aborted") {
         super(message);
-        this.name = "AbortError";
+        this.name = "AbortedError";
     }
 }

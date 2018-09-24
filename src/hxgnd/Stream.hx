@@ -30,7 +30,7 @@ class Stream<T> {
         if (!isActive) return;
 
         inline function done() {
-            emit(Error(new AbortError("aborted")));
+            emit(Error(new AbortedError()));
         }
 
         if (context.onAbort.nonNull()) {
