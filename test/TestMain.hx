@@ -14,4 +14,5 @@ class TestMain implements Buddy<[
     hxgnd.AbortablePromiseTest,
     hxgnd.PromiseToolsTest,
     hxgnd.ReactiveVarTest,
+    hxgnd.ReactiveActorTest,
 ]> {}

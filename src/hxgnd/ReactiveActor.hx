@@ -2,34 +2,56 @@ package hxgnd;
 
 import hxgnd.Delegate;
 
-class ReactiveObject<TState, TMessage> {
+class ReactiveActor<TState, TMessage> {
     var state: TState;
-    var middleware: TState -> TMessage -> (Progress<TState> -> Void) -> (Void -> Void);
+    var middleware: Middleware<TState, TMessage>;
+    var equaler: TState -> TState -> Bool;
     var subscribers: Delegate<TState>;
     var abortSubscribers: Delegate0;
 
-    public function new(middleware: TState -> TMessage -> (Progress<TState> -> Void) -> (Void -> Void)) {
+    public function new(initState: TState, middleware: Middleware<TState, TMessage>, ?equaler: TState -> TState -> Bool) {
+        this.state = initState;
         this.middleware = middleware;
+        this.equaler = LangTools.getOrElse(equaler, LangTools.eq);
         this.subscribers = new Delegate();
         this.abortSubscribers = new Delegate0();
     }
 
-    public function dispatch(action: TMessage): AbortablePromise<Void> {
+    public function getState(): TState {
+        return state;
+    }
+
+    public function dispatch(message: TMessage): AbortablePromise<Unit> {
         var promise = new AbortablePromise(function (fulfill, reject) {
-            function emit(progress: Progress<TState>): Void {
-                switch (progress) {
-                    case Updated(x):
-                        state = x;
-                        subscribers.invoke(x);
-                    case Completed(x):
-                        state = x;
-                        subscribers.invoke(x);
-                        fulfill();
-                    case Failed(e):
+            var complated = false;
+            var context = {
+                emit: function (recuder: TState -> TState, hasNext = false): Void {
+                    if (complated) return;
+
+                    var newState;
+                    try {
+                        newState = recuder(state);
+                        if (equaler(state, newState)) return;
+                    } catch (e: Dynamic) {
                         reject(e);
+                        return;
+                    }
+
+                    state = newState;
+                    subscribers.invoke(newState);
+
+                    if (!hasNext) {
+                        complated = true;
+                        fulfill(new Unit());
+                    }
+                },
+                throwError: function (e: Dynamic): Void {
+                    if (complated) return;
+                    complated = true;
+                    reject(e);
                 }
             }
-            return middleware(state, action, emit);
+            return middleware(context, state, message);
         });
 
         var onAbort = promise.abort;
@@ -82,8 +104,9 @@ class ReactiveObject<TState, TMessage> {
     // }
 }
 
-enum Progress<T> {
-    Updated(value: T);
-    Completed(value: T);
-    Failed(error: Dynamic);
+typedef Middleware<TState, TMessage> = Context<TState> -> TState -> TMessage -> (Void -> Void);
+
+typedef Context<TState> = {
+    function emit(reducer: TState -> TState, ?haxeNext: Bool): Void;
+    function throwError(error: Dynamic): Void;
 }
