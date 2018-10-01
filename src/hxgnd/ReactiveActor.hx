@@ -23,15 +23,15 @@ class ReactiveActor<TState, TMessage> {
 
     public function dispatch(message: TMessage): AbortablePromise<Unit> {
         var promise = new AbortablePromise(function (fulfill, reject) {
-            var complated = false;
+            var completed = false;
             var context = {
                 emit: function (recuder: TState -> TState, hasNext = false): Void {
-                    if (complated) return;
+                    if (completed) return;
 
                     var newState;
                     try {
                         newState = recuder(state);
-                        if (equaler(state, newState)) return;
+                        if (completed || equaler(state, newState)) return;
                     } catch (e: Dynamic) {
                         reject(e);
                         return;
@@ -41,13 +41,13 @@ class ReactiveActor<TState, TMessage> {
                     subscribers.invoke(newState);
 
                     if (!hasNext) {
-                        complated = true;
+                        completed = true;
                         fulfill(new Unit());
                     }
                 },
                 throwError: function (e: Dynamic): Void {
-                    if (complated) return;
-                    complated = true;
+                    if (completed) return;
+                    completed = true;
                     reject(e);
                 }
             }
