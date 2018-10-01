@@ -1324,6 +1324,17 @@ class ReactiveActorTest extends BuddySuite {
                     });
                 });
             });
+
+            describe("unsubscribe()", {
+                it("can call 2-times", {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {};
+                    });
+                    var unscribe = actor.subscribe(function (x) {});
+                    unscribe();
+                    unscribe();
+                });
+            });
         });
 
         describe("ReactiveActor#abort()", {

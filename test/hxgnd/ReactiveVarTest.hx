@@ -267,6 +267,15 @@ class ReactiveVarTest extends BuddySuite {
                     });
                 });
             });
+
+            describe("unsubscribe()", {
+                it("can call 2-times", {
+                    var reactiveVar = new ReactiveVar(10);
+                    var unscribe = reactiveVar.subscribe(function (x) {});
+                    unscribe();
+                    unscribe();
+                });
+            });
         });
     }
 }
