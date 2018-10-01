@@ -826,8 +826,118 @@ class ReactiveActorTest extends BuddySuite {
             // });
 
             describe("equaler", {
+                describe("custom equaler", {
+                    it("should call", function (done) {
+                        var called = false;
 
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return x);
+                            return function () {}
+                        }, function (a, b) {
+                            called = true;
+                            return a == b;
+                        });
+                        actor.dispatch(Increment);
 
+                        wait(10, function () {
+                            called.should.be(true);
+                            done();
+                        });
+                    });
+
+                    // trueを返す
+                    // falseを返す
+                });
+
+                describe("emit(hasNext=default)", {
+                    it("should not notify when it is using default", function (done) {
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return x);
+                            return function () {}
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
+
+                    it("should not notify when it is using custom", function (done) {
+                        var actor = new ReactiveActor({value: 10}, function (ctx, state, message) {
+                            ctx.emit(function (x) return {value: 10});
+                            return function () {}
+                        }, function (a, b) {
+                            return a.value == b.value;
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
+                });
+
+                describe("emit(hasNext=false)", {
+                    it("should not notify when it is using default", function (done) {
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return x, false);
+                            return function () {}
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
+
+                    it("should not notify when it is using custom", function (done) {
+                        var actor = new ReactiveActor({value: 10}, function (ctx, state, message) {
+                            ctx.emit(function (x) return {value: 10}, false);
+                            return function () {}
+                        }, function (a, b) {
+                            return a.value == b.value;
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
+                });
+
+                describe("emit(hasNext=true)", {
+                    it("should not notify when it is using default", function (done) {
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return x, true);
+                            return function () {}
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
+
+                    it("should not notify when it is using custom", function (done) {
+                        var actor = new ReactiveActor({value: 10}, function (ctx, state, message) {
+                            ctx.emit(function (x) return {value: 10}, true);
+                            return function () {}
+                        }, function (a, b) {
+                            return a.value == b.value;
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
+                });
             });
         });
 
