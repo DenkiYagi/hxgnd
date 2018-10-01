@@ -45,7 +45,9 @@ class ReactiveActorTest extends BuddySuite {
                     });
 
                     actor.dispatch(Increment);
+                    #if js
                     called.should.be(false);
+                    #end
                 });
 
                 it("should call 2-times", function (done) {
@@ -101,6 +103,7 @@ class ReactiveActorTest extends BuddySuite {
                     wait(10, done);
                 });
 
+                #if js
                 it("should not call the middleware", function (done) {
                     var actor = new ReactiveActor(10, function (ctx, _, _) {
                         fail();
@@ -111,6 +114,7 @@ class ReactiveActorTest extends BuddySuite {
                     promise.abort();
                     wait(10, done);
                 });
+                #end
 
                 it("should call the onabort", function (done) {
                     var actor = new ReactiveActor(10, function (_, _, _) {
