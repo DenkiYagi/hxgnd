@@ -28,7 +28,7 @@ class ReactiveVarTest extends BuddySuite {
         });
 
         describe("ReactiveVar.subscribe()", {
-            describe("one subscriber", {
+            describe("single subscriber", {
                 it("should not call subscriber", function (done) {
                     var reactiveVar = new ReactiveVar(10);
                     reactiveVar.subscribe(function (x) {
@@ -89,7 +89,7 @@ class ReactiveVarTest extends BuddySuite {
                 });
             });
 
-            describe("two subscribers", {
+            describe("multi subscribers", {
                 it("should not call all subscribers", function (done) {
                     var reactiveVar = new ReactiveVar(10);
                     reactiveVar.subscribe(function (x) {
