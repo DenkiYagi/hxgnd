@@ -204,6 +204,69 @@ class ReactiveVarTest extends BuddySuite {
                     wait(10, done);
                 });
             });
+
+            describe("equaler", {
+                describe("default equaler", {
+                    it("should notify", function (done) {
+                        var reactiveVar = new ReactiveVar(10);
+                        reactiveVar.subscribe(function (x) {
+                            x.should.be(11);
+                            done();
+                        });
+                        reactiveVar.set(11);
+                    });
+
+                    it("should not notify", function (done) {
+                        var reactiveVar = new ReactiveVar(10);
+                        reactiveVar.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        reactiveVar.set(10);
+                        wait(10, done);
+                    });
+                });
+
+                describe("custom equaler", {
+                    it("should call equaler", function (done) {
+                        var called = false;
+
+                        var reactiveVar = new ReactiveVar(10, function (a, b) {
+                            called = true;
+                            return a == b;
+                        });
+                        reactiveVar.set(10);
+
+                        wait(10, function () {
+                            called.should.be(true);
+                            done();
+                        });
+                    });
+
+                    it("should notify", function (done) {
+                        var reactiveVar = new ReactiveVar(10, function (a, b) {
+                            return false;
+                        });
+                        reactiveVar.subscribe(function (x) {
+                            x.should.be(10);
+                            done();
+                        });
+                        reactiveVar.set(10);
+                    });
+
+                    it("should not notify", function (done) {
+                        var reactiveVar = new ReactiveVar(10, function (a, b) {
+                            return true;
+                        });
+                        reactiveVar.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        reactiveVar.set(11);
+                        wait(10, done);
+                    });
+                });
+            });
         });
     }
 }

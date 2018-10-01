@@ -826,8 +826,35 @@ class ReactiveActorTest extends BuddySuite {
             // });
 
             describe("equaler", {
+                describe("default equaler", {
+                    it("should notify", function (done) {
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return x + 1);
+                            return function () {}
+                        });
+                        actor.subscribe(function (x) {
+                            x.should.be(11);
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                    });
+
+                    it("should not notify", function (done) {
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return 10);
+                            return function () {}
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
+                });
+
                 describe("custom equaler", {
-                    it("should call", function (done) {
+                    it("should call equaler", function (done) {
                         var called = false;
 
                         var actor = new ReactiveActor(10, function (ctx, state, message) {
@@ -845,8 +872,34 @@ class ReactiveActorTest extends BuddySuite {
                         });
                     });
 
-                    // trueを返す
-                    // falseを返す
+                    it("should notify", function (done) {
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return x);
+                            return function () {}
+                        }, function (a, b) {
+                            return false;
+                        });
+                        actor.subscribe(function (x) {
+                            x.should.be(10);
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                    });
+
+                    it("should not notify", function (done) {
+                        var actor = new ReactiveActor(10, function (ctx, state, message) {
+                            ctx.emit(function (x) return 11);
+                            return function () {}
+                        }, function (a, b) {
+                            return true;
+                        });
+                        actor.subscribe(function (x) {
+                            fail();
+                            done();
+                        });
+                        actor.dispatch(Increment);
+                        wait(10, done);
+                    });
                 });
 
                 describe("emit(hasNext=default)", {
@@ -941,8 +994,8 @@ class ReactiveActorTest extends BuddySuite {
             });
         });
 
-
         describe("ReactiveActor#abort()", {
+            // TODO
         });
     }
 }
