@@ -274,6 +274,18 @@ class AbortablePromiseTest extends BuddySuite {
                     function (_) { fail(); done(); }
                 );
             });
+
+            it("should not abort", function (done) {
+                var promise = AbortablePromise.resolve(1);
+                promise.abort();
+                promise.then(function (x) {
+                    x.should.be(1);
+                    done();
+                }, function (e) {
+                    fail();
+                    done();
+                });
+            });
         });
 
         describe("AbortablePromise.reject()", {
@@ -297,6 +309,18 @@ class AbortablePromiseTest extends BuddySuite {
                         done();
                     }
                 );
+            });
+
+            it("should not abort", function (done) {
+                var promise = AbortablePromise.reject("hello");
+                promise.abort();
+                promise.then(function (x) {
+                    fail();
+                    done();
+                }, function (e) {
+                    (e: String).should.be("hello");
+                    done();
+                });
             });
         });
 
@@ -854,6 +878,16 @@ class AbortablePromiseTest extends BuddySuite {
 
         describe("AbortablePromise.abort()", {
             describe("before execution", {
+                it("should not call the executor", function (done) {
+                    var promise = new AbortablePromise(function (_, _) {
+                        fail();
+                        done();
+                        return function () {}
+                    });
+                    promise.abort();
+                    wait(10, done);
+                });
+
                 it("should not call the abort callback", function (done) {
                     var promise = new AbortablePromise(function (_, _) {
                         return function () {

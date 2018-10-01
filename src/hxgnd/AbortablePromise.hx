@@ -29,11 +29,17 @@ class AbortablePromise<T> implements IPromise<T> {
         onRejectedHanlders = new Delegate();
         abortCallback = Maybe.empty();
 
+        execute(executor);
+    }
+
+    function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
         Dispatcher.dispatch(function exec() {
-            try {
-                abortCallback = Maybe.ofNullable(executor(onFulfilled, onRejected));
-            } catch (e: Dynamic) {
-                onRejected(e);
+            if (result.isEmpty()) {
+                try {
+                    abortCallback = Maybe.ofNullable(executor(onFulfilled, onRejected));
+                } catch (e: Dynamic) {
+                    onRejected(e);
+                }
             }
         });
     }
@@ -146,16 +152,28 @@ class AbortablePromise<T> implements IPromise<T> {
     }
 
     public static function resolve<T>(?value: T): AbortablePromise<T> {
-        return new AbortablePromise(function (f, _) {
-            f(value);
-            return LangTools.emptyFunction;
-        });
+        return new ResolvedAbortablePromise(value);
     }
 
     public static function reject<T>(error: Dynamic): AbortablePromise<T> {
-        return new AbortablePromise(function (_, r) {
-            r(error);
-            return LangTools.emptyFunction;
-        });
+        return new RejectedAbortablePromise(error);
+    }
+}
+
+private class ResolvedAbortablePromise<T> extends AbortablePromise<T> {
+    public override function new(value: T) {
+        super(null);
+        result = Maybe.of(Result.Success(value));
+    }
+    override function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
+    }
+}
+
+private class RejectedAbortablePromise<T> extends AbortablePromise<T> {
+    public override function new(error: Dynamic) {
+        super(null);
+        result = Maybe.of(Result.Failure(error));
+    }
+    override function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
     }
 }
