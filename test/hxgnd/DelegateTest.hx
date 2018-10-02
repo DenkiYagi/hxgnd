@@ -118,6 +118,32 @@ class DelegateTest extends BuddySuite {
                 });
             });
 
+            describe("Delegate#isEmpty()", {
+                it("should be true", {
+                    var delegate = new Delegate();
+                    delegate.isEmpty().should.be(true);
+                });
+
+                it("should be false", {
+                    var delegate = new Delegate();
+                    delegate.add(function (_) {});
+                    delegate.isEmpty().should.be(false);
+                });
+            });
+
+            describe("Delegate#nonEmpty()", {
+                it("should be false", {
+                    var delegate = new Delegate();
+                    delegate.nonEmpty().should.be(false);
+                });
+
+                it("should be true", {
+                    var delegate = new Delegate();
+                    delegate.add(function (_) {});
+                    delegate.nonEmpty().should.be(true);
+                });
+            });
+
             describe("Delegate#invoke()", {
                 it("should pass when it has no items", {
                     var delegate = new Delegate<Int>();
@@ -280,6 +306,32 @@ class DelegateTest extends BuddySuite {
 
                     var array = (delegate: ReadOnlyArray<Void -> Void>);
                     array.length.should.be(0);
+                });
+            });
+
+            describe("Delegate0#isEmpty()", {
+                it("should be true", {
+                    var delegate = new Delegate0();
+                    delegate.isEmpty().should.be(true);
+                });
+
+                it("should be false", {
+                    var delegate = new Delegate0();
+                    delegate.add(function () {});
+                    delegate.isEmpty().should.be(false);
+                });
+            });
+
+            describe("Delegate0#nonEmpty()", {
+                it("should be false", {
+                    var delegate = new Delegate0();
+                    delegate.nonEmpty().should.be(false);
+                });
+
+                it("should be true", {
+                    var delegate = new Delegate0();
+                    delegate.add(function () {});
+                    delegate.nonEmpty().should.be(true);
                 });
             });
 

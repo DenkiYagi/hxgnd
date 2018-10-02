@@ -19,6 +19,14 @@ abstract Delegate<T>(Array<T -> Void>) to ReadOnlyArray<T -> Void> {
         this = [];
     }
 
+    public inline function isEmpty(): Bool {
+        return this.isEmpty();
+    }
+
+    public inline function nonEmpty(): Bool {
+        return this.nonEmpty();
+    }
+
     public inline function invoke(x: T): Void {
         for (f in this.copy()) f(x);
     }
@@ -39,6 +47,14 @@ abstract Delegate0(Array<Void -> Void>) to ReadOnlyArray<Void -> Void> {
 
     public inline function removeAll(): Void {
         this = [];
+    }
+
+    public inline function isEmpty(): Bool {
+        return this.isEmpty();
+    }
+
+    public inline function nonEmpty(): Bool {
+        return this.nonEmpty();
     }
 
     public inline function invoke(): Void {
