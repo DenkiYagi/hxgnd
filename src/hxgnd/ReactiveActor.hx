@@ -7,14 +7,14 @@ class ReactiveActor<TState, TMessage> {
     var middleware: Middleware<TState, TMessage>;
     var equaler: TState -> TState -> Bool;
     var subscribers: Delegate<TState>;
-    var abortSubscribers: Delegate0;
+    var abortHanlders: Delegate0;
 
     public function new(initState: TState, middleware: Middleware<TState, TMessage>, ?equaler: TState -> TState -> Bool) {
         this.state = initState;
         this.middleware = middleware;
         this.equaler = LangTools.getOrElse(equaler, LangTools.eq);
         this.subscribers = new Delegate();
-        this.abortSubscribers = new Delegate0();
+        this.abortHanlders = new Delegate0();
     }
 
     public function getState(): TState {
@@ -55,8 +55,8 @@ class ReactiveActor<TState, TMessage> {
         });
 
         var onAbort = promise.abort;
-        abortSubscribers.add(onAbort);
-        promise.finally(abortSubscribers.remove.bind(onAbort));
+        abortHanlders.add(onAbort);
+        promise.finally(abortHanlders.remove.bind(onAbort));
 
         return promise;
     }
@@ -67,7 +67,7 @@ class ReactiveActor<TState, TMessage> {
     }
 
     public function abort(): Void {
-        abortSubscribers.invoke();
+        abortHanlders.invoke();
         subscribers.removeAll();
     }
 

@@ -1330,7 +1330,7 @@ class ReactiveActorTest extends BuddySuite {
             });
 
             describe("unsubscribe()", {
-                it("can call 2-times", {
+                it("should pass when it is called 2-times", {
                     var actor = new ReactiveActor(10, function (ctx, state, message) {
                         return function () {};
                     });
@@ -1342,7 +1342,196 @@ class ReactiveActorTest extends BuddySuite {
         });
 
         describe("ReactiveActor#abort()", {
-        // TODO
+            describe("no actions", {
+                it("should pass", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {};
+                    });
+                    actor.abort();
+                    wait(10, done);
+                });
+
+                it("should pass when it is called 2-times", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {};
+                    });
+                    actor.abort();
+                    actor.abort();
+                    wait(10, done);
+                });
+            });
+
+            describe("one pending action", {
+                it("should call catchError", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {};
+                    });
+                    var promise = actor.dispatch(Increment);
+                    promise.catchError(function (e) {
+                        Std.is(e, AbortedError).should.be(true);
+                        done();
+                    });
+                    wait(5, actor.abort);
+                });
+
+                it("should call onabort", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {
+                            done();
+                        };
+                    });
+                    actor.dispatch(Increment);
+                    wait(5, actor.abort);
+                });
+
+                it("should call onabort 1-time", function (done) {
+                    var count = 0;
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {
+                            count++;
+                        };
+                    });
+                    actor.dispatch(Increment);
+                    wait(5, function () {
+                        actor.abort();
+                        actor.abort();
+                        wait(5, function () {
+                            count.should.be(1);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("one resolved action", {
+                it("should pass", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        ctx.emit(function (x) return 1);
+                        return function () {
+                            fail();
+                            done();
+                        };
+                    });
+                    actor.dispatch(Increment);
+                    wait(5, function () {
+                        actor.abort();
+                        wait(5, done);
+                    });
+                });
+
+                it("should pass when it is called 2-times", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        ctx.emit(function (x) return 1);
+                        return function () {
+                            fail();
+                            done();
+                        };
+                    });
+                    wait(5, function () {
+                        actor.abort();
+                        actor.abort();
+                        wait(5, done);
+                    });
+                });
+            });
+
+            describe("one rejected action", {
+                it("should pass", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        ctx.throwError("error");
+                        return function () {
+                            fail();
+                            done();
+                        };
+                    });
+                    actor.dispatch(Increment);
+                    wait(5, function () {
+                        actor.abort();
+                        wait(5, done);
+                    });
+                });
+
+                it("should pass when it is called 2-times", function (done) {
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        ctx.throwError("error");
+                        return function () {
+                            fail();
+                            done();
+                        };
+                    });
+                    wait(5, function () {
+                        actor.abort();
+                        actor.abort();
+                        wait(5, done);
+                    });
+               });
+            });
+
+            describe("two pending actions", {
+                it("should call catchError", function (done) {
+                    var count1 = 0;
+                    var count2 = 0;
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {};
+                    });
+                    var promise1 = actor.dispatch(Increment);
+                    var promise2 = actor.dispatch(Increment);
+                    promise1.catchError(function (e) {
+                        Std.is(e, AbortedError).should.be(true);
+                        count1++;
+                    });
+                    promise2.catchError(function (e) {
+                        Std.is(e, AbortedError).should.be(true);
+                        count2++;
+                    });
+                    wait(5, function () {
+                        actor.abort();
+                        wait(5, function () {
+                            count1.should.be(1);
+                            count2.should.be(1);
+                            done();
+                        });
+                    });
+                });
+
+                it("should call onabort", function (done) {
+                    var count = 0;
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {
+                            count++;
+                        };
+                    });
+                    actor.dispatch(Increment);
+                    actor.dispatch(Increment);
+                    wait(5, function () {
+                        actor.abort();
+                        wait(5, function () {
+                            count.should.be(2);
+                            done();
+                       });
+                    });
+                });
+
+                it("should call onabort 1-time", function (done) {
+                    var count = 0;
+                    var actor = new ReactiveActor(10, function (ctx, state, message) {
+                        return function () {
+                            count++;
+                        };
+                    });
+                    actor.dispatch(Increment);
+                    actor.dispatch(Increment);
+                    wait(5, function () {
+                        actor.abort();
+                        actor.abort();
+                        actor.abort();
+                        wait(5, function () {
+                            count.should.be(2);
+                            done();
+                       });
+                    });
+                });
+            });
         });
     }
 }
