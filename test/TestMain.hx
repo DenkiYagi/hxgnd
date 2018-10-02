@@ -13,6 +13,6 @@ class TestMain implements Buddy<[
     hxgnd.SyncPromiseTest,
     hxgnd.AbortablePromiseTest,
     hxgnd.PromiseToolsTest,
-    hxgnd.ReactiveVarTest,
+    hxgnd.ReactivePropertyTest,
     hxgnd.ReactiveActorTest,
 ]> {}

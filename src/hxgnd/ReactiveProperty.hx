@@ -1,6 +1,6 @@
 package hxgnd;
 
-class ReactiveVar<T> {
+class ReactiveProperty<T> {
     var value: T;
     var equaler: T -> T -> Bool;
     var subscribers: Delegate<T>;
