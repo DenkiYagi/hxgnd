@@ -20,7 +20,7 @@ abstract Delegate<T>(Array<T -> Void>) to ReadOnlyArray<T -> Void> {
     }
 
     public inline function invoke(x: T): Void {
-        for (f in this) f(x);
+        for (f in this.copy()) f(x);
     }
 }
 
@@ -42,6 +42,6 @@ abstract Delegate0(Array<Void -> Void>) to ReadOnlyArray<Void -> Void> {
     }
 
     public inline function invoke(): Void {
-        for (f in this) f();
+        for (f in this.copy()) f();
     }
 }
