@@ -37,7 +37,12 @@ class ReactiveActor<TState, TMessage> {
                         return;
                     }
 
+                    #if debug
+                    state = LangTools.freeze(newState);
+                    #else
                     state = newState;
+                    #end
+
                     subscribers.invoke(newState);
 
                     if (!hasNext) {
