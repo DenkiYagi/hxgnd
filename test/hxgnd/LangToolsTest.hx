@@ -599,6 +599,48 @@ class LangToolsTest extends BuddySuite {
                 });
             });
         });
+
+        describe("LangTools.callIfNotNull()", {
+            describe("Void -> Void", {
+                it("should pass", {
+                    var fn: Void -> Void = null;
+                    fn.callIfNotNull();
+                });
+
+                it("should pass", function (done) {
+                    var fn = function () { done(); };
+                    fn.callIfNotNull();
+                });
+            });
+
+            describe("return value", {
+                it("should pass", {
+                    var fn: Void -> Int = null;
+                    var ret = fn.callIfNotNull();
+                    ret.should.be(null);
+                });
+
+                it("should pass", {
+                    var fn: Void -> Int = function () return 1;
+                    var ret = fn.callIfNotNull();
+                    ret.should.be(1);
+                });
+            });
+
+            describe("multiple arguments", {
+                it("should pass", {
+                    var fn: Int -> Int -> Int = null;
+                    var ret = fn.callIfNotNull(1, 2);
+                    ret.should.be(null);
+                });
+
+                it("should pass", {
+                    var fn: Int -> Int -> Int = function (a, b) return a + b;
+                    var ret = fn.callIfNotNull(1, 2);
+                    ret.should.be(3);
+                });
+            });
+        });
     }
 }
 

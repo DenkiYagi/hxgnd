@@ -288,4 +288,13 @@ class LangTools {
             return false;
         }
     }
+
+    public static macro function callIfNotNull(fn: ExprOf<Null<haxe.Constraints.Function>>, args: Array<Expr>): Expr {
+        var call = { expr: ECall(fn, args), pos: fn.pos };
+        return macro if (${fn} != null) {
+            ${call};
+        } else {
+            null;
+        }
+    }
 }
