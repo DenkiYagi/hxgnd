@@ -13,6 +13,18 @@ class DelegateTest extends BuddySuite {
                     var delegate = new Delegate<Int>();
                     (delegate: ReadOnlyArray<Int -> Void>).length.should.be(0);
                 });
+
+                it("should copy", {
+                    var functions = [
+                        function (x) {},
+                        function (x) {}
+                    ];
+
+                    var delegate = new Delegate<Int>(functions);
+                    LangTools.eq(untyped delegate, untyped functions).should.be(false);
+                    (delegate: ReadOnlyArray<Int -> Void>).length.should.be(2);
+                    (delegate: ReadOnlyArray<Int -> Void>).same(functions).should.be(true);
+                });
             });
 
             describe("Delegate#add()", {
@@ -196,6 +208,18 @@ class DelegateTest extends BuddySuite {
                     count2.should.be(1);
                 });
             });
+
+            describe("Delegate#copy()", {
+                it("should pass", {
+                    var delegate = new Delegate<Int>([
+                        function (x) {},
+                        function (x) {},
+                    ]);
+                    var copy = delegate.copy();
+                    copy.eq(delegate).should.be(false);
+                    copy.same(delegate).should.be(true);
+                });
+            });
         });
 
         describe("Delegate0", {
@@ -203,6 +227,18 @@ class DelegateTest extends BuddySuite {
                 it("should be empty", {
                     var delegate = new Delegate0();
                     (delegate: ReadOnlyArray<Void -> Void>).length.should.be(0);
+                });
+
+                it("should copy", {
+                    var functions = [
+                        function () {},
+                        function () {}
+                    ];
+
+                    var delegate = new Delegate0(functions);
+                    LangTools.eq(untyped delegate, untyped functions).should.be(false);
+                    (delegate: ReadOnlyArray<Void -> Void>).length.should.be(2);
+                    (delegate: ReadOnlyArray<Void -> Void>).same(functions).should.be(true);
                 });
             });
 
@@ -388,6 +424,18 @@ class DelegateTest extends BuddySuite {
                     delegate.invoke();
                     count1.should.be(1);
                     count2.should.be(1);
+                });
+            });
+
+            describe("Delegate0#copy()", {
+                it("should pass", {
+                    var delegate = new Delegate0([
+                        function () {},
+                        function () {},
+                    ]);
+                    var copy = delegate.copy();
+                    copy.eq(delegate).should.be(false);
+                    copy.same(delegate).should.be(true);
                 });
             });
         });
