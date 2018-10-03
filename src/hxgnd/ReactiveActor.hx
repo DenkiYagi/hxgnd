@@ -12,7 +12,7 @@ class ReactiveActor<TState, TMessage> {
     public function new(initState: TState, middleware: Middleware<TState, TMessage>, ?equaler: TState -> TState -> Bool) {
         this.state = initState;
         this.middleware = middleware;
-        this.equaler = LangTools.getOrElse(equaler, LangTools.eq);
+        this.equaler = LangTools.getOrElse(equaler, function eq(a, b) return LangTools.eq(a, b));
         this.subscribers = new Delegate();
         this.abortHanlders = new Delegate0();
     }

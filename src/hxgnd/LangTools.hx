@@ -18,7 +18,7 @@ using Lambda;
 class LangTools {
     public static var emptyFunction(default, null) = function empty() {};
 
-    public static inline function eq<T>(a: Null<T>, b: Null<T>): Bool {
+    @:extern public static inline function eq<T>(a: Null<T>, b: Null<T>): Bool {
         #if js
         return JsNative.strictEq(a, b);
         #else
@@ -26,7 +26,7 @@ class LangTools {
         #end
     }
 
-    public static inline function neq<T>(a: Null<T>, b: Null<T>): Bool {
+    @:extern public static inline function neq<T>(a: Null<T>, b: Null<T>): Bool {
         #if js
         return JsNative.strictNeq(a, b);
         #else
@@ -34,33 +34,33 @@ class LangTools {
         #end
     }
 
-    public static inline function isNull<T>(a: Null<T>): Bool {
+    @:extern public static inline function isNull<T>(a: Null<T>): Bool {
         return a == null;
     }
 
-    public static inline function nonNull<T>(a: Null<T>): Bool {
+    @:extern public static inline function nonNull<T>(a: Null<T>): Bool {
         return a != null;
     }
 
     #if js
-    public static inline function isUndefined<T>(a: Null<T>): Bool {
+    @:extern public static inline function isUndefined<T>(a: Null<T>): Bool {
         return JsNative.strictEq(a, js.Lib.undefined);
     }
     #end
 
-    public static inline function getOrElse<T>(a: Null<T>, b: T): T {
+    @:extern public static inline function getOrElse<T>(a: Null<T>, b: T): T {
         return nonNull(a) ? a : b;
     }
 
-    public static inline function toMaybe<T>(a: Null<T>): Maybe<T> {
+    @:extern public static inline function toMaybe<T>(a: Null<T>): Maybe<T> {
         return a;
     }
 
-    public static inline function isEmpty(x: Null<String>): Bool {
+    @:extern public static inline function isEmpty(x: Null<String>): Bool {
         return isNull(x) || eq(x, "");
     }
 
-    public static inline function nonEmpty(x: Null<String>): Bool {
+    @:extern public static inline function nonEmpty(x: Null<String>): Bool {
         return nonNull(x) && neq(x, "");
     }
 
@@ -71,11 +71,11 @@ class LangTools {
     static var BLANK = ~/^[\x09-\x0D\x85\x20\xA0\x{1680}\x{2000}-\x{200A}\x{202F}\x{205F}\x{3000}\x{2028}\x{2029}]*$/u;
     #end
 
-    public static inline function isBlank(x: Null<String>): Bool {
+    @:extern public static inline function isBlank(x: Null<String>): Bool {
         return isNull(x) || BLANK.match(x);
     }
 
-    public static inline function nonBlank(x: Null<String>): Bool {
+    @:extern public static inline function nonBlank(x: Null<String>): Bool {
         return !isBlank(x);
     }
 
@@ -245,12 +245,12 @@ class LangTools {
         return true;
     }
 
-    public static function notSame(value1: Dynamic, value2: Dynamic): Bool {
+    @:extern public static inline function notSame(value1: Dynamic, value2: Dynamic): Bool {
         return !same(value1, value2);
     }
 
     #if js
-    static inline function nonJsObject(x: Dynamic): Bool {
+    @:extern static inline function nonJsObject(x: Dynamic): Bool {
         return JsNative.strictEq(x, null) || JsNative.strictNeq(JsNative.typeof(x), "object");
     }
     #end
@@ -259,7 +259,7 @@ class LangTools {
         return Reflect.isFunction(Reflect.field(x, "iterator"));
     }
 
-    static inline function isSameIterable(a: Iterable<Dynamic>, b: Iterable<Dynamic>): Bool {
+    @:extern static inline function isSameIterable(a: Iterable<Dynamic>, b: Iterable<Dynamic>): Bool {
         try {
             var aIt: Iterator<Dynamic> = cast a.iterator();
             var bIt: Iterator<Dynamic> = cast b.iterator();
@@ -273,11 +273,11 @@ class LangTools {
         }
     }
 
-    static inline function isIterator(x : Dynamic) {
+    @:extern static inline function isIterator(x : Dynamic) {
         return Reflect.isFunction(Reflect.field(x, "next")) && Reflect.isFunction(Reflect.field(x, "hasNext"));
     }
 
-    static inline function isSameIterator(a: Iterator<Dynamic>, b: Iterator<Dynamic>): Bool {
+    @:extern static inline function isSameIterator(a: Iterator<Dynamic>, b: Iterator<Dynamic>): Bool {
         try {
             while (a.hasNext()) {
                 if (!b.hasNext()) return false;

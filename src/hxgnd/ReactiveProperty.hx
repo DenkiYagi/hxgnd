@@ -7,7 +7,7 @@ class ReactiveProperty<T> {
 
     public function new(initValue: T, ?equaler: T -> T -> Bool) {
         this.value = initValue;
-        this.equaler = LangTools.getOrElse(equaler, LangTools.eq);
+        this.equaler = LangTools.getOrElse(equaler, function eq(a, b) return LangTools.eq(a, b));
         this.subscribers = new Delegate();
     }
 
