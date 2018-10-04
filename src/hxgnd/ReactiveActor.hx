@@ -25,17 +25,9 @@ class ReactiveActor<TState, TMessage> {
         var promise = new AbortablePromise(function (fulfill, reject) {
             var completed = false;
             var context = {
-                emit: function (recuder: TState -> TState, hasNext = false): Void {
-                    if (completed) return;
-
-                    var newState;
-                    try {
-                        newState = recuder(state);
-                        if (completed || equaler(state, newState)) return;
-                    } catch (e: Dynamic) {
-                        reject(e);
-                        return;
-                    }
+                getState: getState,
+                emit: function (newState: TState, hasNext = false): Void {
+                    if (completed || equaler(state, newState)) return;
 
                     #if debug
                     state = LangTools.freeze(newState);
@@ -43,20 +35,33 @@ class ReactiveActor<TState, TMessage> {
                     state = newState;
                     #end
 
-                    subscribers.invoke(newState);
+                    try {
+                        subscribers.invoke(state);
+                    } catch (e: Dynamic) {
+                        trace(e);
+                    }
 
                     if (!hasNext) {
                         completed = true;
                         fulfill(new Unit());
                     }
                 },
+                emitEnd: function (): Void {
+                    if (completed) return;
+                    completed = true;
+                    fulfill(new Unit());
+                },
                 throwError: function (e: Dynamic): Void {
                     if (completed) return;
                     completed = true;
                     reject(e);
-                }
+                },
+                become: function (newMiddleware: Middleware<TState, TMessage>): Void {
+                    middleware = newMiddleware;
+                },
+                dispatch: dispatch
             }
-            return middleware(context, state, message);
+            return middleware(context, message);
         });
 
         var onAbort = promise.abort;
@@ -109,9 +114,13 @@ class ReactiveActor<TState, TMessage> {
     // }
 }
 
-typedef Middleware<TState, TMessage> = Context<TState> -> TState -> TMessage -> (Void -> Void);
+typedef Middleware<TState, TMessage> = Context<TState, TMessage> -> TMessage -> (Void -> Void);
 
-typedef Context<TState> = {
-    function emit(reducer: TState -> TState, ?haxeNext: Bool): Void;
+typedef Context<TState, TMessage> = {
+    function getState(): TState;
+    function emit(newState: TState, ?hasNext: Bool): Void;
+    function emitEnd(): Void;
     function throwError(error: Dynamic): Void;
+    function become(middleware: Middleware<TState, TMessage>): Void;
+    function dispatch(message: TMessage): AbortablePromise<Unit>;
 }
