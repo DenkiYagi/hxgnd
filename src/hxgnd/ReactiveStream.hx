@@ -23,6 +23,16 @@ class ReactiveStream<T> {
     }
 
     /**
+    * Create a idling empty stream.
+    * @return ReactiveStream<T>
+     */
+    public static function never<T>(): ReactiveStream<T> {
+        var stream = new ReactiveStream();
+        stream.becomeNever();
+        return stream;
+    }
+
+    /**
     * Create a closed empty stream.
     * @return ReactiveStream<T>
      */
@@ -33,21 +43,11 @@ class ReactiveStream<T> {
     }
 
     /**
-    * Create a unclosed empty stream.
-    * @return ReactiveStream<T>
-     */
-    public static function never<T>(): ReactiveStream<T> {
-        var stream = new ReactiveStream();
-        stream.becomeNever();
-        return stream;
-    }
-
-    /**
     * Create a failed stream.
     * @param error an error infomation
     * @return ReactiveStream<T>
      */
-    public static function throwError<T>(error: Dynamic): ReactiveStream<T> {
+    public static function fail<T>(error: Dynamic): ReactiveStream<T> {
         var stream = new ReactiveStream();
         stream.becomeFailed(error);
         return stream;
