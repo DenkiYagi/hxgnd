@@ -12,7 +12,7 @@ class ReactiveStream<T> {
 
     function new() { }
 
-    public static function create<T>(middleware: Context<T> -> Controller): ReactiveStream<T> {
+    public static function create<T>(middleware: ReactableStreamMiddleware<T>): ReactiveStream<T> {
         var stream = new ReactiveStream();
         stream.valueSubscribers = new Delegate();
         stream.endSubscribers = new Delegate0();
@@ -54,7 +54,7 @@ class ReactiveStream<T> {
         return stream;
     }
 
-    function becomeIdle(middleware: Middleware<T>): Void {
+    function becomeIdle(middleware: ReactableStreamMiddleware<T>): Void {
         var init = onInit.bind(middleware);
         processor = {
             subscribe: function (fn) {
@@ -90,7 +90,7 @@ class ReactiveStream<T> {
         }
     }
 
-    function becomeRunning(controller: Controller): Void {
+    function becomeRunning(controller: ReactableStreamMiddlewareController): Void {
         var pause = onPause.bind(controller);
         processor = {
             subscribe: valueSubscribers.add,
@@ -118,7 +118,7 @@ class ReactiveStream<T> {
         }
     }
 
-    function becomePaused(controller: Controller): Void {
+    function becomePaused(controller: ReactableStreamMiddlewareController): Void {
         var resume = onResume.bind(controller);
         processor = {
             subscribe: function (fn) {
@@ -167,7 +167,7 @@ class ReactiveStream<T> {
         }
     }
 
-    function onInit(middleware: Middleware<T>) {
+    function onInit(middleware: ReactableStreamMiddleware<T>) {
         becomeInitializing();
         Dispatcher.dispatch(function init() {
             try {
@@ -189,7 +189,7 @@ class ReactiveStream<T> {
         });
     }
 
-    function onInited(controller: Controller): Void {
+    function onInited(controller: ReactableStreamMiddlewareController): Void {
         if (hasNoSubscribers()) {
             becomePaused(controller);
         } else {
@@ -231,17 +231,17 @@ class ReactiveStream<T> {
         removeAllsubscribers();
     }
 
-    function onPause(controller: Controller): Void {
+    function onPause(controller: ReactableStreamMiddlewareController): Void {
         becomePaused(controller);
         controller.detach();
     }
 
-    function onResume(controller: Controller): Void {
+    function onResume(controller: ReactableStreamMiddlewareController): Void {
         becomeRunning(controller);
         controller.attach();
     }
 
-    function onClose(controller: Controller): Void {
+    function onClose(controller: ReactableStreamMiddlewareController): Void {
         try {
             controller.close();
             onEmitEnd();
@@ -378,22 +378,22 @@ class ReactiveStream<T> {
 
 }
 
-typedef Middleware<T> = Context<T> -> Controller;
+typedef ReactableStreamMiddleware<T> = ReactableStreamContext<T> -> ReactableStreamMiddlewareController;
 
-typedef Context<T> = {
+typedef ReactableStreamContext<T> = {
     function emit(value: T): Void;
     function emitEnd(): Void;
     function throwError(error: Dynamic): Void;
 }
 
-typedef Controller = {
+typedef ReactableStreamMiddlewareController = {
     function attach(): Void;
     function detach(): Void;
     function close(): Void;
 }
 
 private typedef Processor<T> = {
-    @:optional var onInited: Controller -> Void;
+    @:optional var onInited: ReactableStreamMiddlewareController -> Void;
     @:optional var onInitFailed: Dynamic -> Void;
 
     @:optional var subscribe: (T -> Void) -> Void;

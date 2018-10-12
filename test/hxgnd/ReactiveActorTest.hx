@@ -1220,7 +1220,7 @@ class ReactiveActorTest extends BuddySuite {
                     var calledAlt = false;
                     var calledObserver = false;
 
-                    function alt(c: Context<Int, Operation>, m: Operation) {
+                    function alt(c: ReactiveActorContext<Int, Operation>, m: Operation) {
                         calledAlt = true;
                         c.emit(c.getState() + 2);
                         c.getState().should.be(12);

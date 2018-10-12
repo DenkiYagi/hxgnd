@@ -4,12 +4,12 @@ import hxgnd.Delegate;
 
 class ReactiveActor<TState, TMessage> {
     var state: TState;
-    var middleware: Middleware<TState, TMessage>;
+    var middleware: ReactiveActorMiddleware<TState, TMessage>;
     var equaler: TState -> TState -> Bool;
     var subscribers: Delegate<TState>;
     var abortHanlders: Delegate0;
 
-    public function new(initState: TState, middleware: Middleware<TState, TMessage>, ?equaler: TState -> TState -> Bool) {
+    public function new(initState: TState, middleware: ReactiveActorMiddleware<TState, TMessage>, ?equaler: TState -> TState -> Bool) {
         this.state = initState;
         this.middleware = middleware;
         this.equaler = LangTools.getOrElse(equaler, function eq(a, b) return LangTools.eq(a, b));
@@ -56,7 +56,7 @@ class ReactiveActor<TState, TMessage> {
                     completed = true;
                     reject(e);
                 },
-                become: function (newMiddleware: Middleware<TState, TMessage>): Void {
+                become: function (newMiddleware: ReactiveActorMiddleware<TState, TMessage>): Void {
                     middleware = newMiddleware;
                 },
                 dispatch: dispatch
@@ -114,13 +114,13 @@ class ReactiveActor<TState, TMessage> {
     // }
 }
 
-typedef Middleware<TState, TMessage> = Context<TState, TMessage> -> TMessage -> (Void -> Void);
+typedef ReactiveActorMiddleware<TState, TMessage> = ReactiveActorContext<TState, TMessage> -> TMessage -> (Void -> Void);
 
-typedef Context<TState, TMessage> = {
+typedef ReactiveActorContext<TState, TMessage> = {
     function getState(): TState;
     function emit(newState: TState, ?hasNext: Bool): Void;
     function emitEnd(): Void;
     function throwError(error: Dynamic): Void;
-    function become(middleware: Middleware<TState, TMessage>): Void;
+    function become(middleware: ReactiveActorMiddleware<TState, TMessage>): Void;
     function dispatch(message: TMessage): AbortablePromise<Unit>;
 }
