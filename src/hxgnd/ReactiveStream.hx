@@ -10,13 +10,14 @@ class ReactiveStream<T> {
     var endSubscribers: Delegate0;
     var errorSubscribers: Delegate<Dynamic>;
 
-    function new() { }
+    function new() {
+        valueSubscribers = new Delegate();
+        endSubscribers = new Delegate0();
+        errorSubscribers = new Delegate();
+    }
 
     public static function create<T>(middleware: ReactableStreamMiddleware<T>): ReactiveStream<T> {
         var stream = new ReactiveStream();
-        stream.valueSubscribers = new Delegate();
-        stream.endSubscribers = new Delegate0();
-        stream.errorSubscribers = new Delegate();
         stream.becomeIdle(middleware);
         return stream;
     }
@@ -27,7 +28,6 @@ class ReactiveStream<T> {
      */
     public static function empty<T>(): ReactiveStream<T> {
         var stream = new ReactiveStream();
-        stream.endSubscribers = new Delegate0();
         stream.becomeClosed();
         return stream;
     }
@@ -38,7 +38,6 @@ class ReactiveStream<T> {
      */
     public static function never<T>(): ReactiveStream<T> {
         var stream = new ReactiveStream();
-        stream.endSubscribers = new Delegate0();
         stream.becomeNever();
         return stream;
     }
@@ -285,9 +284,6 @@ class ReactiveStream<T> {
 
     public function catchError(fn: Dynamic -> ReactiveStream<T>): ReactiveStream<T> {
         var wrapper = new ReactiveStream();
-        wrapper.valueSubscribers = new Delegate();
-        wrapper.endSubscribers = new Delegate0();
-        wrapper.errorSubscribers = new Delegate();
 
         var detacher = new Delegate0();
         function attach() {
