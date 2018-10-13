@@ -309,8 +309,8 @@ class ReactiveStream<T> {
     }
 
     public function finally(fn: Void -> Void): Void {
-        processor.subscribeEnd(fn);
-        processor.subscribeError(function (_) fn());
+        processor.subscribeEnd.callIfNotNull(fn);
+        processor.subscribeError.callIfNotNull(function (_) fn());
     }
 
     public function close(): Void {
