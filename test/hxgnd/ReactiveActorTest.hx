@@ -11,7 +11,6 @@ class ReactiveActorTest extends BuddySuite {
             it("should not call middleware", function (done) {
                 new ReactiveActor(10, function (_, _) {
                     fail();
-                    done();
                     return function () {};
                 });
                 wait(10, done);
@@ -22,7 +21,6 @@ class ReactiveActorTest extends BuddySuite {
             it("should pass", function (done) {
                 var actor = new ReactiveActor(10, function (_, _) {
                     fail();
-                    done();
                     return function () {};
                 });
                 actor.getState().should.be(10);
@@ -84,7 +82,6 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     wait(10, done);
                 });
@@ -109,11 +106,9 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     actor.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     wait(10, done);
                 });
@@ -173,13 +168,11 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.subscribe(function (x) {
                         fail();
-                        done();
                     });
 
                     var promise = actor.dispatch(Increment);
                     promise.finally(function () {
                         fail();
-                        done();
                     });
                     wait(10, done);
                 });
@@ -192,18 +185,15 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.subscribe(function (x) {
                         fail();
-                        done();
                     });
 
                     var promise1 = actor.dispatch(Increment);
                     var promise2 = actor.dispatch(Decrement);
                     promise1.finally(function () {
                         fail();
-                        done();
                     });
                     promise2.finally(function () {
                         fail();
-                        done();
                     });
                     wait(10, done);
                 });
@@ -214,7 +204,6 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.subscribe(function (x) {
                         fail();
-                        done();
                     });
 
                     var promise = actor.dispatch(Increment);
@@ -230,7 +219,6 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.subscribe(function (x) {
                         fail();
-                        done();
                     });
 
                     var promise = actor.dispatch(Increment);
@@ -259,7 +247,6 @@ class ReactiveActorTest extends BuddySuite {
                         });
                         actor.subscribe(function (x) {
                             fail();
-                            done();
                         });
                         actor.dispatch(Increment);
                         wait(10, done);
@@ -308,7 +295,6 @@ class ReactiveActorTest extends BuddySuite {
                         });
                         actor.subscribe(function (x) {
                             fail();
-                            done();
                         });
                         actor.dispatch(Increment);
                         wait(10, done);
@@ -328,7 +314,6 @@ class ReactiveActorTest extends BuddySuite {
                         done();
                     }, function (_) {
                         fail();
-                        done();
                     });
                 });
 
@@ -389,7 +374,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.emit(1);
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     var promise = actor.dispatch(Increment);
@@ -520,7 +504,6 @@ class ReactiveActorTest extends BuddySuite {
                         done();
                     }, function (_) {
                         fail();
-                        done();
                     });
                 });
 
@@ -581,7 +564,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.emit(1, false);
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     var promise = actor.dispatch(Increment);
@@ -710,7 +692,6 @@ class ReactiveActorTest extends BuddySuite {
                     var promise = actor.dispatch(Increment);
                     promise.finally(function () {
                         fail();
-                        done();
                     });
 
                     wait(10, done);
@@ -757,7 +738,6 @@ class ReactiveActorTest extends BuddySuite {
                     var promise1 = actor.dispatch(Increment);
                     promise1.finally(function () {
                         fail();
-                        done();
                     });
                     actor.getState().should.be(10);
 
@@ -767,7 +747,6 @@ class ReactiveActorTest extends BuddySuite {
                         var promise2 = actor.dispatch(Decrement);
                         promise2.finally(function () {
                             fail();
-                            done();
                         });
                         wait(5, function () {
                             actor.getState().should.be(9);
@@ -941,7 +920,6 @@ class ReactiveActorTest extends BuddySuite {
                     var promise = actor.dispatch(Increment);
                     promise.then(function (_) {
                         fail();
-                        done();
                     }, function (e) {
                         (e: String).should.be("error");
                         done();
@@ -953,7 +931,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.throwError("error");
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     var promise = actor.dispatch(Increment);
@@ -1084,7 +1061,6 @@ class ReactiveActorTest extends BuddySuite {
                         done();
                     }, function (_) {
                         fail();
-                        done();
                     });
                 });
 
@@ -1106,7 +1082,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.emitEnd();
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     var promise = actor.dispatch(Increment);
@@ -1348,7 +1323,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.emit(1);
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     actor.dispatch(Increment);
@@ -1363,7 +1337,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.emit(1);
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     wait(5, function () {
@@ -1380,7 +1353,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.throwError("error");
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     actor.dispatch(Increment);
@@ -1395,7 +1367,6 @@ class ReactiveActorTest extends BuddySuite {
                         ctx.throwError("error");
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     wait(5, function () {

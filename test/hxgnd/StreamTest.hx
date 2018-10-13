@@ -508,7 +508,6 @@ class StreamTest extends BuddySuite {
                 });
                 stream.end.then(function (result) {
                     fail();
-                    done();
                 });
                 wait(10, done);
             });

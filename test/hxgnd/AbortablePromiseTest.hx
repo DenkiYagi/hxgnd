@@ -24,8 +24,8 @@ class AbortablePromiseTest extends BuddySuite {
                     new AbortablePromise(function (_, _) {
                         return function () {};
                     }).then(
-                        function (_) { fail(); done(); },
-                        function (_) { fail(); done(); }
+                        function (_) { fail(); },
+                        function (_) { fail(); }
                     );
                     wait(5, done);
                 });
@@ -45,7 +45,7 @@ class AbortablePromiseTest extends BuddySuite {
                         new AbortablePromise(function (fulfill, _) {
                             fulfill();
                             return function () {};
-                        }).then(null, function (_) { fail(); done(); });
+                        }).then(null, function (_) { fail(); });
                         wait(5, done);
                     });
 
@@ -55,7 +55,7 @@ class AbortablePromiseTest extends BuddySuite {
                             return function () {};
                         }).then(
                             function (_) { done(); },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
 
@@ -68,7 +68,7 @@ class AbortablePromiseTest extends BuddySuite {
                                 x.should.be(1);
                                 done();
                             },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
                 });
@@ -86,7 +86,7 @@ class AbortablePromiseTest extends BuddySuite {
                         new AbortablePromise(function (fulfill, _) {
                             wait(5, fulfill.bind());
                             return function () {};
-                        }).then(null, function (_) { fail(); done(); });
+                        }).then(null, function (_) { fail(); });
                         wait(10, done);
                     });
 
@@ -96,7 +96,7 @@ class AbortablePromiseTest extends BuddySuite {
                             return function () {};
                         }).then(
                             function (_) { done(); },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
 
@@ -109,7 +109,7 @@ class AbortablePromiseTest extends BuddySuite {
                                 x.should.be(1);
                                 done();
                             },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
                 });
@@ -129,7 +129,7 @@ class AbortablePromiseTest extends BuddySuite {
                         new AbortablePromise(function (_, reject) {
                             reject();
                             return function () {};
-                        }).then(function (_) { fail(); done(); });
+                        }).then(function (_) { fail(); });
                         wait(5, done);
                     });
 
@@ -138,7 +138,7 @@ class AbortablePromiseTest extends BuddySuite {
                             reject();
                             return function () {};
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -151,7 +151,7 @@ class AbortablePromiseTest extends BuddySuite {
                             reject();
                             return function () {};
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -164,7 +164,7 @@ class AbortablePromiseTest extends BuddySuite {
                             reject("error");
                             return function () {};
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 (e: String).should.be("error");
                                 done();
@@ -176,7 +176,7 @@ class AbortablePromiseTest extends BuddySuite {
                         new AbortablePromise(function (_, _) {
                             throw "error";
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 (e: String).should.be("error");
                                 done();
@@ -198,7 +198,7 @@ class AbortablePromiseTest extends BuddySuite {
                         new AbortablePromise(function (_, reject) {
                             wait(5, reject.bind());
                             return function () {};
-                        }).then(function (_) { fail(); done(); });
+                        }).then(function (_) { fail(); });
                         wait(10, done);
                     });
 
@@ -207,7 +207,7 @@ class AbortablePromiseTest extends BuddySuite {
                             wait(5, reject.bind());
                             return function () {};
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -220,7 +220,7 @@ class AbortablePromiseTest extends BuddySuite {
                             wait(5, reject.bind());
                             return function () {};
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -233,7 +233,7 @@ class AbortablePromiseTest extends BuddySuite {
                             wait(5, reject.bind("error"));
                             return function () {};
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.same(e, "error").should.be(true);
                                 done();
@@ -261,7 +261,7 @@ class AbortablePromiseTest extends BuddySuite {
             it("should call resolved(_)", function (done) {
                 AbortablePromise.resolve().then(
                     function (_) { done(); },
-                    function (_) { fail(); done(); }
+                    function (_) { fail(); }
                 );
             });
 
@@ -271,7 +271,7 @@ class AbortablePromiseTest extends BuddySuite {
                         x.should.be(1);
                         done();
                     },
-                    function (_) { fail(); done(); }
+                    function (_) { fail(); }
                 );
             });
 
@@ -283,7 +283,6 @@ class AbortablePromiseTest extends BuddySuite {
                     done();
                 }, function (e) {
                     fail();
-                    done();
                 });
             });
         });
@@ -293,7 +292,7 @@ class AbortablePromiseTest extends BuddySuite {
 
            it("should call rejected(x)", function (done) {
                 AbortablePromise.reject("error").then(
-                    function (_) { fail(); done(); },
+                    function (_) { fail(); },
                     function (e) {
                         LangTools.same(e, "error").should.be(true);
                         done();
@@ -303,7 +302,7 @@ class AbortablePromiseTest extends BuddySuite {
 
             it("should call rejected(_)", function (done) {
                  AbortablePromise.reject("error").then(
-                    function (_) { fail(); done(); },
+                    function (_) { fail(); },
                     function (e) {
                         LangTools.same(e, "error").should.be(true);
                         done();
@@ -337,7 +336,6 @@ class AbortablePromiseTest extends BuddySuite {
                         done();
                     }, function (_) {
                         fail();
-                        done();
                     });
                 });
 
@@ -347,7 +345,6 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     }).then(function (_) {
                         fail();
-                        done();
                     }, function (e) {
                         (e: String).should.be("error");
                         done();
@@ -367,7 +364,6 @@ class AbortablePromiseTest extends BuddySuite {
                         done();
                     }, function (_) {
                         fail();
-                        done();
                     });
                 });
 
@@ -379,7 +375,6 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     }).then(function (_) {
                         fail();
-                        done();
                     }, function (e) {
                         (e: String).should.be("error");
                         done();
@@ -614,7 +609,6 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     }).catchError(function (_) {
                         fail();
-                        done();
                     });
                     wait(5, done);
                 });
@@ -639,7 +633,6 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     }).catchError(function (_) {
                         fail();
-                        done();
                     });
                     wait(5, done);
                 });
@@ -881,7 +874,6 @@ class AbortablePromiseTest extends BuddySuite {
                 it("should not call the executor", function (done) {
                     var promise = new AbortablePromise(function (_, _) {
                         fail();
-                        done();
                         return function () {}
                     });
                     promise.abort();
@@ -892,7 +884,6 @@ class AbortablePromiseTest extends BuddySuite {
                     var promise = new AbortablePromise(function (_, _) {
                         return function () {
                             fail();
-                            done();
                         }
                     });
                     promise.abort();
@@ -1021,7 +1012,6 @@ class AbortablePromiseTest extends BuddySuite {
                         f(1);
                         return function () {
                             fail();
-                            done();
                         }
                     });
                     wait(5, function () {
@@ -1063,7 +1053,6 @@ class AbortablePromiseTest extends BuddySuite {
                         f(1);
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     wait(5, function () {
@@ -1082,7 +1071,6 @@ class AbortablePromiseTest extends BuddySuite {
                         r("error");
                         return function () {
                             fail();
-                            done();
                         }
                     });
                     wait(5, function () {
@@ -1126,7 +1114,6 @@ class AbortablePromiseTest extends BuddySuite {
                         r("error");
                         return function () {
                             fail();
-                            done();
                         };
                     });
                     wait(5, function () {

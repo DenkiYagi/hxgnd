@@ -33,7 +33,6 @@ class ReactivePropertyTest extends BuddySuite {
                     var property = new ReactiveProperty(10);
                     property.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     property.get();
                     wait(10, done);
@@ -64,7 +63,6 @@ class ReactivePropertyTest extends BuddySuite {
                                 x.should.be(-10);
                             case _:
                                 fail();
-                                done();
                         }
                     });
 
@@ -81,7 +79,6 @@ class ReactivePropertyTest extends BuddySuite {
                     var property = new ReactiveProperty(10);
                     var unscribe = property.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     unscribe();
                     property.set(-5);
@@ -94,11 +91,9 @@ class ReactivePropertyTest extends BuddySuite {
                     var property = new ReactiveProperty(10);
                     property.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     property.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     property.get();
                     wait(10, done);
@@ -139,7 +134,6 @@ class ReactivePropertyTest extends BuddySuite {
                                 x.should.be(-10);
                             case _:
                                 fail();
-                                done();
                         }
                     });
                     property.subscribe(function (x) {
@@ -150,7 +144,6 @@ class ReactivePropertyTest extends BuddySuite {
                                 x.should.be(-10);
                             case _:
                                 fail();
-                                done();
                         }
                     });
 
@@ -170,7 +163,6 @@ class ReactivePropertyTest extends BuddySuite {
                     var property = new ReactiveProperty(10);
                     var unscribe1 = property.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     property.subscribe(function (x) {
                         count2++;
@@ -190,11 +182,9 @@ class ReactivePropertyTest extends BuddySuite {
                     var property = new ReactiveProperty(10);
                     var unscribe1 = property.subscribe(function (x) {
                         fail();
-                        done();
                     });
                     var unscribe2 = property.subscribe(function (x) {
                         fail();
-                        done();
                     });
 
                     unscribe1();
@@ -220,7 +210,6 @@ class ReactivePropertyTest extends BuddySuite {
                         var property = new ReactiveProperty(10);
                         property.subscribe(function (x) {
                             fail();
-                            done();
                         });
                         property.set(10);
                         wait(10, done);
@@ -260,7 +249,6 @@ class ReactivePropertyTest extends BuddySuite {
                         });
                         property.subscribe(function (x) {
                             fail();
-                            done();
                         });
                         property.set(11);
                         wait(10, done);

@@ -21,8 +21,8 @@ class SyncPromiseTest extends BuddySuite {
             describe("pending", {
                 it("should be not completed", function (done) {
                     new SyncPromise(function (_, _) {}).then(
-                        function (_) { fail(); done(); },
-                        function (_) { fail(); done(); }
+                        function (_) { fail(); },
+                        function (_) { fail(); }
                     );
                     wait(5, done);
                 });
@@ -40,7 +40,7 @@ class SyncPromiseTest extends BuddySuite {
                     it("should pass when it have no fulfilled", function (done) {
                         new SyncPromise(function (fulfill, _) {
                             fulfill();
-                        }).then(null, function (_) { fail(); done(); });
+                        }).then(null, function (_) { fail(); });
                         wait(5, done);
                     });
 
@@ -49,7 +49,7 @@ class SyncPromiseTest extends BuddySuite {
                             fulfill();
                         }).then(
                             function (_) { done(); },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
 
@@ -61,7 +61,7 @@ class SyncPromiseTest extends BuddySuite {
                                 x.should.be(1);
                                 done();
                             },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
                 });
@@ -77,7 +77,7 @@ class SyncPromiseTest extends BuddySuite {
                     it("should pass when it have no fulfilled", function (done) {
                         new SyncPromise(function (fulfill, _) {
                             wait(5, fulfill.bind());
-                        }).then(null, function (_) { fail(); done(); });
+                        }).then(null, function (_) { fail(); });
                         wait(10, done);
                     });
 
@@ -86,7 +86,7 @@ class SyncPromiseTest extends BuddySuite {
                             wait(5, fulfill.bind());
                         }).then(
                             function (_) { done(); },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
 
@@ -98,7 +98,7 @@ class SyncPromiseTest extends BuddySuite {
                                 x.should.be(1);
                                 done();
                             },
-                            function (_) { fail(); done(); }
+                            function (_) { fail(); }
                         );
                     });
                 });
@@ -116,7 +116,7 @@ class SyncPromiseTest extends BuddySuite {
                     it("should pass when it have no rejected", function (done) {
                         new SyncPromise(function (_, reject) {
                             reject();
-                        }).then(function (_) { fail(); done(); });
+                        }).then(function (_) { fail(); });
                         wait(5, done);
                     });
 
@@ -124,7 +124,7 @@ class SyncPromiseTest extends BuddySuite {
                         new SyncPromise(function (_, reject) {
                             reject();
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -136,7 +136,7 @@ class SyncPromiseTest extends BuddySuite {
                         new SyncPromise(function (_, reject) {
                             reject();
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -148,7 +148,7 @@ class SyncPromiseTest extends BuddySuite {
                         new SyncPromise(function (_, reject) {
                             reject("error");
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 (e: String).should.be("error");
                                 done();
@@ -160,7 +160,7 @@ class SyncPromiseTest extends BuddySuite {
                         new SyncPromise(function (_, _) {
                             throw "error";
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 (e: String).should.be("error");
                                 done();
@@ -180,7 +180,7 @@ class SyncPromiseTest extends BuddySuite {
                     it("should pass when it have no rejected", function (done) {
                         new SyncPromise(function (_, reject) {
                             wait(5, reject.bind());
-                        }).then(function (_) { fail(); done(); });
+                        }).then(function (_) { fail(); });
                         wait(10, done);
                     });
 
@@ -188,7 +188,7 @@ class SyncPromiseTest extends BuddySuite {
                         new SyncPromise(function (_, reject) {
                             wait(5, reject.bind());
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -200,7 +200,7 @@ class SyncPromiseTest extends BuddySuite {
                         new SyncPromise(function (_, reject) {
                             wait(5, reject.bind());
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.isNull(e).should.be(true);
                                 done();
@@ -212,7 +212,7 @@ class SyncPromiseTest extends BuddySuite {
                         new SyncPromise(function (_, reject) {
                             wait(5, reject.bind("error"));
                         }).then(
-                            function (_) { fail(); done(); },
+                            function (_) { fail(); },
                             function (e) {
                                 LangTools.same(e, "error").should.be(true);
                                 done();
@@ -238,7 +238,7 @@ class SyncPromiseTest extends BuddySuite {
             it("should call resolved(_)", function (done) {
                 SyncPromise.resolve().then(
                     function (_) { done(); },
-                    function (_) { fail(); done(); }
+                    function (_) { fail(); }
                 );
             });
 
@@ -248,7 +248,7 @@ class SyncPromiseTest extends BuddySuite {
                         x.should.be(1);
                         done();
                     },
-                    function (_) { fail(); done(); }
+                    function (_) { fail(); }
                 );
             });
         });
@@ -258,7 +258,7 @@ class SyncPromiseTest extends BuddySuite {
 
            it("should call rejected(x)", function (done) {
                 SyncPromise.reject("error").then(
-                    function (_) { fail(); done(); },
+                    function (_) { fail(); },
                     function (e) {
                         LangTools.same(e, "error").should.be(true);
                         done();
@@ -268,7 +268,7 @@ class SyncPromiseTest extends BuddySuite {
 
             it("should call rejected(_)", function (done) {
                  SyncPromise.reject("error").then(
-                    function (_) { fail(); done(); },
+                    function (_) { fail(); },
                     function (e) {
                         LangTools.same(e, "error").should.be(true);
                         done();
@@ -289,7 +289,6 @@ class SyncPromiseTest extends BuddySuite {
                         done();
                     }, function (_) {
                         fail();
-                        done();
                     });
                 });
 
@@ -298,7 +297,6 @@ class SyncPromiseTest extends BuddySuite {
                         reject("error");
                     }).then(function (_) {
                         fail();
-                        done();
                     }, function (e) {
                         (e: String).should.be("error");
                         done();
@@ -317,7 +315,6 @@ class SyncPromiseTest extends BuddySuite {
                         done();
                     }, function (_) {
                         fail();
-                        done();
                     });
                 });
 
@@ -328,7 +325,6 @@ class SyncPromiseTest extends BuddySuite {
                         });
                     }).then(function (_) {
                         fail();
-                        done();
                     }, function (e) {
                         (e: String).should.be("error");
                         done();
@@ -562,7 +558,6 @@ class SyncPromiseTest extends BuddySuite {
                         fulfill(100);
                     }).catchError(function (_) {
                         fail();
-                        done();
                     });
                     wait(5, done);
                 });
@@ -585,7 +580,6 @@ class SyncPromiseTest extends BuddySuite {
                         });
                     }).catchError(function (_) {
                         fail();
-                        done();
                     });
                     wait(5, done);
                 });

@@ -20,7 +20,6 @@ class PromiseToolsTest extends BuddySuite {
                         done();
                     }).catchError(function (e) {
                         fail();
-                        done();
                     });
                 });
 
@@ -31,7 +30,6 @@ class PromiseToolsTest extends BuddySuite {
                     fnNG.callAsPromise().then(function (x) {
                         trace(x);
                         fail();
-                        done();
                     }).catchError(function (e) {
                         Std.is(e, Error).should.be(true);
                         done();
@@ -57,7 +55,6 @@ class PromiseToolsTest extends BuddySuite {
                         done();
                     }).catchError(function (e) {
                         fail();
-                        done();
                     });
                 });
 
@@ -72,7 +69,6 @@ class PromiseToolsTest extends BuddySuite {
 
                     fn.callAsPromise(false, 500, "hello").then(function (x) {
                         fail();
-                        done();
                     }).catchError(function (e) {
                         Std.is(e, Error).should.be(true);
                         done();
@@ -89,7 +85,6 @@ class PromiseToolsTest extends BuddySuite {
                         done();
                     }).catchError(function (e) {
                         fail();
-                        done();
                     });
                 });
 
@@ -98,7 +93,6 @@ class PromiseToolsTest extends BuddySuite {
                         callback(new Error(""), null);
                     }.callAsPromise().then(function (x) {
                         fail();
-                        done();
                     }).catchError(function (e) {
                         Std.is(e, Error).should.be(true);
                         done();
@@ -118,7 +112,6 @@ class PromiseToolsTest extends BuddySuite {
                         done();
                     }).catchError(function (e) {
                         fail();
-                        done();
                     });
                 });
 
@@ -127,7 +120,6 @@ class PromiseToolsTest extends BuddySuite {
                         callback(new Error(""), null, null);
                     }.callAsPromise().then(function (x) {
                         fail();
-                        done();
                     }).catchError(function (e) {
                         Std.is(e, Error).should.be(true);
                         done();
@@ -149,7 +141,6 @@ class PromiseToolsTest extends BuddySuite {
                         done();
                     }).catchError(function (e) {
                         fail();
-                        done();
                     });
                 });
 
@@ -159,7 +150,6 @@ class PromiseToolsTest extends BuddySuite {
                     }
                     fnNG.callAsPromiseUnsafe().then(function (x) {
                         fail();
-                        done();
                     }).catchError(function (e) {
                         Std.is(e, Error).should.be(true);
                         done();
@@ -182,7 +172,6 @@ class PromiseToolsTest extends BuddySuite {
                         done();
                     }).catchError(function (e) {
                         fail();
-                        done();
                     });
                 });
 
@@ -197,7 +186,6 @@ class PromiseToolsTest extends BuddySuite {
 
                     fn.callAsPromiseUnsafe(false, 500, "hello").then(function (x) {
                         fail();
-                        done();
                     }).catchError(function (e) {
                         Std.is(e, Error).should.be(true);
                         done();
