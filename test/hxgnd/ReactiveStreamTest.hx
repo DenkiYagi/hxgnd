@@ -7,605 +7,44 @@ import hxgnd.ReactiveStream;
 
 class ReactiveStreamTest extends BuddySuite {
     public function new() {
-        function testClosedStream(create: Void -> Promise<ReactiveStream<Int>>, tail = false) {
-            describe("state", {
-                it("should pass", function (done) {
-                    create().then(function (stream) {
-                        stream.state.should.equal(Ended);
-                        done();
-                    });
-                });
-            });
-
-            describe("subscribe()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        stream.subscribe(function (_) {
-                            called = true;
-                        });
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        var unsubscribe = stream.subscribe(function (_) {
-                            called = true;
-                        });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("subscribeEnd()", {
-                it("should call a handler", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        stream.subscribeEnd(function () {
-                            called = true;
-                        });
-                        wait(10, function () {
-                            called.should.be(true);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-
-                it("should call all handlers", function (done) {
-                    var called1 = false;
-                    var called2 = false;
-                    create().then(function (stream) {
-                        stream.subscribeEnd(function () {
-                            called1 = true;
+        function testMiddleware(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) {
+            describe("middleware", {
+                it("should pass when it throw error", function (done) {
+                    create(function (ctx) {
+                        throw "error";
+                    }).then(function (stream) {
+                        var values = [];
+                        var countEnd = 0;
+                        var errors = [];
+                        var countFinally = 0;
+                        stream.subscribe(function (x) {
+                            values.push(x);
                         });
                         stream.subscribeEnd(function () {
-                            called2 = true;
+                            countEnd++;
                         });
-                        wait(10, function () {
-                            called1.should.be(true);
-                            called2.should.be(true);
-                            stream.state.should.equal(Ended);
-                            done();
+                        stream.subscribeError(function (e) {
+                            errors.push(e);
                         });
-                    });
-                });
+                        stream.finally(function () {
+                            countFinally++;
 
-                it("should unsubscribe but it should call a handler", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        var unsubscribe = stream.subscribeEnd(function () {
-                            called = true;
                         });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(true);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("subscribeError()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        stream.subscribeError(function (_) {
-                            called = true;
-                        });
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        var unsubscribe = stream.subscribeError(function (_) {
-                            called = true;
-                        });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("catchError()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
                         stream.catchError(function (e) {
-                            called = true;
+                            fail();
                             throw e;
                         });
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Ended);
+
+                        wait(5, function () {
+                            LangTools.same(values, []).should.be(true);
+                            countEnd.should.be(0);
+                            LangTools.same(errors, ["error"]).should.be(true);
+                            countFinally.should.be(1);
                             done();
                         });
                     });
                 });
 
-                it("should be a closed stream", function (done) {
-                    create().then(function (stream) {
-                        stream.catchError(function (e) {
-                            throw e;
-                        });
-                        stream.state.should.equal(Ended);
-                        done();
-                    });
-                });
-
-                // TODO catchError
-            });
-
-            describe("finally()", {
-                it("should call a handler", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        stream.finally(function () {
-                            called = true;
-                        });
-                        wait(10, function () {
-                            called.should.be(true);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-
-                it("should call all handlers", function (done) {
-                    var called1 = false;
-                    var called2 = false;
-                    create().then(function (stream) {
-                        stream.finally(function () {
-                            called1 = true;
-                        });
-                        stream.finally(function () {
-                            called2 = true;
-                        });
-                        wait(10, function () {
-                            called1.should.be(true);
-                            called2.should.be(true);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-
-                it("should unsubscribe but it should call a handler", function (done) {
-                    var called = false;
-                    create().then(function (stream) {
-                        var unsubscribe = stream.finally(function () {
-                            called = true;
-                        });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(true);
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("close()", {
-                if (tail) {
-                    it("should not change state", function (done) {
-                        create().then(function (stream) {
-                            stream.close();
-                            stream.state.should.equal(Ended);
-                            done();
-                        });
-                    });
-                } else {
-                    testClosedStream(function () {
-                        return create().then(function (stream) {
-                            stream.close();
-                            return stream;
-                        });
-                    }, true);
-
-                    describe("subscribing before close()", {
-                        it("should pass", function (done) {
-                            var called = false;
-                            create().then(function (stream) {
-                                stream.subscribeEnd(function () {
-                                    called = true;
-                                });
-                                stream.close();
-                                wait(10, function () {
-                                    called.should.be(true);
-                                    stream.state.should.equal(Ended);
-                                    done();
-                                });
-                            });
-                        });
-                    });
-                }
-            });
-        }
-
-        function testFailedStream(create: Dynamic -> Promise<ReactiveStream<Int>>, tail = false) {
-            describe("state", {
-                it("should pass", function (done) {
-                    create("error").then(function (stream) {
-                        stream.state.should.equal(Failed("error"));
-                        done();
-                    });
-                });
-            });
-
-            describe("subscribe()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        stream.subscribe(function (_) {
-                            called = true;
-                        });
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        var unsubscribe = stream.subscribe(function (_) {
-                            called = true;
-                        });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("subscribeEnd()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        stream.subscribeEnd(function () {
-                            called = true;
-                        });
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        var unsubscribe = stream.subscribeEnd(function () {
-                            called = true;
-                        });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("subscribeError()", {
-                it("should call a handler", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        stream.subscribeError(function (error) {
-                            called = true;
-                            (error: String).should.be("error");
-                        });
-                        wait(10, function () {
-                            called.should.be(true);
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                });
-
-                it("should unsubscribe but it should call a handler", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        var unsubscribe = stream.subscribeError(function (error) {
-                            called = true;
-                            (error: String).should.be("error");
-                        });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(true);
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("catchError()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        stream.catchError(function (e) {
-                            called = true;
-                            throw e;
-                        });
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                });
-
-                it("should be a failed stream", function (done) {
-                    create("error").then(function (stream) {
-                        stream.catchError(function (e) {
-                            return ReactiveStream.empty();
-                        });
-                        stream.state.should.equal(Failed("error"));
-                        done();
-                    });
-                });
-
-                // TODO catchError
-            });
-
-            describe("finally()", {
-                it("should call a handler", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        stream.finally(function () {
-                            called = true;
-                        });
-                        wait(10, function () {
-                            called.should.be(true);
-                            done();
-                        });
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    create("error").then(function (stream) {
-                        var unsubscribe = stream.finally(function () {
-                            called = true;
-                        });
-                        unsubscribe();
-                        wait(10, function () {
-                            called.should.be(true);
-                            done();
-                        });
-                    });
-                });
-            });
-
-            describe("close()", {
-                if (tail) {
-                    it("should not change state", function (done) {
-                        create("error").then(function (stream) {
-                            stream.state.should.equal(Failed("error"));
-                            done();
-                        });
-                    });
-                } else {
-                    testFailedStream(function (error) {
-                        return create(error).then(function (stream) {
-                            stream.close();
-                            return stream;
-                        });
-                    }, true);
-                }
-            });
-        }
-
-        function testNeverStream(create: Void -> ReactiveStream<Int>) {
-            describe("state", {
-                it("should pass", {
-                    create().state.should.equal(Never);
-                });
-            });
-
-            describe("subscribe()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    var stream = create();
-                    stream.subscribe(function (_) {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.subscribe(function (_) {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-            });
-
-            describe("subscribeEnd()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    var stream = create();
-                    stream.subscribeEnd(function () {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.subscribeEnd(function () {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-            });
-
-            describe("subscribeError()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    var stream = create();
-                    stream.subscribeError(function (_) {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.subscribeError(function (_) {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-            });
-
-            describe("catchError()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    var stream = create();
-                    stream.catchError(function (e) {
-                        called = true;
-                        throw e;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-
-                it("should be a suspended stream", {
-                    var stream = create().catchError(function (e) {
-                        return ReactiveStream.empty();
-                    });
-                    stream.state.should.equal(Never);
-                });
-
-                // TODO catchError
-            });
-
-            describe("finally()", {
-                it("should not call a handler", function (done) {
-                    var called = false;
-                    var stream = create();
-                    stream.finally(function () {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-
-                it("should unsubscribe", function (done) {
-                    var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.finally(function () {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
-                    });
-                });
-            });
-
-            describe("close()", {
-                testClosedStream(function () {
-                    var stream = create();
-                    stream.close();
-                    return SyncPromise.resolve(stream);
-                }, true);
-            });
-        }
-
-        function testIdleStream(create: Void -> Promise<ReactiveStream<Int>>) {
-            describe("state", {
-                it("should pass", function (done) {
-                    create().then(function (stream) {
-                        stream.state.should.equal(Idle);
-                        done();
-                    });
-                });
-            });
-
-            describe("close()", {
-                testClosedStream(function () {
-                    return create().then(function (stream) {
-                        stream.close();
-                        return stream;
-                    });
-                });
-            });
-        }
-
-        function testContext(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) {
-            describe("context", {
                 it("should pass when it call [ emit ]", function (done) {
                     var context: ReactableStreamContext<Int>;
                     function emit() {
@@ -1341,6 +780,641 @@ class ReactiveStreamTest extends BuddySuite {
             });
         }
 
+        function testEndedStream(create: Void -> Promise<ReactiveStream<Int>>, tail = false) {
+            describe("state", {
+                it("should pass", function (done) {
+                    create().then(function (stream) {
+                        stream.state.should.equal(Ended);
+                        done();
+                    });
+                });
+            });
+
+            describe("subscribe()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        stream.subscribe(function (_) {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        var unsubscribe = stream.subscribe(function (_) {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("subscribeEnd()", {
+                it("should call a handler", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        stream.subscribeEnd(function () {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(true);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+
+                it("should call all handlers", function (done) {
+                    var called1 = false;
+                    var called2 = false;
+                    create().then(function (stream) {
+                        stream.subscribeEnd(function () {
+                            called1 = true;
+                        });
+                        stream.subscribeEnd(function () {
+                            called2 = true;
+                        });
+                        wait(10, function () {
+                            called1.should.be(true);
+                            called2.should.be(true);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe but it should call a handler", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        var unsubscribe = stream.subscribeEnd(function () {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(true);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("subscribeError()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        stream.subscribeError(function (_) {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        var unsubscribe = stream.subscribeError(function (_) {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("catchError()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        stream.catchError(function (e) {
+                            called = true;
+                            throw e;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+
+                it("should be a closed stream", function (done) {
+                    create().then(function (stream) {
+                        stream.catchError(function (e) throw e);
+                        stream.state.should.equal(Ended);
+                        done();
+                    });
+                });
+
+                describe("returned stream", {
+                    if (tail) {
+                        it("should be a closed stream", function (done) {
+                            create().then(function (stream) {
+                                var returned = stream.catchError(function (e) throw e);
+                                returned.state.should.equal(Ended);
+                                done();
+                            });
+                        });
+                    } else {
+                        testEndedStream(function () {
+                            return create().then(function (s) return s.catchError(function (e) throw e));
+                        }, true);
+                    }
+                });
+            });
+
+            describe("finally()", {
+                it("should call a handler", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        stream.finally(function () {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(true);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+
+                it("should call all handlers", function (done) {
+                    var called1 = false;
+                    var called2 = false;
+                    create().then(function (stream) {
+                        stream.finally(function () {
+                            called1 = true;
+                        });
+                        stream.finally(function () {
+                            called2 = true;
+                        });
+                        wait(10, function () {
+                            called1.should.be(true);
+                            called2.should.be(true);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe but it should call a handler", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        var unsubscribe = stream.finally(function () {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(true);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("close()", {
+                if (tail) {
+                    it("should not change state", function (done) {
+                        create().then(function (stream) {
+                            stream.close();
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
+                    });
+                } else {
+                    testEndedStream(function () {
+                        return create().then(function (stream) {
+                            stream.close();
+                            return stream;
+                        });
+                    }, true);
+
+                    describe("subscribing before close()", {
+                        it("should pass", function (done) {
+                            var called = false;
+                            create().then(function (stream) {
+                                stream.subscribeEnd(function () {
+                                    called = true;
+                                });
+                                stream.close();
+                                wait(10, function () {
+                                    called.should.be(true);
+                                    stream.state.should.equal(Ended);
+                                    done();
+                                });
+                            });
+                        });
+                    });
+                }
+            });
+        }
+
+        function testFailedStream(create: Dynamic -> Promise<ReactiveStream<Int>>, tail = false) {
+            describe("state", {
+                it("should pass", function (done) {
+                    create("error").then(function (stream) {
+                        stream.state.should.equal(Failed("error"));
+                        done();
+                    });
+                });
+            });
+
+            describe("subscribe()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        stream.subscribe(function (_) {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        var unsubscribe = stream.subscribe(function (_) {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("subscribeEnd()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        stream.subscribeEnd(function () {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        var unsubscribe = stream.subscribeEnd(function () {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("subscribeError()", {
+                it("should call a handler", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        stream.subscribeError(function (error) {
+                            called = true;
+                            (error: String).should.be("error");
+                        });
+                        wait(10, function () {
+                            called.should.be(true);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe but it should call a handler", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        var unsubscribe = stream.subscribeError(function (error) {
+                            called = true;
+                            (error: String).should.be("error");
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(true);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("catchError()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        stream.catchError(function (e) {
+                            called = true;
+                            throw e;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+
+                it("should be a failed stream", function (done) {
+                    create("error").then(function (stream) {
+                        stream.catchError(function (e) {
+                            return ReactiveStream.empty();
+                        });
+                        stream.state.should.equal(Failed("error"));
+                        done();
+                    });
+                });
+
+                // never
+                // closed
+                // failed
+                // idle
+                //
+
+                // TODO
+                // describe("returned stream", {
+                //     if (tail) {
+                //     } else {
+                //         testFailedStream(function (error) {
+                //             create("xxx").then(function (s) return s.catchError(x))
+                //         })
+                //     }
+                // });
+            });
+
+            describe("finally()", {
+                it("should call a handler", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        stream.finally(function () {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(true);
+                            done();
+                        });
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        var unsubscribe = stream.finally(function () {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(true);
+                            done();
+                        });
+                    });
+                });
+            });
+
+            describe("close()", {
+                if (tail) {
+                    it("should not change state", function (done) {
+                        create("error").then(function (stream) {
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                } else {
+                    testFailedStream(function (error) {
+                        return create(error).then(function (stream) {
+                            stream.close();
+                            return stream;
+                        });
+                    }, true);
+                }
+            });
+        }
+
+        function testNeverStream(create: Void -> ReactiveStream<Int>, tail = false) {
+            describe("state", {
+                it("should pass", {
+                    create().state.should.equal(Never);
+                });
+            });
+
+            describe("subscribe()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    var stream = create();
+                    stream.subscribe(function (_) {
+                        called = true;
+                    });
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    var stream = create();
+                    var unsubscribe = stream.subscribe(function (_) {
+                        called = true;
+                    });
+                    unsubscribe();
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+            });
+
+            describe("subscribeEnd()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    var stream = create();
+                    stream.subscribeEnd(function () {
+                        called = true;
+                    });
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    var stream = create();
+                    var unsubscribe = stream.subscribeEnd(function () {
+                        called = true;
+                    });
+                    unsubscribe();
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+            });
+
+            describe("subscribeError()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    var stream = create();
+                    stream.subscribeError(function (_) {
+                        called = true;
+                    });
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    var stream = create();
+                    var unsubscribe = stream.subscribeError(function (_) {
+                        called = true;
+                    });
+                    unsubscribe();
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+            });
+
+            describe("catchError()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    var stream = create();
+                    stream.catchError(function (e) {
+                        called = true;
+                        throw e;
+                    });
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+
+                describe("returned stream", {
+                    if (tail) {
+                        it("should be a suspended stream", {
+                            var stream = create().catchError(function (e) {
+                                return ReactiveStream.empty();
+                            });
+                            stream.state.should.equal(Never);
+                        });
+                    } else {
+                        testNeverStream(function () {
+                            return create().catchError(function (e) {
+                                return ReactiveStream.empty();
+                            });
+                        }, true);
+                    }
+                });
+            });
+
+            describe("finally()", {
+                it("should not call a handler", function (done) {
+                    var called = false;
+                    var stream = create();
+                    stream.finally(function () {
+                        called = true;
+                    });
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+
+                it("should unsubscribe", function (done) {
+                    var called = false;
+                    var stream = create();
+                    var unsubscribe = stream.finally(function () {
+                        called = true;
+                    });
+                    unsubscribe();
+                    wait(10, function () {
+                        called.should.be(false);
+                        stream.state.should.equal(Never);
+                        done();
+                    });
+                });
+            });
+
+            describe("close()", {
+                testEndedStream(function () {
+                    var stream = create();
+                    stream.close();
+                    return SyncPromise.resolve(stream);
+                }, true);
+            });
+        }
+
+        function testIdleStream(create: Void -> Promise<ReactiveStream<Int>>) {
+            describe("state", {
+                it("should pass", function (done) {
+                    create().then(function (stream) {
+                        stream.state.should.equal(Idle);
+                        done();
+                    });
+                });
+            });
+
+            describe("close()", {
+                testEndedStream(function () {
+                    return create().then(function (stream) {
+                        stream.close();
+                        return stream;
+                    });
+                });
+            });
+        }
+
+        function testCatchError() {
+
+        }
+
         function testRunningStream(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) {
             describe("state", {
                 it("should pass", function (done) {
@@ -1357,10 +1431,10 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
 
-            testContext(create);
+            testMiddleware(create);
 
             describe("close()", {
-                testClosedStream(function () {
+                testEndedStream(function () {
                     return create(function (ctx) {
                         return {
                             attach: function () {},
@@ -1391,10 +1465,10 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
 
-            testContext(create);
+            testMiddleware(create);
 
             describe("close()", {
-                testClosedStream(function () {
+                testEndedStream(function () {
                     return create(function (ctx) {
                         return {
                             attach: function () {},
@@ -1408,179 +1482,6 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
         }
-
-
-        // function testTryCatch<T>(stream: ReactiveStream<T>) {
-        //         describe("attach", {
-        //             it("should not call a handler", function (done) {
-        //                 var called = false;
-        //                 ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(false);
-        //                     done();
-        //                 });
-        //             });
-
-        //             it("should pass when it be applied subscribe()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 })
-        //                 .subscribe(function (_) {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(false);
-        //                     done();
-        //                 });
-        //             });
-
-        //             it("should pass when it be applied subscribeEnd()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 })
-        //                 .subscribeEnd(function () {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(false);
-        //                     done();
-        //                 });
-        //             });
-
-        //             it("should pass when it be applied subscribeError()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 })
-        //                 .subscribeError(function (_) {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(true);
-        //                     done();
-        //                 });
-        //             });
-
-        //             it("should pass when it be applied finally()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 })
-        //                 .finally(function () {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(true);
-        //                     done();
-        //                 });
-        //             });
-        //         });
-
-        //         describe("reattach", {
-        //             it("should pass when it be applied subscribe()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 var stream = ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 });
-
-        //                 var unsubscribe = stream.subscribe(function (_) {});
-        //                 unsubscribe();
-
-        //                 stream.subscribe(function (_) {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(false);
-        //                     done();
-        //                 });
-        //             });
-
-        //             it("should pass when it be applied subscribeEnd()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 var stream = ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 });
-
-        //                 var unsubscribe = stream.subscribe(function (_) {});
-        //                 unsubscribe();
-
-        //                 stream.subscribeEnd(function () {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(false);
-        //                     done();
-        //                 });
-        //             });
-
-        //             it("should pass when it be applied subscribeError()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 var stream = ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 });
-
-        //                 var unsubscribe = stream.subscribe(function (_) {});
-        //                 unsubscribe();
-
-        //                 stream.subscribeError(function (_) {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(true);
-        //                     done();
-        //                 });
-        //             });
-
-        //             it("should pass when it be applied finally()", function (done) {
-        //                 var called = false;
-        //                 var observerCalled = false;
-        //                 var stream = ReactiveStream.fail("error").catchError(function (e) {
-        //                     called = true;
-        //                     throw e;
-        //                 });
-
-        //                 var unsubscribe = stream.subscribe(function (_) {});
-        //                 unsubscribe();
-
-        //                 stream.finally(function () {
-        //                     observerCalled = true;
-        //                 });
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     observerCalled.should.be(true);
-        //                     done();
-        //                 });
-        //             });
-        //         });
-        //         // close
-
-        // }
 
         // --------------------------------------------------------------------
         // test main
@@ -1638,7 +1539,7 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                testClosedStream(function () {
+                testEndedStream(function () {
                     var stream = ReactiveStream.create(function (ctx) {
                         return {
                             attach: function () {},
@@ -1690,7 +1591,7 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                testClosedStream(function () {
+                testEndedStream(function () {
                     var stream = ReactiveStream.create(function (ctx) {
                         return {
                             attach: function () {},
@@ -1742,7 +1643,7 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                testClosedStream(function () {
+                testEndedStream(function () {
                     var stream = ReactiveStream.create(function (ctx) {
                         return {
                             attach: function () {},
@@ -1812,7 +1713,7 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                testClosedStream(function () {
+                testEndedStream(function () {
                     var stream = ReactiveStream.create(function (ctx) {
                         return {
                             attach: function () {},
@@ -1832,7 +1733,7 @@ class ReactiveStreamTest extends BuddySuite {
         });
 
         describe("ReactiveStream.empty()", {
-            testClosedStream(function () {
+            testEndedStream(function () {
                 return SyncPromise.resolve(ReactiveStream.empty());
             });
         });
