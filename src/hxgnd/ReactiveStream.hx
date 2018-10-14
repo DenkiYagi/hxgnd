@@ -5,10 +5,12 @@ import hxgnd.Dispatcher;
 using hxgnd.LangTools;
 
 class ReactiveStream<T> {
-    var processor: Processor<T>;
+    var receiver: Receiver<T>;
     var valueSubscribers: Delegate<T>;
     var endSubscribers: Delegate0;
     var errorSubscribers: Delegate<Dynamic>;
+
+    public var state(get, never): ReactiveStreamState;
 
     function new() {
         valueSubscribers = new Delegate();
@@ -16,19 +18,13 @@ class ReactiveStream<T> {
         errorSubscribers = new Delegate();
     }
 
+    /**
+    * Create a stream from middleware.
+    * @return ReactiveStream<T>
+     */
     public static function create<T>(middleware: ReactableStreamMiddleware<T>): ReactiveStream<T> {
         var stream = new ReactiveStream();
         stream.becomeIdle(middleware);
-        return stream;
-    }
-
-    /**
-    * Create a idling empty stream.
-    * @return ReactiveStream<T>
-     */
-    public static function never<T>(): ReactiveStream<T> {
-        var stream = new ReactiveStream();
-        stream.becomeNever();
         return stream;
     }
 
@@ -38,7 +34,7 @@ class ReactiveStream<T> {
      */
     public static function empty<T>(): ReactiveStream<T> {
         var stream = new ReactiveStream();
-        stream.becomeClosed();
+        stream.becomeEnded();
         return stream;
     }
 
@@ -53,9 +49,20 @@ class ReactiveStream<T> {
         return stream;
     }
 
+    /**
+    * Create a never stream.
+    * @return ReactiveStream<T>
+     */
+    public static function never<T>(): ReactiveStream<T> {
+        var stream = new ReactiveStream();
+        stream.becomeNever();
+        return stream;
+    }
+
     function becomeIdle(middleware: ReactableStreamMiddleware<T>): Void {
         var init = onInit.bind(middleware);
-        processor = {
+        receiver = {
+            state: Idle,
             subscribe: function (fn) {
                 valueSubscribers.add(fn);
                 init();
@@ -73,7 +80,8 @@ class ReactiveStream<T> {
     }
 
     function becomeInitializing(): Void {
-        processor = {
+        receiver = {
+            state: Running,
             onInited: onInited,
             onInitFailed: onInitFailed,
             subscribe: valueSubscribers.add,
@@ -91,7 +99,9 @@ class ReactiveStream<T> {
 
     function becomeRunning(controller: ReactableStreamMiddlewareController): Void {
         var pause = onPause.bind(controller);
-        processor = {
+        receiver = {
+            state: Running,
+
             subscribe: valueSubscribers.add,
             unsubscribe: function (fn) {
                 valueSubscribers.remove(fn);
@@ -117,9 +127,11 @@ class ReactiveStream<T> {
         }
     }
 
-    function becomePaused(controller: ReactableStreamMiddlewareController): Void {
+    function becomeSuspended(controller: ReactableStreamMiddlewareController): Void {
         var resume = onResume.bind(controller);
-        processor = {
+        receiver = {
+            state: Suspended,
+
             subscribe: function (fn) {
                 resume();
                 valueSubscribers.add(fn);
@@ -144,22 +156,25 @@ class ReactiveStream<T> {
         }
     }
 
-    function becomeClosed(): Void {
-        processor = {
+    function becomeEnded(): Void {
+        receiver = {
+            state: Ended,
             subscribeEnd: Dispatcher.dispatch
         }
     }
 
     function becomeFailed(error: Dynamic): Void {
-        processor = {
+        receiver = {
+            state: Failed(error),
             subscribeError: function (fn: Dynamic -> Void) {
-                Dispatcher.dispatch.bind(fn.bind(error));
+                Dispatcher.dispatch(fn.bind(error));
             }
         }
     }
 
     function becomeNever(): Void {
-        processor = {
+        receiver = {
+            state: Never,
             subscribeEnd: endSubscribers.add,
             unsubscribeEnd: endSubscribers.remove,
             close: onEmitEnd
@@ -172,25 +187,25 @@ class ReactiveStream<T> {
             try {
                 var controller = middleware({
                     emit: function (value) {
-                        processor.onEmit.callIfNotNull(value);
+                        receiver.onEmit.callIfNotNull(value);
                     },
                     emitEnd: function () {
-                        processor.onEmitEnd.callIfNotNull();
+                        receiver.onEmitEnd.callIfNotNull();
                     },
                     throwError: function (error) {
-                        processor.onthrowError.callIfNotNull(error);
+                        receiver.onthrowError.callIfNotNull(error);
                     }
                 });
-                processor.onInited.callIfNotNull(controller);
+                receiver.onInited.callIfNotNull(controller);
             } catch (e: Dynamic) {
-                processor.onInitFailed.callIfNotNull(e);
+                receiver.onInitFailed.callIfNotNull(e);
             }
         });
     }
 
     function onInited(controller: ReactableStreamMiddlewareController): Void {
         if (hasNoSubscribers()) {
-            becomePaused(controller);
+            becomeSuspended(controller);
         } else {
             becomeRunning(controller);
             controller.attach();
@@ -204,13 +219,17 @@ class ReactiveStream<T> {
     }
 
     function onEmit(value: T): Void {
-        Dispatcher.dispatch(function () {
-            valueSubscribers.invoke(value);
-        });
+        // TODO delegate側にcopyとdispatchを任せたい
+        if (valueSubscribers.nonEmpty()) {
+            var delegate = valueSubscribers.copy();
+            Dispatcher.dispatch(function () {
+                delegate.invoke(value);
+            });
+        }
     }
 
     function onEmitEnd(): Void {
-        becomeClosed();
+        becomeEnded();
         if (endSubscribers.nonEmpty()) {
             var delegate = endSubscribers.copy();
             Dispatcher.dispatch(function () {
@@ -221,6 +240,7 @@ class ReactiveStream<T> {
     }
 
     function onThrowError(error: Dynamic): Void {
+        becomeFailed(error);
         if (errorSubscribers.nonEmpty()) {
             var delegate = errorSubscribers.copy();
             Dispatcher.dispatch(function () {
@@ -231,7 +251,7 @@ class ReactiveStream<T> {
     }
 
     function onPause(controller: ReactableStreamMiddlewareController): Void {
-        becomePaused(controller);
+        becomeSuspended(controller);
         controller.detach();
     }
 
@@ -261,60 +281,87 @@ class ReactiveStream<T> {
         errorSubscribers.removeAll();
     }
 
+    function get_state(): ReactiveStreamState {
+        return receiver.state;
+    }
+
     public function subscribe(fn: T -> Void): Void -> Void {
-        processor.subscribe.callIfNotNull(fn);
+        receiver.subscribe.callIfNotNull(fn);
         return function unsubscribe() {
-            processor.unsubscribe.callIfNotNull(fn);
+            receiver.unsubscribe.callIfNotNull(fn);
         }
     }
 
     public function subscribeEnd(fn: Void -> Void): Void -> Void {
-        processor.subscribeEnd.callIfNotNull(fn);
+        receiver.subscribeEnd.callIfNotNull(fn);
         return function unsubscribeEnd() {
-            processor.unsubscribeEnd.callIfNotNull(fn);
+            receiver.unsubscribeEnd.callIfNotNull(fn);
         }
     }
 
     public function subscribeError(fn: Dynamic -> Void): Void -> Void {
-        processor.subscribeError.callIfNotNull(fn);
+        receiver.subscribeError.callIfNotNull(fn);
         return function unsubscribeError() {
-            processor.unsubscribeError.callIfNotNull(fn);
+            receiver.unsubscribeError.callIfNotNull(fn);
         }
     }
 
     public function catchError(fn: Dynamic -> ReactiveStream<T>): ReactiveStream<T> {
-        var wrapper = new ReactiveStream();
+        // TODO receiverで処理する
 
-        var detacher = new Delegate0();
-        function attach() {
-            detacher.add(subscribe(wrapper.onEmit));
-            detacher.add(subscribeEnd(wrapper.onEmitEnd));
-            detacher.add(subscribeError(function rescue(error) {
-                detacher.removeAll();
+        var nextStream = new ReactiveStream();
 
-                var nextStream = fn(error);
-                detacher.add(nextStream.subscribe(wrapper.onEmit));
-                detacher.add(nextStream.subscribeEnd(wrapper.onEmitEnd));
-                detacher.add(nextStream.subscribeError(wrapper.onThrowError));
-            }));
+        switch (receiver.state) {
+            case Ended:
+                nextStream.becomeEnded();
+            case Failed(e):
+                nextStream.becomeFailed(e);
+            case Never:
+                nextStream.becomeNever();
+            case _:
+                var detacher = new Delegate0();
+                var close: Null<Void -> Void> = null;
+                function attach() {
+                    detacher.add(subscribe(nextStream.onEmit));
+                    detacher.add(subscribeEnd(nextStream.onEmitEnd));
+                    detacher.add(subscribeError(function rescue(error) {
+                        detacher.removeAll();
+
+                        var retStream;
+                        try {
+                            retStream = fn(error);
+                        } catch (e: Dynamic) {
+                            retStream = ReactiveStream.fail(e);
+                        }
+                        close = retStream.close;
+                        detacher.add(retStream.subscribe(nextStream.onEmit));
+                        detacher.add(retStream.subscribeEnd(nextStream.onEmitEnd));
+                        detacher.add(retStream.subscribeError(nextStream.onThrowError));
+                    }));
+                }
+
+                nextStream.becomeSuspended({
+                    attach: attach,
+                    detach: detacher.invoke,
+                    close: function () {
+                        detacher.invoke();
+                        close.callIfNotNull();
+                    }
+                });
         }
 
-        wrapper.becomeRunning({
-            attach: attach,
-            detach: detacher.invoke,
-            close: detacher.invoke
-        });
-
-        return wrapper;
+        return nextStream;
     }
 
-    public function finally(fn: Void -> Void): Void {
-        processor.subscribeEnd.callIfNotNull(fn);
-        processor.subscribeError.callIfNotNull(function (_) fn());
+    public function finally(fn: Void -> Void): Void -> Void {
+        var delegate = new Delegate0();
+        delegate.add(subscribeEnd(fn));
+        delegate.add(subscribeError(function onerror(_) fn()));
+        return delegate.invoke;
     }
 
     public function close(): Void {
-        processor.close.callIfNotNull();
+        receiver.close.callIfNotNull();
     }
 
     // public function pull(): Promise<T> {
@@ -388,7 +435,18 @@ typedef ReactableStreamMiddlewareController = {
     function close(): Void;
 }
 
-private typedef Processor<T> = {
+enum ReactiveStreamState {
+    Idle;
+    Running;
+    Suspended;
+    Ended;
+    Failed(error: Dynamic);
+    Never;
+}
+
+private typedef Receiver<T> = {
+    var state: ReactiveStreamState;
+
     @:optional var onInited: ReactableStreamMiddlewareController -> Void;
     @:optional var onInitFailed: Dynamic -> Void;
 
