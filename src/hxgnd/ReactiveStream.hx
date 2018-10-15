@@ -83,7 +83,6 @@ class ReactiveStream<T> {
         receiver = {
             state: Running,
             onInited: onInited,
-            onInitFailed: onInitFailed,
             subscribe: valueSubscribers.add,
             unsubscribe: valueSubscribers.remove,
             subscribeEnd: endSubscribers.add,
@@ -198,7 +197,7 @@ class ReactiveStream<T> {
                 });
                 receiver.onInited.callIfNotNull(controller);
             } catch (e: Dynamic) {
-                receiver.onInitFailed.callIfNotNull(e);
+                receiver.onthrowError.callIfNotNull(e);
             }
         });
     }
@@ -210,12 +209,6 @@ class ReactiveStream<T> {
             becomeRunning(controller);
             controller.attach();
         }
-    }
-
-    function onInitFailed(error: Dynamic): Void {
-        becomeFailed(error);
-        errorSubscribers.invoke(error);
-        removeAllsubscribers();
     }
 
     function onEmit(value: T): Void {
@@ -308,17 +301,18 @@ class ReactiveStream<T> {
 
     public function catchError(fn: Dynamic -> ReactiveStream<T>): ReactiveStream<T> {
         // TODO receiverで処理する
-
-        var nextStream = new ReactiveStream();
-
-        switch (receiver.state) {
+        return switch (receiver.state) {
             case Ended:
+                var nextStream = new ReactiveStream();
                 nextStream.becomeEnded();
-            case Failed(e):
-                nextStream.becomeFailed(e);
+                nextStream;
             case Never:
+                var nextStream = new ReactiveStream();
                 nextStream.becomeNever();
+                nextStream;
             case _:
+                var nextStream = new ReactiveStream();
+
                 var detacher = new Delegate0();
                 var close: Null<Void -> Void> = null;
                 function attach() {
@@ -348,9 +342,9 @@ class ReactiveStream<T> {
                         close.callIfNotNull();
                     }
                 });
-        }
 
-        return nextStream;
+                nextStream;
+        }
     }
 
     public function finally(fn: Void -> Void): Void -> Void {
@@ -448,7 +442,6 @@ private typedef Receiver<T> = {
     var state: ReactiveStreamState;
 
     @:optional var onInited: ReactableStreamMiddlewareController -> Void;
-    @:optional var onInitFailed: Dynamic -> Void;
 
     @:optional var subscribe: (T -> Void) -> Void;
     @:optional var unsubscribe: (T -> Void) -> Void;

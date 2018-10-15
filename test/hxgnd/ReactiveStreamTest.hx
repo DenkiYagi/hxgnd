@@ -17,6 +17,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -28,10 +29,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -40,6 +40,7 @@ class ReactiveStreamTest extends BuddySuite {
                             countEnd.should.be(0);
                             LangTools.same(errors, ["error"]).should.be(true);
                             countFinally.should.be(1);
+                            LangTools.same(caughtErrors, []).should.be(true);
                             done();
                         });
                     });
@@ -63,6 +64,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -74,10 +76,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -88,6 +89,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(0);
                                 LangTools.same(errors, []).should.be(true);
                                 countFinally.should.be(0);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -112,6 +114,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -123,10 +126,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -137,6 +139,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(1);
                                 LangTools.same(errors, []).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -161,6 +164,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -172,10 +176,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -186,6 +189,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(0);
                                 LangTools.same(errors, ["error1"]).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -211,6 +215,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -222,10 +227,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -236,6 +240,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(0);
                                 LangTools.same(errors, []).should.be(true);
                                 countFinally.should.be(0);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -261,6 +266,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -275,7 +281,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -286,6 +292,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(1);
                                 LangTools.same(errors, []).should.be(true);
                                 countFinally.should.be(1);
+                            LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -311,6 +318,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -322,10 +330,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -336,6 +343,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(0);
                                 LangTools.same(errors, ["error2"]).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -361,6 +369,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -372,10 +381,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -386,6 +394,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(1);
                                 LangTools.same(errors, []).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -411,6 +420,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -422,10 +432,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -436,6 +445,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(1);
                                 LangTools.same(errors, []).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -461,6 +471,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -475,7 +486,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -486,6 +497,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(1);
                                 LangTools.same(errors, []).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -511,6 +523,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -522,10 +535,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -536,6 +548,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(0);
                                 LangTools.same(errors, ["error1"]).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -561,6 +574,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -572,10 +586,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -586,6 +599,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(0);
                                 LangTools.same(errors, ["error1"]).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -611,6 +625,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countEnd = 0;
                         var errors = [];
                         var countFinally = 0;
+                        var caughtErrors = [];
                         stream.subscribe(function (x) {
                             values.push(x);
                         });
@@ -622,10 +637,9 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         stream.finally(function () {
                             countFinally++;
-
                         });
                         stream.catchError(function (e) {
-                            fail();
+                            caughtErrors.push(e);
                             throw e;
                         });
 
@@ -636,6 +650,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 countEnd.should.be(0);
                                 LangTools.same(errors, ["error1"]).should.be(true);
                                 countFinally.should.be(1);
+                                LangTools.same(caughtErrors, []).should.be(true);
                                 done();
                             });
                         });
@@ -903,7 +918,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("catchError()", {
-                it("should not call a handler", function (done) {
+                it("should not call a handler when it is not subscribed", function (done) {
                     var called = false;
                     create().then(function (stream) {
                         stream.catchError(function (e) {
@@ -918,17 +933,25 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                it("should be a closed stream", function (done) {
+                it("should not call a handler when it is subscribed", function (done) {
+                    var called = false;
                     create().then(function (stream) {
-                        stream.catchError(function (e) throw e);
-                        stream.state.should.equal(Ended);
-                        done();
+                        var next = stream.catchError(function (e) {
+                            called = true;
+                            throw e;
+                        });
+                        next.finally(function () {});
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Ended);
+                            done();
+                        });
                     });
                 });
 
                 describe("returned stream", {
                     if (tail) {
-                        it("should be a closed stream", function (done) {
+                        it("should be a ended stream", function (done) {
                             create().then(function (stream) {
                                 var returned = stream.catchError(function (e) throw e);
                                 returned.state.should.equal(Ended);
@@ -1043,28 +1066,30 @@ class ReactiveStreamTest extends BuddySuite {
             describe("subscribe()", {
                 it("should not call a handler", function (done) {
                     var called = false;
-                    var stream = create();
-                    stream.subscribe(function (_) {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        stream.subscribe(function (_) {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
 
                 it("should unsubscribe", function (done) {
                     var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.subscribe(function (_) {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        var unsubscribe = stream.subscribe(function (_) {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
             });
@@ -1072,28 +1097,30 @@ class ReactiveStreamTest extends BuddySuite {
             describe("subscribeEnd()", {
                 it("should not call a handler", function (done) {
                     var called = false;
-                    var stream = create();
-                    stream.subscribeEnd(function () {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        stream.subscribeEnd(function () {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
 
                 it("should unsubscribe", function (done) {
                     var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.subscribeEnd(function () {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        var unsubscribe = stream.subscribeEnd(function () {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
             });
@@ -1101,54 +1128,76 @@ class ReactiveStreamTest extends BuddySuite {
             describe("subscribeError()", {
                 it("should not call a handler", function (done) {
                     var called = false;
-                    var stream = create();
-                    stream.subscribeError(function (_) {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        stream.subscribeError(function (_) {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
 
                 it("should unsubscribe", function (done) {
                     var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.subscribeError(function (_) {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        var unsubscribe = stream.subscribeError(function (_) {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
             });
 
             describe("catchError()", {
-                it("should not call a handler", function (done) {
+                it("should not call a handler when it is not subscribed", function (done) {
                     var called = false;
-                    var stream = create();
-                    stream.catchError(function (e) {
-                        called = true;
-                        throw e;
+                    create().then(function (stream) {
+                        stream.catchError(function (e) {
+                            called = true;
+                            throw e;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                });
+
+                it("should not call a handler when it is subscribed", function (done) {
+                    var called = false;
+                    create().then(function (stream) {
+                        var next = stream.catchError(function (e) {
+                            called = true;
+                            throw e;
+                        });
+                        next.finally(function () {});
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
 
                 describe("returned stream", {
                     if (tail) {
-                        it("should be a suspended stream", {
-                            var stream = create().catchError(function (e) {
-                                return ReactiveStream.empty();
+                        it("should be a never stream", function (done) {
+                            create().then(function (stream) {
+                                var next = stream.catchError(function (e) {
+                                    return ReactiveStream.empty();
+                                });
+                                next.state.should.equal(Never);
+                                done();
                             });
-                            stream.state.should.equal(Never);
                         });
                     } else {
                         testNeverStream(function () {
@@ -1163,37 +1212,40 @@ class ReactiveStreamTest extends BuddySuite {
             describe("finally()", {
                 it("should not call a handler", function (done) {
                     var called = false;
-                    var stream = create();
-                    stream.finally(function () {
-                        called = true;
-                    });
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        stream.finally(function () {
+                            called = true;
+                        });
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
 
                 it("should unsubscribe", function (done) {
                     var called = false;
-                    var stream = create();
-                    var unsubscribe = stream.finally(function () {
-                        called = true;
-                    });
-                    unsubscribe();
-                    wait(10, function () {
-                        called.should.be(false);
-                        stream.state.should.equal(Never);
-                        done();
+                    create().then(function (stream) {
+                        var unsubscribe = stream.finally(function () {
+                            called = true;
+                        });
+                        unsubscribe();
+                        wait(10, function () {
+                            called.should.be(false);
+                            stream.state.should.equal(Never);
+                            done();
+                        });
                     });
                 });
             });
 
             describe("close()", {
                 testEndedStream(function () {
-                    var stream = create();
-                    stream.close();
-                    return SyncPromise.resolve(stream);
+                    return create().then(function (stream) {
+                        stream.close();
+                        return stream;
+                    });
                 }, true);
             });
         }
@@ -1304,7 +1356,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("catchError()", {
-                it("should not call a handler", function (done) {
+                it("should not call a handler when it is not subscribed", function (done) {
                     var called = false;
                     create("error").then(function (stream) {
                         stream.catchError(function (e) {
@@ -1313,6 +1365,22 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         wait(10, function () {
                             called.should.be(false);
+                            stream.state.should.equal(Failed("error"));
+                            done();
+                        });
+                    });
+                });
+
+                it("should call a handler when it is subscribed", function (done) {
+                    var called = false;
+                    create("error").then(function (stream) {
+                        var next = stream.catchError(function (e) {
+                            called = true;
+                            throw e;
+                        });
+                        next.finally(function () {});
+                        wait(10, function () {
+                            called.should.be(true);
                             stream.state.should.equal(Failed("error"));
                             done();
                         });
@@ -1329,13 +1397,14 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                testNeverStream(function () {
-                    return create("error").then(function (stream) {
-                        return stream.catchError(function (e) return ReactiveStream.never());
-                    });
-                }, true);
+                // testNeverStream(function () {
+                //     return create("error").then(function (stream) {
+                //         return stream.catchError(function (e) return ReactiveStream.never());
+                //     });
+                // }, true);
+
                 // never
-                // closed
+                // ended
                 // failed
                 // idle
 
@@ -1665,6 +1734,8 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("catchError()", {
+                // TODO
+
                 testIdleStream(function () {
                     var stream = ReactiveStream.create(function (ctx) {
                         fail();
@@ -1736,7 +1807,7 @@ class ReactiveStreamTest extends BuddySuite {
         });
 
         describe("ReactiveStream.never()", {
-            testNeverStream(ReactiveStream.never);
+            testNeverStream(function () return Promise.resolve(ReactiveStream.never()));
         });
 
         describe("ReactiveStream.empty()", {
