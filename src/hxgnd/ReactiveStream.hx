@@ -5,6 +5,7 @@ import hxgnd.Dispatcher;
 using hxgnd.LangTools;
 
 class ReactiveStream<T> {
+    // TODO add Middleware controller tests : attach detach close
     var receiver: Receiver<T>;
     var valueSubscribers: Delegate<T>;
     var endSubscribers: Delegate0;
@@ -81,7 +82,7 @@ class ReactiveStream<T> {
     function becomePreparing(): Void {
         receiver = {
             state: Running,
-            onInited: onInited,
+            onPrepared: onPrepared,
             subscribe: valueSubscribers.add,
             unsubscribe: valueSubscribers.remove,
             subscribeEnd: endSubscribers.add,
@@ -223,14 +224,14 @@ class ReactiveStream<T> {
                         receiver.onthrowError.callIfNotNull(error);
                     }
                 });
-                receiver.onInited.callIfNotNull(controller);
+                receiver.onPrepared.callIfNotNull(controller);
             } catch (e: Dynamic) {
                 receiver.onthrowError.callIfNotNull(e);
             }
         });
     }
 
-    function onInited(controller: ReactableStreamMiddlewareController): Void {
+    function onPrepared(controller: ReactableStreamMiddlewareController): Void {
         if (hasNoSubscribers()) {
             becomeSuspended(controller);
         } else {
@@ -488,7 +489,7 @@ enum ReactiveStreamState {
 private typedef Receiver<T> = {
     var state: ReactiveStreamState;
 
-    @:optional var onInited: ReactableStreamMiddlewareController -> Void;
+    @:optional var onPrepared: ReactableStreamMiddlewareController -> Void;
 
     @:optional var subscribe: (T -> Void) -> Void;
     @:optional var unsubscribe: (T -> Void) -> Void;
