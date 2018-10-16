@@ -1467,11 +1467,11 @@ class ReactiveStreamTest extends BuddySuite {
             });
         }
 
-        function testIdleStream(create: Void -> Promise<ReactiveStream<Int>>) {
+        function testInitStream(create: Void -> Promise<ReactiveStream<Int>>) {
             describe("state", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
-                        stream.state.should.equal(Idle);
+                        stream.state.should.equal(Init);
                         done();
                     });
                 });
@@ -1564,7 +1564,7 @@ class ReactiveStreamTest extends BuddySuite {
         // --------------------------------------------------------------------
         describe("ReactiveStream.create()", {
             describe("no subscribing", {
-                testIdleStream(function () {
+                testInitStream(function () {
                     var stream = ReactiveStream.create(function (ctx) {
                         fail();
                         return {
@@ -1736,7 +1736,7 @@ class ReactiveStreamTest extends BuddySuite {
             describe("catchError()", {
                 // TODO
 
-                testIdleStream(function () {
+                testInitStream(function () {
                     var stream = ReactiveStream.create(function (ctx) {
                         fail();
                         return {
