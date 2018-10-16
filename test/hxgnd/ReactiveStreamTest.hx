@@ -1356,16 +1356,27 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("catchError()", {
+                it("should be a failed stream", function (done) {
+                    create("error").then(function (stream) {
+                        stream.catchError(function (e) {
+                            return ReactiveStream.empty();
+                        });
+                        stream.state.should.equal(Failed("error"));
+                        done();
+                    });
+                });
+
                 it("should not call a handler when it is not subscribed", function (done) {
                     var called = false;
                     create("error").then(function (stream) {
-                        stream.catchError(function (e) {
+                        var next = stream.catchError(function (e) {
                             called = true;
                             throw e;
                         });
                         wait(10, function () {
                             called.should.be(false);
                             stream.state.should.equal(Failed("error"));
+                            next.state.should.equal(Init);
                             done();
                         });
                     });
@@ -1382,41 +1393,79 @@ class ReactiveStreamTest extends BuddySuite {
                         wait(10, function () {
                             called.should.be(true);
                             stream.state.should.equal(Failed("error"));
+                            next.state.should.not.equal(Init);
                             done();
                         });
                     });
                 });
 
-                it("should be a failed stream", function (done) {
-                    create("error").then(function (stream) {
-                        stream.catchError(function (e) {
-                            return ReactiveStream.empty();
-                        });
-                        stream.state.should.equal(Failed("error"));
-                        done();
-                    });
+                // TODO
+                describe("to an active stream", {
                 });
 
-                // testNeverStream(function () {
-                //     return create("error").then(function (stream) {
-                //         return stream.catchError(function (e) return ReactiveStream.never());
-                //     });
-                // }, true);
+                describe("to a never stream", {
+                    testNeverStream(function () {
+                        return create("error").then(function (stream) {
+                            var next = stream.catchError(function (e) return ReactiveStream.never());
+                            next.finally(function () {});
+                            return next;
+                        });
+                    }, true);
+                });
 
-                // never
-                // ended
-                // failed
-                // idle
+                describe("to a ended stream", {
+                    testEndedStream(function () {
+                        return create("error").then(function (stream) {
+                            var next = stream.catchError(function (e) return ReactiveStream.empty());
+                            next.finally(function () {});
+                            return next;
+                        });
+                    }, true);
+                });
 
-                // TODO
-                // describe("returned stream", {
-                //     if (tail) {
-                //     } else {
-                //         testFailedStream(function (error) {
-                //             create("xxx").then(function (s) return s.catchError(x))
-                //         })
-                //     }
-                // });
+                describe("to a failed stream", {
+                    if (tail) {
+                        it("should pass", function (done) {
+                            create("xxx").then(function (stream) {
+                                var next = stream.catchError(function (e) return ReactiveStream.fail("error"));
+                                next.finally(function () {});
+                                next.state.should.equal(Failed("error"));
+                                done();
+                            });
+                        });
+                    } else {
+                        testFailedStream(function (error) {
+                            return create("xxx").then(function (stream) {
+                                var next = stream.catchError(function (e) return ReactiveStream.fail(error));
+                                next.finally(function () {});
+                                return next;
+                            });
+                        }, true);
+                    }
+                });
+
+                describe("throw error", {
+                    if (tail) {
+                        it("should pass", function (done) {
+                            create("xxx").then(function (stream) {
+                                var next = stream.catchError(function (e) throw "error");
+                                next.finally(function () {});
+                                next.state.should.equal(Failed("error"));
+                                done();
+                            });
+                        });
+
+                    } else {
+                        testFailedStream(function (error) {
+                            return create("xxx").then(function (stream) {
+                                var next = stream.catchError(function (e) throw error);
+                                next.finally(function () {});
+                                next.state.should.equal(Failed(error));
+                                return next;
+                            });
+                        }, true);
+                    }
+                });
             });
 
             describe("finally()", {
@@ -1487,11 +1536,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
         }
 
-        function testCatchError() {
-
-        }
-
-        function testRunningStream(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) {
+        function testActiveStream(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) {
             describe("state", {
                 it("should pass", function (done) {
                     create(function (ctx) {
@@ -1508,6 +1553,62 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             testMiddleware(create);
+
+            describe("catchError()", {
+                // TODO
+
+                describe("to an active stream", {
+                });
+
+                describe("to a never stream", {
+                    testNeverStream(function () {
+                        return create(function (ctx) throw "xxx").then(function (stream) {
+                            return new Promise(function (f, _) {
+                                var next = stream.catchError(function (e) return ReactiveStream.never());
+                                next.finally(function () {});
+                                wait(5, f.bind(next));
+                            });
+                        });
+                    }, true);
+                });
+
+                // describe("to a ended stream", {
+                //     testEndedStream(function () {
+                //         return create(function (ctx) {
+                //             throw "xxx";
+                //         }).then(function (stream) {
+                //             var next = stream.catchError(function (e) return ReactiveStream.empty());
+                //             next.finally(function () {});
+                //             return next;
+                //         });
+                //     }, true);
+                // });
+
+                // describe("to a failed stream", {
+                //     testFailedStream(function (error) {
+                //         return create(function (ctx) {
+                //             throw "xxx";
+                //         }).then(function (stream) {
+                //             var next = stream.catchError(function (e) return ReactiveStream.fail(error));
+                //             next.finally(function () {});
+                //             return next;
+                //         });
+                //     }, true);
+                // });
+
+                // describe("throw error", {
+                //     testFailedStream(function (error) {
+                //         return create(function (ctx) {
+                //             throw "xxx";
+                //         }).then(function (stream) {
+                //             var next = stream.catchError(function (e) throw error);
+                //             next.finally(function () {});
+                //             next.state.should.equal(Failed(error));
+                //             return next;
+                //         });
+                //     }, true);
+                // });
+            });
 
             describe("close()", {
                 testEndedStream(function () {
@@ -1597,7 +1698,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     });
 
-                    testRunningStream(function (middleware) {
+                    testActiveStream(function (middleware) {
                         var stream = ReactiveStream.create(middleware);
                         stream.subscribe(function (_) {});
                         return Promise.resolve(stream);
@@ -1649,7 +1750,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     });
 
-                    testRunningStream(function (middleware) {
+                    testActiveStream(function (middleware) {
                         var stream = ReactiveStream.create(middleware);
                         stream.subscribeEnd(function () {});
                         return Promise.resolve(stream);
@@ -1701,7 +1802,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     });
 
-                    testRunningStream(function (middleware) {
+                    testActiveStream(function (middleware) {
                         var stream = ReactiveStream.create(middleware);
                         stream.subscribeError(function (_) {});
                         return Promise.resolve(stream);
@@ -1733,26 +1834,6 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
 
-            describe("catchError()", {
-                // TODO
-
-                testInitStream(function () {
-                    var stream = ReactiveStream.create(function (ctx) {
-                        fail();
-                        return {
-                            attach: function () {},
-                            detach: function () {},
-                            close: function () {}
-                        }
-                    });
-                    stream.catchError(function (e) {
-                        fail();
-                        throw e;
-                    });
-                    return SyncPromise.resolve(stream);
-                });
-            });
-
             describe("finally()", {
                 describe("running", {
                     it("should call middleware", function (done) {
@@ -1773,7 +1854,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     });
 
-                    testRunningStream(function (middleware) {
+                    testActiveStream(function (middleware) {
                         var stream = ReactiveStream.create(middleware);
                         stream.finally(function () {});
                         return Promise.resolve(stream);
@@ -1806,20 +1887,20 @@ class ReactiveStreamTest extends BuddySuite {
             });
         });
 
-        describe("ReactiveStream.never()", {
-            testNeverStream(function () return Promise.resolve(ReactiveStream.never()));
-        });
+        // describe("ReactiveStream.never()", {
+        //     testNeverStream(function () return Promise.resolve(ReactiveStream.never()));
+        // });
 
-        describe("ReactiveStream.empty()", {
-            testEndedStream(function () {
-                return SyncPromise.resolve(ReactiveStream.empty());
-            });
-        });
+        // describe("ReactiveStream.empty()", {
+        //     testEndedStream(function () {
+        //         return SyncPromise.resolve(ReactiveStream.empty());
+        //     });
+        // });
 
-        describe("ReactiveStream.fail()", {
-            testFailedStream(function (error) {
-                return SyncPromise.resolve(ReactiveStream.fail(error));
-            });
-        });
+        // describe("ReactiveStream.fail()", {
+        //     testFailedStream(function (error) {
+        //         return SyncPromise.resolve(ReactiveStream.fail(error));
+        //     });
+        // });
     }
 }
