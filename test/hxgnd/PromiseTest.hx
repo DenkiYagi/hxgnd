@@ -357,6 +357,16 @@ class PromiseTest extends BuddySuite {
                         });
                     });
 
+                    it("should chain using Promise", function (done) {
+                        Promise.resolve(1)
+                        .then(function (x) {
+                            return new Promise(function (f, _) f("hello"));
+                        }).then(function (x) {
+                            x.should.be("hello");
+                            done();
+                        });
+                    });
+
                     it("should chain using resolved Promise", function (done) {
                         Promise.resolve(1)
                         .then(function (x) {
