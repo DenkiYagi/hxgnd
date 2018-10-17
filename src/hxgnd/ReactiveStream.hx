@@ -11,6 +11,9 @@ class ReactiveStream<T> {
     var endSubscribers: Delegate0;
     var errorSubscribers: Delegate<Dynamic>;
 
+    /**
+     * Get the state of this stream.
+     */
     public var state(get, never): ReactiveStreamState;
 
     function new() {
@@ -21,6 +24,7 @@ class ReactiveStream<T> {
 
     /**
     * Create a stream from middleware.
+    * @param middleware
     * @return ReactiveStream<T>
      */
     public static function create<T>(middleware: ReactableStreamMiddleware<T>): ReactiveStream<T> {
@@ -30,7 +34,7 @@ class ReactiveStream<T> {
     }
 
     /**
-    * Create a closed empty stream.
+    * Create an empty stream that is closed.
     * @return ReactiveStream<T>
      */
     public static function empty<T>(): ReactiveStream<T> {
@@ -40,8 +44,8 @@ class ReactiveStream<T> {
     }
 
     /**
-    * Create a failed stream.
-    * @param error an error infomation
+    * Create a stream that is failed.
+    * @param error The error information
     * @return ReactiveStream<T>
      */
     public static function fail<T>(error: Dynamic): ReactiveStream<T> {
@@ -51,7 +55,7 @@ class ReactiveStream<T> {
     }
 
     /**
-    * Create a never stream.
+    * Create an empty stram that is never closed.
     * @return ReactiveStream<T>
      */
     public static function never<T>(): ReactiveStream<T> {
@@ -65,17 +69,17 @@ class ReactiveStream<T> {
             state: Init,
             subscribe: function (fn) {
                 valueSubscribers.add(fn);
-                onInit(middleware);
+                startPreparing(middleware);
             },
             subscribeEnd: function (fn) {
                 endSubscribers.add(fn);
-                onInit(middleware);
+                startPreparing(middleware);
             },
             subscribeError: function (fn) {
                 errorSubscribers.add(fn);
-                onInit(middleware);
+                startPreparing(middleware);
             },
-            close: onEmitEnd
+            close: emitEnd
         }
     }
 
@@ -89,10 +93,10 @@ class ReactiveStream<T> {
             unsubscribeEnd: endSubscribers.remove,
             subscribeError: errorSubscribers.add,
             unsubscribeError: errorSubscribers.remove,
-            onEmit: onEmit,
-            onEmitEnd: onEmitEnd,
-            onThrowError: onThrowError,
-            close: onEmitEnd
+            onEmit: emit,
+            onEmitEnd: emitEnd,
+            onThrowError: throwError,
+            close: emitEnd
         }
     }
 
@@ -102,21 +106,21 @@ class ReactiveStream<T> {
             subscribe: valueSubscribers.add,
             unsubscribe: function (fn) {
                 valueSubscribers.remove(fn);
-                if (hasNoSubscribers()) onPause(controller);
+                trySuspend(controller);
             },
             subscribeEnd: endSubscribers.add,
             unsubscribeEnd: function (fn) {
                 endSubscribers.remove(fn);
-                if (hasNoSubscribers()) onPause(controller);
+                trySuspend(controller);
             },
             subscribeError: errorSubscribers.add,
             unsubscribeError: function (fn) {
                 errorSubscribers.remove(fn);
-                if (hasNoSubscribers()) onPause(controller);
+                trySuspend(controller);
             },
-            onEmit: onEmit,
-            onEmitEnd: onEmitEnd,
-            onThrowError: onThrowError,
+            onEmit: emit,
+            onEmitEnd: emitEnd,
+            onThrowError: throwError,
             close: onClose.bind(controller)
         }
     }
@@ -125,22 +129,22 @@ class ReactiveStream<T> {
         receiver = {
             state: Suspended,
             subscribe: function (fn) {
-                onResume(controller);
+                resume(controller);
                 valueSubscribers.add(fn);
             },
             unsubscribe: valueSubscribers.remove,
             subscribeEnd: function (fn) {
-                onResume(controller);
+                resume(controller);
                 endSubscribers.add(fn);
             },
             unsubscribeEnd: endSubscribers.remove,
             subscribeError: function (fn) {
-                onResume(controller);
+                resume(controller);
                 errorSubscribers.add(fn);
             },
             unsubscribeError: errorSubscribers.remove,
-            onEmitEnd: onEmitEnd,
-            onThrowError: onThrowError,
+            onEmitEnd: emitEnd,
+            onThrowError: throwError,
             close: onClose.bind(controller)
         }
     }
@@ -165,32 +169,30 @@ class ReactiveStream<T> {
             },
             catchError: function (fn: Dynamic -> ReactiveStream<T>) {
                 var nextStream = new ReactiveStream();
-                nextStream.becomePreCatchError(error, fn);
+                nextStream.becomeRecovering(error, fn);
                 return nextStream;
             },
         }
     }
 
-    function becomePreCatchError(error: Dynamic, catchError: Dynamic -> ReactiveStream<T>): Void {
+    function becomeRecovering(error: Dynamic, recoverFn: Dynamic -> ReactiveStream<T>): Void {
         receiver = {
             state: Init,
             subscribe: function (fn) {
-                onCatchError(error, catchError);
+                recover(error, recoverFn);
                 valueSubscribers.add(fn);
             },
             unsubscribe: valueSubscribers.remove,
             subscribeEnd: function (fn) {
-                onCatchError(error, catchError);
+                recover(error, recoverFn);
                 endSubscribers.add(fn);
             },
             unsubscribeEnd: endSubscribers.remove,
             subscribeError: function (fn) {
-                onCatchError(error, catchError);
+                recover(error, recoverFn);
                 errorSubscribers.add(fn);
             },
             unsubscribeError: errorSubscribers.remove,
-            onEmitEnd: onEmitEnd,
-            onThrowError: onThrowError,
             close: becomeEnded
         }
     }
@@ -205,15 +207,16 @@ class ReactiveStream<T> {
                 nextStream.becomeNever();
                 return nextStream;
             },
-            close: onEmitEnd
+            close: emitEnd
         }
     }
 
-    function onInit(middleware: ReactableStreamMiddleware<T>) {
+    function startPreparing(middleware: ReactableStreamMiddleware<T>) {
         becomePreparing();
         Dispatcher.dispatch(function init() {
             try {
                 var controller = middleware({
+                    stream: this,
                     emit: function (value) {
                         receiver.onEmit.callIfNotNull(value);
                     },
@@ -240,7 +243,7 @@ class ReactiveStream<T> {
         }
     }
 
-    function onEmit(value: T): Void {
+    function emit(value: T): Void {
         // TODO delegate側にcopyとdispatchを任せたい
         if (valueSubscribers.nonEmpty()) {
             var delegate = valueSubscribers.copy();
@@ -250,7 +253,7 @@ class ReactiveStream<T> {
         }
     }
 
-    function onEmitEnd(): Void {
+    function emitEnd(): Void {
         becomeEnded();
         if (endSubscribers.nonEmpty()) {
             var delegate = endSubscribers.copy();
@@ -261,7 +264,7 @@ class ReactiveStream<T> {
         removeAllsubscribers();
     }
 
-    function onThrowError(error: Dynamic): Void {
+    function throwError(error: Dynamic): Void {
         becomeFailed(error);
         if (errorSubscribers.nonEmpty()) {
             var delegate = errorSubscribers.copy();
@@ -272,24 +275,26 @@ class ReactiveStream<T> {
         removeAllsubscribers();
     }
 
-    function onPause(controller: ReactableStreamMiddlewareController): Void {
-        becomeSuspended(controller);
-        controller.detach();
+    function trySuspend(controller: ReactableStreamMiddlewareController): Void {
+        if (hasNoSubscribers()) {
+            becomeSuspended(controller);
+            controller.detach();
+        }
     }
 
-    function onResume(controller: ReactableStreamMiddlewareController): Void {
+    function resume(controller: ReactableStreamMiddlewareController): Void {
         becomeRunning(controller);
         controller.attach();
     }
 
-    function onCatchError(error: Dynamic, fn: Dynamic -> ReactiveStream<T>): Void {
+    function recover(error: Dynamic, fn: Dynamic -> ReactiveStream<T>): Void {
         try {
             var internal = fn(error);
             switch (internal.state) {
                 case Ended:
-                    onEmitEnd();
+                    emitEnd();
                 case Failed(e):
-                    onThrowError(e);
+                    throwError(e);
                 case Never:
                     valueSubscribers.removeAll();
                     errorSubscribers.removeAll();
@@ -297,9 +302,9 @@ class ReactiveStream<T> {
                 case _:
                     var detach = new Delegate0();
                     function attach() {
-                        detach.add(internal.subscribe(onEmit));
-                        detach.add(internal.subscribeEnd(onEmitEnd));
-                        detach.add(internal.subscribeError(onThrowError));
+                        detach.add(internal.subscribe(emit));
+                        detach.add(internal.subscribeEnd(emitEnd));
+                        detach.add(internal.subscribeError(throwError));
                     }
                     becomeRunning({
                         attach: attach,
@@ -311,16 +316,16 @@ class ReactiveStream<T> {
                     });
             }
         } catch (e: Dynamic) {
-            onThrowError(e);
+            throwError(e);
         }
     }
 
     function onClose(controller: ReactableStreamMiddlewareController): Void {
         try {
             controller.close();
-            onEmitEnd();
+            emitEnd();
         } catch (error: Dynamic) {
-            onThrowError(error);
+            throwError(error);
         }
     }
 
@@ -366,44 +371,67 @@ class ReactiveStream<T> {
         return if (receiver.catchError.nonNull()) {
             receiver.catchError(fn);
         } else {
-            var nextStream = new ReactiveStream();
-
-            var detach = new Delegate0();
-            var close: Null<Void -> Void> = null;
-            function attach() {
-                detach.add(subscribe(nextStream.onEmit));
-                detach.add(subscribeEnd(nextStream.onEmitEnd));
-                detach.add(subscribeError(function rescue(error) {
-                    detach.removeAll();
-                    nextStream.onCatchError(error, fn);
-                }));
-            }
-
-            nextStream.receiver = {
-                state: Init,
-                subscribe: function (fn) {
-                    attach();
-                    valueSubscribers.add(fn);
-                },
-                unsubscribe: valueSubscribers.remove,
-                subscribeEnd: function (fn) {
-                    attach();
-                    endSubscribers.add(fn);
-                },
-                unsubscribeEnd: endSubscribers.remove,
-                subscribeError: function (fn) {
-                    attach();
-                    errorSubscribers.add(fn);
-                },
-                unsubscribeError: errorSubscribers.remove,
-                onEmitEnd: onEmitEnd,
-                onThrowError: onThrowError,
-                close: function () {
-                    close.callIfNotNull();
-                    detach.invoke();
+            ReactiveStream.create(function (ctx) {
+                var detach = new Delegate0();
+                var close: Null<Void -> Void> = null;
+                function attach() {
+                    detach.add(subscribe(ctx.emit));
+                    detach.add(subscribeEnd(ctx.emitEnd));
+                    detach.add(subscribeError(function rescue(error) {
+                        detach.removeAll();
+                        ctx.stream.recover(error, fn);
+                    }));
                 }
-            }
-            nextStream;
+
+                return {
+                    attach: attach,
+                    detach: detach.invoke,
+                    close: function () {
+                        close.callIfNotNull();
+                        detach.invoke();
+                    },
+                }
+            });
+
+
+            // var nextStream = new ReactiveStream();
+
+            // var detach = new Delegate0();
+            // var close: Null<Void -> Void> = null;
+            // function attach() {
+            //     detach.add(subscribe(nextStream.emit));
+            //     detach.add(subscribeEnd(nextStream.emitEnd));
+            //     detach.add(subscribeError(function rescue(error) {
+            //         detach.removeAll();
+            //         nextStream.recover(error, fn);
+            //     }));
+            // }
+
+            // nextStream.receiver = {
+            //     state: Init,
+            //     subscribe: function (fn) {
+            //         attach();
+            //         valueSubscribers.add(fn);
+            //     },
+            //     unsubscribe: valueSubscribers.remove,
+            //     subscribeEnd: function (fn) {
+            //         attach();
+            //         endSubscribers.add(fn);
+            //     },
+            //     unsubscribeEnd: endSubscribers.remove,
+            //     subscribeError: function (fn) {
+            //         attach();
+            //         errorSubscribers.add(fn);
+            //     },
+            //     unsubscribeError: errorSubscribers.remove,
+            //     onEmitEnd: emitEnd,
+            //     onThrowError: throwError,
+            //     close: function () {
+            //         close.callIfNotNull();
+            //         detach.invoke();
+            //     }
+            // }
+            // nextStream;
         }
     }
 
@@ -478,6 +506,7 @@ class ReactiveStream<T> {
 typedef ReactableStreamMiddleware<T> = ReactableStreamContext<T> -> ReactableStreamMiddlewareController;
 
 typedef ReactableStreamContext<T> = {
+    var stream(default, never): ReactiveStream<T>;
     function emit(value: T): Void;
     function emitEnd(): Void;
     function throwError(error: Dynamic): Void;
