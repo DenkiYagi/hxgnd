@@ -1400,38 +1400,48 @@ class ReactiveStreamTest extends BuddySuite {
             testObservable(create);
 
             describe("catchError()", {
+                describe("chain", {
+                    it("should", function (done) {
+                        var values = [];
+                        var countEnd = 0;
+                        var errors = [];
+                        var countFinally = 0;
+                        var caughtErrors = [];
+                        create(function (ctx) {
+                            trace("middleware");
+                            trace(ctx.stream.state);
+                            ctx.emit(10);
+                            ctx.emit(20);
+                            return { attach: function () {}, detach: function () {}, close: function () {} }
+                        }).then(function (stream) {
+                            var next = stream.catchError(function (e) throw e);
+                            next.subscribe(function (x) {
+                                values.push(x);
+                            });
+                            next.subscribeEnd(function () {
+                                countEnd++;
+                            });
+                            next.subscribeError(function (e) {
+                                errors.push(e);
+                            });
+                            next.finally(function () {
+                                countFinally++;
+                            });
+                            next.catchError(function (e) {
+                                caughtErrors.push(e);
+                                throw e;
+                            });
 
+                            values.should.containExactly([10, 20]);
+                            countEnd.should.be(0);
+                            errors.should.containExactly([]);
+                            countFinally.should.be(0);
+                            caughtErrors.should.containExactly([]);
+                            done();
+                        });
+                    });
+                });
             });
-
-                // describe("suspended", {
-                //     testSuspendedStream(function (middleware) {
-                //         return new Promise(function (f, _) {
-                //             var stream = ReactiveStream.create(middleware);
-                //             var unsubscribe = stream.subscribe(function (_) {});
-                //             unsubscribe();
-                //             wait(5, f.bind(stream));
-                //         });
-                //     });
-                // });
-
-                // testEndedStream(function () {
-                //     var stream = ReactiveStream.create(function (ctx) {
-                //         return {
-                //             attach: function () {},
-                //             detach: function () {},
-                //             close: function () {}
-                //         }
-                //     });
-                //     stream.subscribe(function (_) fail());
-                //     stream.close();
-                //     return SyncPromise.resolve(stream);
-                // });
-
-            // running
-            // suspended
-
-
-
         }
 
         function testActiveStream(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>, tail = false) {
