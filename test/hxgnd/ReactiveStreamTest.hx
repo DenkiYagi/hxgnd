@@ -1408,8 +1408,6 @@ class ReactiveStreamTest extends BuddySuite {
                         var countFinally = 0;
                         var caughtErrors = [];
                         create(function (ctx) {
-                            trace("middleware");
-                            trace(ctx.stream.state);
                             ctx.emit(10);
                             ctx.emit(20);
                             return { attach: function () {}, detach: function () {}, close: function () {} }
@@ -1432,12 +1430,14 @@ class ReactiveStreamTest extends BuddySuite {
                                 throw e;
                             });
 
-                            values.should.containExactly([10, 20]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(0);
-                            caughtErrors.should.containExactly([]);
-                            done();
+                            wait(10, function () {
+                                values.should.containExactly([10, 20]);
+                                countEnd.should.be(0);
+                                errors.should.containExactly([]);
+                                countFinally.should.be(0);
+                                caughtErrors.should.containExactly([]);
+                                done();
+                            });
                         });
                     });
                 });
@@ -1700,19 +1700,15 @@ class ReactiveStreamTest extends BuddySuite {
         });
 
         describe("ReactiveStream.never()", {
-            testNeverStream(function () return Promise.resolve(ReactiveStream.never()));
+            testNeverStream(function () return SyncPromise.resolve(ReactiveStream.never()));
         });
 
         describe("ReactiveStream.empty()", {
-            testEndedStream(function () {
-                return SyncPromise.resolve(ReactiveStream.empty());
-            });
+            testEndedStream(function () return SyncPromise.resolve(ReactiveStream.empty()));
         });
 
         describe("ReactiveStream.fail()", {
-            testFailedStream(function (error) {
-                return SyncPromise.resolve(ReactiveStream.fail(error));
-            });
+            testFailedStream(function (error) return SyncPromise.resolve(ReactiveStream.fail(error)));
         });
     }
 }

@@ -1,6 +1,7 @@
 package hxgnd;
 
 import hxgnd.Delegate;
+import hxgnd.Result;
 using hxgnd.LangTools;
 
 class ReactiveStream<T> {
@@ -79,39 +80,50 @@ class ReactiveStream<T> {
     }
 
     function becomeInit(middleware: ReactableStreamMiddleware<T>): Void {
-        inline function startPreparing(middleware: ReactableStreamMiddleware<T>): Void {
-            trace("startPreparing");
-            becomePreparing(new Promise(function (f, _) f(middleware(createContext()))));
+        inline function startPreparing(): Void {
+            becomePreparing(function prepare(callback) {
+                Dispatcher.dispatch(function () {
+                    try {
+                        var controller = middleware(createContext());
+                        callback(Success(controller));
+                    } catch (e: Dynamic) {
+                        callback(Failure(e));
+                    }
+                });
+            });
         }
 
         receiver = {
             state: Init,
             subscribe: function (fn) {
                 valueSubscribers.add(fn);
-                startPreparing(middleware);
+                startPreparing();
             },
             subscribeEnd: function (fn) {
                 endSubscribers.add(fn);
-                startPreparing(middleware);
+                startPreparing();
             },
             subscribeError: function (fn) {
                 errorSubscribers.add(fn);
-                startPreparing(middleware);
+                startPreparing();
             },
             close: end.bind()
         }
     }
 
-    function becomePreparing(promise: Promise<ReactableStreamMiddlewareController>): Void {
-        promise.then(function (controller) {
-            if (hasNoSubscribers()) {
-                becomeSuspended(controller);
-            } else {
-                becomeRunning(controller);
-                controller.attach();
+    function becomePreparing(prepare: (Result<ReactableStreamMiddlewareController> -> Void) -> Void): Void {
+        prepare(function (result) {
+            switch (result) {
+                case Success(controller):
+                    if (hasNoSubscribers()) {
+                        becomeSuspended(controller);
+                    } else {
+                        becomeRunning(controller);
+                        controller.attach();
+                    }
+                case Failure(error):
+                    throwError(error);
             }
-        }, function (error) {
-            throwError(error);
         });
 
         receiver = {
@@ -256,7 +268,6 @@ class ReactiveStream<T> {
     }
 
     inline function emit(value: T): Void {
-        trace("emit");
         // TODO delegate側にcopyとdispatchを任せたい
         if (valueSubscribers.nonEmpty()) {
             valueSubscribers.copy().invoke(value);
@@ -389,13 +400,10 @@ class ReactiveStream<T> {
                 var detach = new Delegate0();
                 var close: Null<Void -> Void> = null;
                 function attach() {
-                    trace("attach");
                     detach.add(this.subscribe(ctx.emit));
                     detach.add(this.subscribeEnd(ctx.emitEnd));
                     detach.add(this.subscribeError(function rescue(error) {
-                        trace("rescue");
                         detach.removeAll();
-                        // bug
                         ctx.stream.recover(error, fn);
                     }));
                 }
