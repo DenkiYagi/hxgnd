@@ -10,6 +10,7 @@ class ReactiveStream<T> {
     var valueSubscribers: Delegate<T>;
     var endSubscribers: Delegate0;
     var errorSubscribers: Delegate<Dynamic>;
+    var childClosers: Delegate0;
 
     /**
      * Get the state of this stream.
@@ -20,6 +21,7 @@ class ReactiveStream<T> {
         valueSubscribers = new Delegate();
         endSubscribers = new Delegate0();
         errorSubscribers = new Delegate();
+        childClosers = new Delegate0();
     }
 
     /**
@@ -127,7 +129,7 @@ class ReactiveStream<T> {
         });
 
         receiver = {
-            state: Running,
+            state: Init,
             subscribe: valueSubscribers.add,
             unsubscribe: valueSubscribers.remove,
             subscribeEnd: endSubscribers.add,
@@ -222,11 +224,6 @@ class ReactiveStream<T> {
             subscribeError: function (fn: Dynamic -> Void) {
                 fn(error);
             },
-            catchError: function (fn: Dynamic -> ReactiveStream<T>) {
-                var nextStream = new ReactiveStream();
-                nextStream.becomeRecovering(error, fn);
-                return nextStream;
-            },
         }
     }
 
@@ -288,7 +285,8 @@ class ReactiveStream<T> {
         if (endSubscribers.nonEmpty()) {
             endSubscribers.copy().invoke();
         }
-        removeAllsubscribers();
+        childClosers.invoke();
+        release();
     }
 
     function throwError(error: Dynamic): Void {
@@ -296,7 +294,7 @@ class ReactiveStream<T> {
         if (errorSubscribers.nonEmpty()) {
             errorSubscribers.copy().invoke(error);
         }
-        removeAllsubscribers();
+        release();
     }
 
     function recover(error: Dynamic, fn: Dynamic -> ReactiveStream<T>): Void {
@@ -332,6 +330,7 @@ class ReactiveStream<T> {
                         detach.add(internal.subscribeError(throwError));
                     }
 
+                    // これでいいんか？
                     becomeRunning({
                         attach: attach,
                         detach: detach.invoke,
@@ -340,6 +339,7 @@ class ReactiveStream<T> {
                             detach.invoke();
                         }
                     });
+                    //Dispatcher.dispatch(attach);
                     attach();
             }
         } catch (e: Dynamic) {
@@ -359,10 +359,11 @@ class ReactiveStream<T> {
             && errorSubscribers.isEmpty();
     }
 
-    inline function removeAllsubscribers(): Void {
+    inline function release(): Void {
         valueSubscribers.removeAll();
         endSubscribers.removeAll();
         errorSubscribers.removeAll();
+        childClosers.removeAll();
     }
 
     function get_state(): ReactiveStreamState {
@@ -395,10 +396,9 @@ class ReactiveStream<T> {
         return if (receiver.catchError.nonNull()) {
             receiver.catchError(fn);
         } else {
-            var stream = new ReactiveStream();
-            stream.becomeInit(function (ctx) {
+            var child = ReactiveStream.create(function (ctx) {
                 var detach = new Delegate0();
-                var close: Null<Void -> Void> = null;
+                // var close: Null<Void -> Void> = null;
                 function attach() {
                     detach.add(this.subscribe(ctx.emit));
                     detach.add(this.subscribeEnd(ctx.emitEnd));
@@ -412,51 +412,14 @@ class ReactiveStream<T> {
                     attach: attach,
                     detach: detach.invoke,
                     close: function () {
-                        close.callIfNotNull();
+                        // close.callIfNotNull();
                         detach.invoke();
                     },
                 }
             });
-            stream;
-
-            // var nextStream = new ReactiveStream();
-
-            // var detach = new Delegate0();
-            // var close: Null<Void -> Void> = null;
-            // function attach() {
-            //     detach.add(subscribe(nextStream.emit));
-            //     detach.add(subscribeEnd(nextStream.emitEnd));
-            //     detach.add(subscribeError(function rescue(error) {
-            //         detach.removeAll();
-            //         nextStream.recover(error, fn);
-            //     }));
-            // }
-
-            // nextStream.receiver = {
-            //     state: Init,
-            //     subscribe: function (fn) {
-            //         attach();
-            //         valueSubscribers.add(fn);
-            //     },
-            //     unsubscribe: valueSubscribers.remove,
-            //     subscribeEnd: function (fn) {
-            //         attach();
-            //         endSubscribers.add(fn);
-            //     },
-            //     unsubscribeEnd: endSubscribers.remove,
-            //     subscribeError: function (fn) {
-            //         attach();
-            //         errorSubscribers.add(fn);
-            //     },
-            //     unsubscribeError: errorSubscribers.remove,
-            //     onEmitEnd: emitEnd,
-            //     onThrowError: throwError,
-            //     close: function () {
-            //         close.callIfNotNull();
-            //         detach.invoke();
-            //     }
-            // }
-            // nextStream;
+            // TODO 自分を閉じたら親のcloserを解放する
+            childClosers.add(child.close);
+            return child;
         }
     }
 
