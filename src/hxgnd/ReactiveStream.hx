@@ -5,12 +5,12 @@ import hxgnd.Result;
 using hxgnd.LangTools;
 
 class ReactiveStream<T> {
-    // TODO add Middleware controller tests : attach detach close
     var receiver: Receiver<T>;
     var valueSubscribers: Delegate<T>;
     var endSubscribers: Delegate0;
     var errorSubscribers: Delegate<Dynamic>;
     var childClosers: Delegate0;
+    var wrapped: Bool;
 
     /**
      * Get the state of this stream.
@@ -22,6 +22,7 @@ class ReactiveStream<T> {
         endSubscribers = new Delegate0();
         errorSubscribers = new Delegate();
         childClosers = new Delegate0();
+        wrapped = false;
     }
 
     /**
@@ -84,7 +85,8 @@ class ReactiveStream<T> {
     function becomeInit(middleware: ReactableStreamMiddleware<T>): Void {
         inline function startPreparing(): Void {
             becomePreparing(function prepare(callback) {
-                Dispatcher.dispatch(function () {
+                Dispatcher.dispatch(function _prepare() {
+                    if (Type.enumEq(receiver.state, Ended)) return;
                     try {
                         var controller = middleware(createContext());
                         callback(Success(controller));
@@ -129,7 +131,7 @@ class ReactiveStream<T> {
         });
 
         receiver = {
-            state: Init,
+            state: Running,
             subscribe: valueSubscribers.add,
             unsubscribe: valueSubscribers.remove,
             subscribeEnd: endSubscribers.add,
@@ -147,7 +149,7 @@ class ReactiveStream<T> {
         inline function trySuspend(): Void {
             if (hasNoSubscribers()) {
                 becomeSuspended(controller);
-                Dispatcher.dispatch(controller.detach);
+                dispatch(controller.detach);
             }
         }
 
@@ -178,7 +180,7 @@ class ReactiveStream<T> {
     function becomeSuspended(controller: ReactableStreamMiddlewareController): Void {
         inline function resume(): Void {
             becomeRunning(controller);
-            Dispatcher.dispatch(controller.attach);
+            dispatch(controller.attach);
         }
 
         receiver = {
@@ -300,6 +302,8 @@ class ReactiveStream<T> {
     function recover(error: Dynamic, fn: Dynamic -> ReactiveStream<T>): Void {
         try {
             var internal = fn(error);
+            internal.wrapped = true;
+
             switch (internal.state) {
                 case Ended:
                     valueSubscribers.removeAll();
@@ -316,21 +320,11 @@ class ReactiveStream<T> {
                 case _:
                     var detach = new Delegate0();
                     function attach() {
-                        // var _end = end.bind();
-                        // internal.valueSubscribers.add(emit);
-                        // internal.endSubscribers.add(_end);
-                        // internal.errorSubscribers.add(throwError);
-                        // detach.add(function () {
-                        //     internal.valueSubscribers.remove(emit);
-                        //     internal.endSubscribers.remove(_end);
-                        //     internal.errorSubscribers.remove(throwError);
-                        // });
                         detach.add(internal.subscribe(emit));
                         detach.add(internal.subscribeEnd(end.bind()));
                         detach.add(internal.subscribeError(throwError));
                     }
 
-                    // これでいいんか？
                     becomeRunning({
                         attach: attach,
                         detach: detach.invoke,
@@ -339,11 +333,18 @@ class ReactiveStream<T> {
                             detach.invoke();
                         }
                     });
-                    //Dispatcher.dispatch(attach);
                     attach();
             }
         } catch (e: Dynamic) {
             throwError(e);
+        }
+    }
+
+    inline function dispatch(fn: Void -> Void): Void {
+        if (wrapped) {
+            fn();
+        } else {
+            Dispatcher.dispatch(fn);
         }
     }
 
@@ -398,7 +399,6 @@ class ReactiveStream<T> {
         } else {
             var child = ReactiveStream.create(function (ctx) {
                 var detach = new Delegate0();
-                // var close: Null<Void -> Void> = null;
                 function attach() {
                     detach.add(this.subscribe(ctx.emit));
                     detach.add(this.subscribeEnd(ctx.emitEnd));
@@ -412,7 +412,6 @@ class ReactiveStream<T> {
                     attach: attach,
                     detach: detach.invoke,
                     close: function () {
-                        // close.callIfNotNull();
                         detach.invoke();
                     },
                 }

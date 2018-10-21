@@ -7,7 +7,7 @@ import hxgnd.ReactiveStream;
 
 class ReactiveStreamTest extends BuddySuite {
     public function new() {
-        var testInitStream: (ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) -> Bool -> Void;
+        var testInitStream: (ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) -> ?Bool -> Void;
 
         function testObservable(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) {
             describe("observable", {
@@ -55,7 +55,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emit(10);
                                 wait(5, function () f());
@@ -100,7 +100,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emitEnd();
                                 wait(5, function () f());
@@ -145,7 +145,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.throwError("error1");
                                 wait(5, function () f());
@@ -190,7 +190,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emit(10);
                                 ctx.emit(20);
@@ -236,7 +236,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emit(10);
                                 ctx.emitEnd();
@@ -283,7 +283,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emit(10);
                                 ctx.throwError("error2");
@@ -329,7 +329,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emitEnd();
                                 ctx.emit(20);
@@ -375,7 +375,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emitEnd();
                                 ctx.emitEnd();
@@ -421,7 +421,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emitEnd();
                                 ctx.throwError("error2");
@@ -467,7 +467,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.throwError("error1");
                                 ctx.emit(20);
@@ -513,7 +513,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.throwError("error1");
                                 ctx.emitEnd();
@@ -559,7 +559,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var countFinally = 0;
                     var caughtErrors = [];
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.throwError("error1");
                                 ctx.throwError("error2");
@@ -602,7 +602,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var called1 = 0;
                     var called2 = 0;
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emit(10);
                                 wait(5, function () f());
@@ -631,7 +631,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var called1 = 0;
                     var called2 = 0;
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emitEnd();
                                 wait(5, function () f());
@@ -660,7 +660,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var called1 = 0;
                     var called2 = 0;
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.throwError("error");
                                 wait(5, function () f());
@@ -689,7 +689,7 @@ class ReactiveStreamTest extends BuddySuite {
                     var called1 = 0;
                     var called2 = 0;
                     create(function (ctx) {
-                        new Promise(function (f, _) {
+                        new SyncPromise(function (f, _) {
                             wait(5, function () {
                                 ctx.emitEnd();
                                 wait(5, function () f());
@@ -722,7 +722,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
         }
 
-        function testEndedStream(create: Void -> Promise<ReactiveStream<Int>>, tail = false) {
+        function testEndedStream(create: Void -> Promise<ReactiveStream<Int>>, isRecovered = false) {
             describe("state", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
@@ -791,7 +791,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("close()", {
-                if (tail) {
+                if (isRecovered) {
                     it("should not change the state", function (done) {
                         create().then(function (stream) {
                             stream.close();
@@ -830,7 +830,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("catchError()", {
-                if (tail) {
+                if (isRecovered) {
                     it("should pass", function (done) {
                         create().then(function (stream) {
                             var next = stream.catchError(function (e) { fail(); throw e; });
@@ -845,21 +845,33 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     }, true);
 
-                    describe("close the parent stream", {
-                        it("should pass", function (done) {
+                    describe("closing the parent stream", {
+                        it("should ignore close() and it should not change from Ended", function (done) {
                             create().then(function (parent) {
-                                var endCalled = 0;
                                 var child = parent.catchError(function (e) { fail(); throw e; });
+                                parent.close(); // It can not close the ended stream.
                                 child.state.should.equal(Ended);
 
-                                child.subscribeEnd(function () endCalled++);
-                                endCalled.should.be(1);
-                                parent.close();
-                                parent.close();
+                                child.finally(function () {});
+                                wait(5, function () {
+                                    child.state.should.equal(Ended);
+                                    done();
+                                });
+                            });
+                        });
 
+                        it("should pass when it is called close() 2-times", function (done) {
+                            create().then(function (parent) {
+                                var child = parent.catchError(function (e) { fail(); throw e; });
+                                parent.close(); // It can not close the ended stream.
+                                parent.close();
                                 child.state.should.equal(Ended);
-                                endCalled.should.be(1);
-                                done();
+
+                                child.finally(function () {});
+                                wait(5, function () {
+                                    child.state.should.equal(Ended);
+                                    done();
+                                });
                             });
                         });
                     });
@@ -867,7 +879,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
         }
 
-        function testNeverStream(create: Void -> Promise<ReactiveStream<Int>>, tail = false) {
+        function testNeverStream(create: Void -> Promise<ReactiveStream<Int>>, isRecovered = false) {
             describe("state", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
@@ -959,7 +971,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("catchError()", {
-                if (tail) {
+                if (isRecovered) {
                     it("should pass", function (done) {
                         create().then(function (stream) {
                             var next = stream.catchError(function (e) throw e);
@@ -974,20 +986,34 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     }, true);
 
-                    describe("close the parent stream", {
-                        it("should pass", function (done) {
+                    describe("closing the parent stream", {
+                        it("should close and it should recover", function (done) {
                             create().then(function (parent) {
-                                var endCalled = 0;
                                 var child = parent.catchError(function (e) throw e);
-                                child.state.should.equal(Never);
-
-                                child.subscribeEnd(function () endCalled++);
+                                child.finally(function () {
+                                    done();
+                                });
                                 parent.close();
-                                parent.close();
-
                                 child.state.should.equal(Ended);
-                                endCalled.should.be(1);
-                                done();
+                            });
+                        });
+
+                        it("should pass when it is called close() 2-times", function (done) {
+                            create().then(function (parent) {
+                                var called = 0;
+                                var child = parent.catchError(function (e) throw e);
+                                child.finally(function () {
+                                    called++;
+                                });
+
+                                parent.close();
+                                parent.close();
+                                child.state.should.equal(Ended);
+
+                                wait(5, function () {
+                                    called.should.be(1);
+                                    done();
+                                });
                             });
                         });
                     });
@@ -995,7 +1021,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
         }
 
-        function testFailedStream(create: Dynamic -> Promise<ReactiveStream<Int>>, tail = false) {
+        function testFailedStream(create: Dynamic -> Promise<ReactiveStream<Int>>, isRecovered = false) {
             describe("state", {
                 it("should pass", function (done) {
                     create("error").then(function (stream) {
@@ -1064,7 +1090,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("close()", {
-                if (tail) {
+                if (isRecovered) {
                     it("should not change state", function (done) {
                         create("error").then(function (stream) {
                             stream.state.should.equal(Failed("error"));
@@ -1119,12 +1145,10 @@ class ReactiveStreamTest extends BuddySuite {
                             called = true;
                             throw e;
                         });
-                        wait(10, function () {
-                            called.should.be(false);
-                            stream.state.should.equal(Failed("error"));
-                            next.state.should.equal(Init);
-                            done();
-                        });
+                        called.should.be(false);
+                        stream.state.should.equal(Failed("error"));
+                        next.state.should.equal(Init);
+                        done();
                     });
                 });
 
@@ -1136,7 +1160,7 @@ class ReactiveStreamTest extends BuddySuite {
                             throw e;
                         });
                         next.finally(function () {});
-                        wait(10, function () {
+                        Dispatcher.dispatch(function () {
                             called.should.be(true);
                             stream.state.should.equal(Failed("error"));
                             next.state.should.not.equal(Init);
@@ -1146,11 +1170,11 @@ class ReactiveStreamTest extends BuddySuite {
                 });
 
                 function testParentClosing(recover: Dynamic -> ReactiveStream<Int>, state: ReactiveStreamState) {
-                    describe("close the parent stream", {
-                        it("should ignore close and it should recover error", function (done) {
+                    describe("closing the parent stream", {
+                        it("should ignore close() and it should recover lazy", function (done) {
                             create("xxx").then(function (parent) {
                                 var child = parent.catchError(recover);
-                                parent.close();
+                                parent.close(); // It can not close the failed stream
                                 child.state.should.equal(Init);
 
                                 child.finally(function () {});
@@ -1164,7 +1188,7 @@ class ReactiveStreamTest extends BuddySuite {
                         it("should pass when it is called close() 2-times", function (done) {
                             create("xxx").then(function (parent) {
                                 var child = parent.catchError(recover);
-                                parent.close();
+                                parent.close(); // It can not close the failed stream
                                 parent.close();
                                 child.state.should.equal(Init);
 
@@ -1181,7 +1205,7 @@ class ReactiveStreamTest extends BuddySuite {
                 describe("recovery by the alt stream", {
                     testInitStream(function (middleware) {
                         return create("error").then(function (stream) {
-                            return new Promise(function (f, _) {
+                            return new SyncPromise(function (f, _) {
                                 var next = stream.catchError(function (e) return ReactiveStream.create(middleware));
                                 next.state.should.equal(Init);
                                 f(next);
@@ -1190,89 +1214,89 @@ class ReactiveStreamTest extends BuddySuite {
                     }, true);
                 });
 
-            //     describe("recovery by the never stream", {
-            //         testNeverStream(function () {
-            //             return create("error").then(function (stream) {
-            //                 var next = stream.catchError(function (e) return ReactiveStream.never());
-            //                 next.state.should.equal(Init);
-            //                 next.finally(function () {});
-            //                 return new SyncPromise(function (f, _) wait(5, f.bind(next)));
-            //             });
-            //         }, true);
+                describe("recovery by the never stream", {
+                    testNeverStream(function () {
+                        return create("error").then(function (stream) {
+                            var next = stream.catchError(function (e) return ReactiveStream.never());
+                            next.state.should.equal(Init);
+                            next.finally(function () {});
+                            return new SyncPromise(function (f, _) wait(5, f.bind(next)));
+                        });
+                    }, true);
 
-            //         testParentClosing(function (e) return ReactiveStream.never(), Never);
-            //     });
+                    testParentClosing(function (e) return ReactiveStream.never(), Never);
+                });
 
-            //     describe("recovery by the ended stream", {
-            //         testEndedStream(function () {
-            //             return create("error").then(function (stream) {
-            //                 var child = stream.catchError(function (e) return ReactiveStream.empty());
-            //                 child.state.should.equal(Init);
-            //                 child.finally(function () {});
-            //                 return new SyncPromise(function (f, _) wait(5, f.bind(child)));
-            //             });
-            //         }, true);
+                describe("recovery by the ended stream", {
+                    testEndedStream(function () {
+                        return create("error").then(function (stream) {
+                            var child = stream.catchError(function (e) return ReactiveStream.empty());
+                            child.state.should.equal(Init);
+                            child.finally(function () {});
+                            return new SyncPromise(function (f, _) wait(5, f.bind(child)));
+                        });
+                    }, true);
 
-            //         testParentClosing(function (e) return ReactiveStream.empty(), Ended);
-            //     });
+                    testParentClosing(function (e) return ReactiveStream.empty(), Ended);
+                });
 
-            //     describe("recovery by the failed stream", {
-            //         if (tail) {
-            //             it("should pass", function (done) {
-            //                 create("xxx").then(function (stream) {
-            //                     var child = stream.catchError(function (e) return ReactiveStream.fail("error"));
-            //                     child.state.should.equal(Init);
-            //                     child.finally(function () {});
-            //                     wait(5, function () {
-            //                         child.state.should.equal(Failed("error"));
-            //                         done();
-            //                     });
-            //                 });
-            //             });
-            //         } else {
-            //             testFailedStream(function (error) {
-            //                 return create("xxx").then(function (stream) {
-            //                     var child = stream.catchError(function (e) return ReactiveStream.fail(error));
-            //                     child.state.should.equal(Init);
-            //                     child.finally(function () {});
-            //                     return new SyncPromise(function (f, _) wait(5, f.bind(child)));
-            //                 });
-            //             }, true);
+                describe("recovery by the failed stream", {
+                    if (isRecovered) {
+                        it("should pass", function (done) {
+                            create("xxx").then(function (stream) {
+                                var child = stream.catchError(function (e) return ReactiveStream.fail("error"));
+                                child.state.should.equal(Init);
+                                child.finally(function () {});
+                                wait(5, function () {
+                                    child.state.should.equal(Failed("error"));
+                                    done();
+                                });
+                            });
+                        });
+                    } else {
+                        testFailedStream(function (error) {
+                            return create("xxx").then(function (stream) {
+                                var child = stream.catchError(function (e) return ReactiveStream.fail(error));
+                                child.state.should.equal(Init);
+                                child.finally(function () {});
+                                return new SyncPromise(function (f, _) wait(5, f.bind(child)));
+                            });
+                        }, true);
 
-            //             testParentClosing(function (e) return ReactiveStream.fail("error"), Failed("error"));
-            //         }
-            //     });
+                        testParentClosing(function (e) return ReactiveStream.fail("error"), Failed("error"));
+                    }
+                });
 
-            //     describe("throw error", {
-            //         if (tail) {
-            //             it("should pass", function (done) {
-            //                 create("xxx").then(function (stream) {
-            //                     var child = stream.catchError(function (e) throw "error");
-            //                     child.state.should.equal(Init);
-            //                     child.finally(function () {});
-            //                     wait(5, function () {
-            //                         child.state.should.equal(Failed("error"));
-            //                         done();
-            //                     });
-            //                 });
-            //             });
-            //         } else {
-            //             testFailedStream(function (error) {
-            //                 return create("xxx").then(function (stream) {
-            //                     var child = stream.catchError(function (e) throw error);
-            //                     child.state.should.equal(Init);
-            //                     child.finally(function () {});
-            //                     return new SyncPromise(function (f, _) wait(5, f.bind(child)));
-            //                 });
-            //             }, true);
+                describe("throw error", {
+                    if (isRecovered) {
+                        it("should pass", function (done) {
+                            create("xxx").then(function (stream) {
+                                var child = stream.catchError(function (e) throw "error");
+                                child.state.should.equal(Init);
+                                child.finally(function () {});
+                                wait(5, function () {
+                                    child.state.should.equal(Failed("error"));
+                                    done();
+                                });
+                            });
+                        });
+                    } else {
+                        testFailedStream(function (error) {
+                            return create("xxx").then(function (stream) {
+                                var child = stream.catchError(function (e) throw error);
+                                child.state.should.equal(Init);
+                                child.finally(function () {});
+                                return new SyncPromise(function (f, _) wait(5, f.bind(child)));
+                            });
+                        }, true);
 
-            //             testParentClosing(function (e) throw "error", Failed("error"));
-            //         }
-            //     });
-            // });
+                        testParentClosing(function (e) throw "error", Failed("error"));
+                    }
+                });
+            });
         }
 
-        testInitStream = function testInitStream(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>, tail = false) {
+        testInitStream = function (create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>, isRecovered = false) {
             describe("init", {
                 it("should not evaluate the middleware", function (done) {
                     create(function (ctx) {
@@ -1302,7 +1326,7 @@ class ReactiveStreamTest extends BuddySuite {
                             return { attach: function () {}, detach: function () {}, close: function () {} }
                         }).then(function (stream) {
                             trigger(stream);
-                            stream.state.should.equal(Init);
+                            stream.state.should.equal(Running);
                             called.should.be(0);
 
                             wait(5, function () {
@@ -1313,33 +1337,81 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     });
 
-                    it("should not evaluate the middleware when it is detached", function (done) {
-                        var called = 0;
+                    it("should not evaluate the middleware when it is closed before the prepareing", function (done) {
                         create(function (ctx) {
-                            called++;
-                            return { attach: function () {}, detach: function () {}, close: function () {} }
+                            fail();
+                            return { attach: function () {}, detach: function () {}, close: function () fail() }
                         }).then(function (stream) {
-                            var un = trigger(stream);
-                            un();
-                            stream.state.should.equal(Init);
-                            called.should.be(0);
-
+                            stream.close();
+                            trigger(stream);
+                            stream.state.should.equal(Ended);
                             wait(5, function () {
-                                stream.state.should.equal(Suspended);
-                                called.should.be(0);
+                                stream.state.should.equal(Ended);
                                 done();
                             });
                         });
                     });
 
-                    it("should evaluate the middleware once when it is reattached", function (done) {
+                    it("should not evaluate the middleware when it is closed before the completion of the preparing", function (done) {
+                        create(function (ctx) {
+                            fail();
+                            return { attach: function () {}, detach: function () {}, close: function () fail() }
+                        }).then(function (stream) {
+                            trigger(stream);
+                            stream.close();
+                            stream.state.should.equal(Ended);
+                            wait(5, function () {
+                                stream.state.should.equal(Ended);
+                                done();
+                            });
+                        });
+                    });
+
+                    if (isRecovered) {
+                        it("should not evaluate the middleware when it is detached before the completion of the preparing", function (done) {
+                            create(function (ctx) {
+                                fail();
+                                return { attach: function () {}, detach: function () {}, close: function () fail() }
+                            }).then(function (stream) {
+                                var un = trigger(stream);
+                                un();
+                                stream.state.should.equal(Running);
+
+                                wait(5, function () {
+                                    stream.state.should.equal(Suspended);
+                                    done();
+                                });
+                            });
+                        });
+                    } else {
+                        it("should evaluate the middleware when it is detached before the completion of the preparing", function (done) {
+                            var called = 0;
+                            create(function (ctx) {
+                                called++;
+                                return { attach: function () {}, detach: function () {}, close: function () fail() }
+                            }).then(function (stream) {
+                                var un = trigger(stream);
+                                un();
+                                stream.state.should.equal(Running);
+                                called.should.be(0);
+
+                                wait(5, function () {
+                                    stream.state.should.equal(Suspended);
+                                    called.should.be(1);
+                                    done();
+                                });
+                            });
+                        });
+                    }
+
+                    it("should evaluate the middleware once when it is re-attached", function (done) {
                         var called = 0;
                         create(function (ctx) {
                             called++;
                             return { attach: function () {}, detach: function () {}, close: function () {} }
                         }).then(function (stream) {
                             var un = trigger(stream);
-                            stream.state.should.equal(Init);
+                            stream.state.should.equal(Running);
                             called.should.be(0);
 
                             wait(5, function () {
@@ -1347,7 +1419,10 @@ class ReactiveStreamTest extends BuddySuite {
                                 called.should.be(1);
 
                                 un();
+                                stream.state.should.equal(Suspended);
+
                                 trigger(stream);
+                                stream.state.should.equal(Running);
 
                                 stream.subscribe(function (_) fail());
                                 wait(5, function () {
@@ -1360,24 +1435,106 @@ class ReactiveStreamTest extends BuddySuite {
                 });
 
                 describe("middleware controller", {
-                    // TODO attachが呼ばれる
+                    it("should call attach() and detach()", function (done) {
+                        var attachCalled = 0;
+                        var detachCalled = 0;
+                        var closeCalled = 0;
+                        create(function (ctx) {
+                            return {
+                                attach: function () attachCalled++,
+                                detach: function () detachCalled++,
+                                close: function () closeCalled++
+                            }
+                        }).then(function (stream) {
+                            var un = trigger(stream);
+
+                            stream.state.should.equal(Running);
+                            attachCalled.should.be(0);
+                            detachCalled.should.be(0);
+                            closeCalled.should.be(0);
+
+                            wait(5, function () {
+                                stream.state.should.equal(Running);
+                                attachCalled.should.be(1);
+                                detachCalled.should.be(0);
+                                closeCalled.should.be(0);
+
+                                un();
+                                stream.state.should.equal(Suspended);
+                                attachCalled.should.be(1);
+                                detachCalled.should.be(0);
+                                closeCalled.should.be(0);
+
+                                wait(5, function () {
+                                    stream.state.should.equal(Suspended);
+                                    attachCalled.should.be(1);
+                                    detachCalled.should.be(1);
+                                    closeCalled.should.be(0);
+                                    done();
+                                });
+                            });
+                        });
+                    });
+
+                    it("should call close()", function (done) {
+                        var called = 0;
+                        create(function (ctx) {
+                            return { attach: function () {}, detach: function () {}, close: function () called++ }
+                        }).then(function (stream) {
+                            trigger(stream);
+                            wait(5, function () {
+                                stream.close();
+                                stream.state.should.equal(Ended);
+                                called.should.be(1);
+                                done();
+                            });
+                        });
+                    });
+
+                    it("should not call close() when it do not evaluate the middleware", function (done) {
+                        create(function (ctx) {
+                            fail();
+                            return { attach: function () {}, detach: function () {}, close: function () fail() }
+                        }).then(function (stream) {
+                            stream.close();
+                            stream.state.should.equal(Ended);
+                            wait(5, function () {
+                                stream.state.should.equal(Ended);
+                                done();
+                            });
+                        });
+                    });
+
+                    it("should not call close() when it is detached before the completion of the preparing", function (done) {
+                        create(function (ctx) {
+                            return { attach: function () {}, detach: function () {}, close: function () fail() }
+                        }).then(function (stream) {
+                            trigger(stream);
+                            stream.close();
+                            stream.state.should.equal(Ended);
+                            wait(5, function () {
+                                stream.state.should.equal(Ended);
+                                done();
+                            });
+                        });
+                    });
                 });
             }
 
             describe("subscribe()", {
-                testMiddlewareEvaluation(function (stream) return stream.subscribe(function (_) fail()));
+                testMiddlewareEvaluation(function (stream) return stream.subscribe(function (_) {}));
             });
 
             describe("subscribeEnd()", {
-                testMiddlewareEvaluation(function (stream) return stream.subscribeEnd(function () fail()));
+                testMiddlewareEvaluation(function (stream) return stream.subscribeEnd(function () {}));
             });
 
             describe("subscribeError()", {
-                testMiddlewareEvaluation(function (stream) return stream.subscribeError(function (_) fail()));
+                testMiddlewareEvaluation(function (stream) return stream.subscribeError(function (_) {}));
             });
 
             describe("finally()", {
-                testMiddlewareEvaluation(function (stream) return stream.finally(function () fail()));
+                testMiddlewareEvaluation(function (stream) return stream.finally(function () {}));
             });
 
             describe("close()", {
@@ -1394,6 +1551,76 @@ class ReactiveStreamTest extends BuddySuite {
             testObservable(create);
 
             describe("catchError()", {
+                function testParentClosing(recover: Dynamic -> ReactiveStream<Int>) {
+                    describe("closing the parent stream", {
+                        function test(state: ReactiveStreamState, create: Void -> Promise<ReactiveStream<Int>>) {
+                            it('should close and it should not recover when it is the ${state.getName()}', function (done) {
+                                var recoverd = false;
+                                create().then(function (parent) {
+                                    parent.state.should.equal(state);
+
+                                    var child = parent.catchError(function (error) {
+                                        recoverd = true;
+                                        return recover(error);
+                                    });
+                                    parent.close();
+                                    child.state.should.equal(Ended);
+
+                                    child.finally(function () {
+                                        child.state.should.equal(Ended);
+                                        recoverd.should.be(false);
+                                        done();
+                                    });
+                                });
+                            });
+
+                            it("should pass when it is called close() 2-times", function (done) {
+                                create().then(function (parent) {
+                                    var child = parent.catchError(recover);
+                                    parent.close();
+                                    parent.close();
+                                    child.state.should.equal(Ended);
+
+                                    child.finally(function () {});
+                                    wait(5, function () {
+                                        child.state.should.equal(Ended);
+                                        done();
+                                    });
+                                });
+                            });
+                        }
+
+                        test(Init, function () {
+                            return create(function (ctx) {
+                                return { attach: function () {}, detach: function () {}, close: function () {} }
+                            });
+                        });
+
+                        test(Running, function () {
+                            return create(function (ctx) {
+                                return { attach: function () {}, detach: function () {}, close: function () {} }
+                            }).then(function (parent) {
+                                return new SyncPromise(function (f, _) {
+                                    parent.finally(function () {});
+                                    wait(5, f.bind(parent));
+                                });
+                            });
+                        });
+
+                        test(Suspended, function () {
+                            return create(function (ctx) {
+                                return { attach: function () {}, detach: function () {}, close: function () {} }
+                            }).then(function (parent) {
+                                return new SyncPromise(function (f, _) {
+                                    var un = parent.finally(function () {});
+                                    un();
+                                    wait(5, f.bind(parent));
+                                });
+                            });
+                        });
+                    });
+                }
+
                 describe("base stream event notification", {
                     it("should notify the value from the base stream", function (done) {
                         var values = [];
@@ -1486,7 +1713,7 @@ class ReactiveStreamTest extends BuddySuite {
                             child.state.should.equal(Init);
 
                             child.finally(function () {});
-                            child.state.should.equal(Init);
+                            child.state.should.equal(Running);
                             wait(5, function () {
                                 child.state.should.equal(Never);
                                 done();
@@ -1505,400 +1732,97 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     }, true);
 
-                    describe("close the parent stream", {
-                        it("should pass", function (done) {
-                            return create(function (ctx) {
-                                ctx.throwError("error");
-                                return { attach: function () {}, detach: function () {}, close: function () {} }
-                            }).then(function (parent) {
-                                var child = parent.catchError(function (e) return ReactiveStream.never());
-                                child.state.should.equal(Init);
-                                parent.close();
-                                parent.close();
+                    testParentClosing(function (e) return ReactiveStream.never());
+                });
 
+                describe("recovery by the ended stream", {
+                    it("should change the state lazy", function (done) {
+                        return create(function (ctx) {
+                            ctx.throwError("error");
+                            return { attach: function () {}, detach: function () {}, close: function () {} }
+                        }).then(function (stream) {
+                            var child = stream.catchError(function (e) return ReactiveStream.empty());
+                            child.state.should.equal(Init);
+
+                            child.finally(function () {});
+                            child.state.should.equal(Running);
+                            wait(5, function () {
                                 child.state.should.equal(Ended);
                                 done();
                             });
                         });
                     });
+
+                    testEndedStream(function () {
+                        return create(function (ctx) {
+                            ctx.throwError("error");
+                            return { attach: function () {}, detach: function () {}, close: function () {} }
+                        }).then(function (stream) {
+                            var child = stream.catchError(function (e) return ReactiveStream.empty());
+                            child.finally(function () {});
+                            return new SyncPromise(function (f, _) wait(5, f.bind(child)));
+                        });
+                    }, true);
+
+                    testParentClosing(function (e) return ReactiveStream.empty());
                 });
 
-                // describe("recovery by the ended stream", {
-                //     testEndedStream(function () {
-                //         return create("error").then(function (stream) {
-                //             var next = stream.catchError(function (e) return ReactiveStream.empty());
-                //             next.finally(function () {});
-                //             return next;
-                //         });
-                //     }, true);
+                function testRecoveringByFailed(recover: Dynamic -> ReactiveStream<Int>): Void {
+                    if (isRecovered) {
+                        it("should pass", function (done) {
+                            return create(function (ctx) {
+                                ctx.throwError("xxx");
+                                return { attach: function () {}, detach: function () {}, close: function () {} }
+                            }).then(function (stream) {
+                                var next = stream.catchError(function (_) return recover("error"));
+                                next.state.should.equal(Init);
+                                next.finally(function () {});
+                                wait(5, function () {
+                                    next.state.should.equal(Failed("error"));
+                                    done();
+                                });
+                            });
+                        });
+                    } else {
+                        testFailedStream(function (error) {
+                            return create(function (ctx) {
+                                ctx.throwError("xxx");
+                                return { attach: function () {}, detach: function () {}, close: function () {} }
+                            }).then(function (stream) {
+                                var child = stream.catchError(function (_) return recover(error));
+                                child.finally(function () {});
+                                return new SyncPromise(function (f, _) wait(5, f.bind(child)));
+                            });
+                        }, true);
 
-                //     describe("close the parent stream", {
-                //         it("should pass", function (done) {
-                //             create("xxx").then(function (parent) {
-                //                 var child = parent.catchError(function (e) return ReactiveStream.empty());
-                //                 child.state.should.equal(Init);
+                        testParentClosing(recover);
+                    }
+                }
 
-                //                 var count = 0;
-                //                 child.subscribeEnd(function () count++);
-                //                 child.state.should.equal(Ended);
-                //                 count.should.be(1);
+                describe("recovery by the failed stream", {
+                    testRecoveringByFailed(function (e) return ReactiveStream.fail("error"));
+                });
 
-                //                 parent.close();
-                //                 parent.close();
-                //                 child.state.should.equal(Ended);
-                //                 count.should.be(1);
-                //                 done();
-                //             });
-                //         });
-                //     });
-                // });
-
-                // describe("recovery by the failed stream", {
-                //     if (tail) {
-                //         it("should pass", function (done) {
-                //             create("xxx").then(function (stream) {
-                //                 var next = stream.catchError(function (e) return ReactiveStream.fail("error"));
-                //                 next.state.should.equal(Init);
-                //                 next.finally(function () {});
-                //                 next.state.should.equal(Failed("error"));
-                //                 done();
-                //             });
-                //         });
-                //     } else {
-                //         testFailedStream(function (error) {
-                //             return create("xxx").then(function (stream) {
-                //                 var next = stream.catchError(function (e) return ReactiveStream.fail(error));
-                //                 next.state.should.equal(Init);
-                //                 next.finally(function () {});
-                //                 next.state.should.equal(Failed(error));
-                //                 return next;
-                //             });
-                //         }, true);
-
-                //         describe("close the parent stream", {
-                //             it("should pass", function (done) {
-                //                 create("xxx").then(function (parent) {
-                //                     var child = parent.catchError(function (e) return ReactiveStream.fail("error"));
-                //                     child.subscribeEnd(function () fail());
-                //                     parent.close();
-                //                     parent.close();
-
-                //                     child.state.should.equal(Failed("error"));
-                //                     done();
-                //                 });
-                //             });
-                //         });
-                //     }
-                // });
-
-
-
-                // describe("base stream error recovering", {
-                //     it("should recover", function (done) {
-                //         var values = [];
-                //         var countEnd = 0;
-                //         var errors = [];
-                //         var countFinally = 0;
-                //         var caughtErrors = [];
-                //         create(function (ctx) {
-                //             ctx.emit(10);
-                //             ctx.throwError("error");
-                //             return { attach: function () {}, detach: function () {}, close: function () {} }
-                //         }).then(function (stream) {
-                //             var next = stream.catchError(function (e) {});
-                //             next.subscribe(function (x) {
-                //                 values.push(x);
-                //             });
-                //             next.subscribeEnd(function () {
-                //                 countEnd++;
-                //             });
-                //             next.subscribeError(function (e) {
-                //                 errors.push(e);
-                //             });
-                //             next.finally(function () {
-                //                 countFinally++;
-                //             });
-                //             next.catchError(function (e) {
-                //                 caughtErrors.push(e);
-                //                 throw e;
-                //             });
-
-                //             wait(10, function () {
-                //                 values.should.containExactly([10]);
-                //                 countEnd.should.be(1);
-                //                 errors.should.containExactly([]);
-                //                 countFinally.should.be(1);
-                //                 caughtErrors.should.containExactly([]);
-                //                 done();
-                //             });
-                //         });
-                //     });
-                // });
-            });
-        }
-
-        function testActiveStream(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>, tail = false) {
-            // TODO
-            // describe("state", {
-            //     it("should pass", function (done) {
-            //         create(function (ctx) {
-            //             return {
-            //                 attach: function () {},
-            //                 detach: function () {},
-            //                 close: function () {}
-            //             }
-            //         }).then(function (stream) {
-            //             stream.state.should.equal(Running);
-            //             done();
-            //         });
-            //     });
-            // });
-
-            testObservable(create);
-
-            // if (!tail) {
-            //     describe("catchError()", {
-            //         // TODO
-
-            //         describe("to an active stream", {
-            //         });
-
-            //         describe("to the never stream", {
-            //             testNeverStream(function () {
-            //                 return create(function (ctx) throw "xxx").then(function (stream) {
-            //                     return new Promise(function (f, _) {
-            //                         var next = stream.catchError(function (e) return ReactiveStream.never());
-            //                         next.finally(function () {});
-            //                         wait(5, f.bind(next));
-            //                     });
-            //                 });
-            //             }, true);
-            //         });
-
-            //         describe("to the ended stream", {
-            //             testEndedStream(function () {
-            //                 return create(function (ctx) throw "xxx").then(function (stream) {
-            //                     return new Promise(function (f, _) {
-            //                         var next = stream.catchError(function (e) return ReactiveStream.empty());
-            //                         next.finally(function () {});
-            //                         wait(5, f.bind(next));
-            //                     });
-            //                 });
-            //             }, true);
-            //         });
-
-            //         describe("to the failed stream", {
-            //             testFailedStream(function (error) {
-            //                 return create(function (ctx) throw "xxx").then(function (stream) {
-            //                     return new Promise(function (f, _) {
-            //                         var next = stream.catchError(function (e) return ReactiveStream.fail(error));
-            //                         next.finally(function () {});
-            //                         wait(5, f.bind(next));
-            //                     });
-            //                 });
-            //             }, true);
-            //         });
-
-            //         describe("throw error", {
-            //             testFailedStream(function (error) {
-            //                 return create(function (ctx) throw "xxx").then(function (stream) {
-            //                     return new Promise(function (f, _) {
-            //                         var next = stream.catchError(function (e) throw error);
-            //                         next.finally(function () {});
-            //                         wait(5, f.bind(next));
-            //                     });
-            //                 });
-            //             }, true);
-            //         });
-            //     });
-            // }
-
-            describe("close()", {
-                testEndedStream(function () {
-                    return create(function (ctx) {
-                        return {
-                            attach: function () {},
-                            detach: function () {},
-                            close: function () {}
-                        }
-                    }).then(function (stream) {
-                        stream.close();
-                        return stream;
-                    });
+                describe("recovery by throw", {
+                    testRecoveringByFailed(function (e) throw "error");
                 });
             });
         }
-
 
         // --------------------------------------------------------------------
         // test main
         // --------------------------------------------------------------------
         describe("ReactiveStream.create()", {
-
-        //     describe("subscribeEnd()", {
-        //         describe("running", {
-        //             it("should call middleware", function (done) {
-        //                 var called = false;
-        //                 var stream = ReactiveStream.create(function (ctx) {
-        //                     called = true;
-        //                     return {
-        //                         attach: function () {},
-        //                         detach: function () {},
-        //                         close: function () {}
-        //                     }
-        //                 });
-        //                 stream.subscribeEnd(function () fail());
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     stream.state.should.equal(Running);
-        //                     done();
-        //                 });
-        //             });
-
-        //             testActiveStream(function (middleware) {
-        //                 var stream = ReactiveStream.create(middleware);
-        //                 stream.subscribeEnd(function () {});
-        //                 return Promise.resolve(stream);
-        //             });
-        //         });
-
-        //         describe("suspended", {
-        //             testSuspendedStream(function (middleware) {
-        //                 return new Promise(function (f, _) {
-        //                     var stream = ReactiveStream.create(middleware);
-        //                     var unsubscribe = stream.subscribeEnd(function () {});
-        //                     unsubscribe();
-        //                     wait(5, f.bind(stream));
-        //                 });
-        //             });
-        //         });
-
-        //         testEndedStream(function () {
-        //             var stream = ReactiveStream.create(function (ctx) {
-        //                 return {
-        //                     attach: function () {},
-        //                     detach: function () {},
-        //                     close: function () {}
-        //                 }
-        //             });
-        //             stream.subscribeEnd(function () {});
-        //             stream.close();
-        //             return SyncPromise.resolve(stream);
-        //         });
-        //     });
-
-        //     describe("subscribeError()", {
-        //         describe("running", {
-        //             it("should call middleware", function (done) {
-        //                 var called = false;
-        //                 var stream = ReactiveStream.create(function (ctx) {
-        //                     called = true;
-        //                     return {
-        //                         attach: function () {},
-        //                         detach: function () {},
-        //                         close: function () {}
-        //                     }
-        //                 });
-        //                 stream.subscribeError(function (_) fail());
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     stream.state.should.equal(Running);
-        //                     done();
-        //                 });
-        //             });
-
-        //             testActiveStream(function (middleware) {
-        //                 var stream = ReactiveStream.create(middleware);
-        //                 stream.subscribeError(function (_) {});
-        //                 return Promise.resolve(stream);
-        //             });
-        //         });
-
-        //         describe("suspended", {
-        //             testSuspendedStream(function (middleware) {
-        //                 return new Promise(function (f, _) {
-        //                     var stream = ReactiveStream.create(middleware);
-        //                     var unsubscribe = stream.subscribeError(function (e) {});
-        //                     unsubscribe();
-        //                     wait(5, f.bind(stream));
-        //                 });
-        //             });
-        //         });
-
-        //         testEndedStream(function () {
-        //             var stream = ReactiveStream.create(function (ctx) {
-        //                 return {
-        //                     attach: function () {},
-        //                     detach: function () {},
-        //                     close: function () {}
-        //                 }
-        //             });
-        //             stream.subscribeError(function (_) fail());
-        //             stream.close();
-        //             return SyncPromise.resolve(stream);
-        //         });
-        //     });
-
-        //     describe("finally()", {
-        //         describe("running", {
-        //             it("should call middleware", function (done) {
-        //                 var called = false;
-        //                 var stream = ReactiveStream.create(function (ctx) {
-        //                     called = true;
-        //                     return {
-        //                         attach: function () {},
-        //                         detach: function () {},
-        //                         close: function () {}
-        //                     }
-        //                 });
-        //                 stream.finally(function () fail());
-        //                 wait(10, function () {
-        //                     called.should.be(true);
-        //                     stream.state.should.equal(Running);
-        //                     done();
-        //                 });
-        //             });
-
-        //             testActiveStream(function (middleware) {
-        //                 var stream = ReactiveStream.create(middleware);
-        //                 stream.finally(function () {});
-        //                 return Promise.resolve(stream);
-        //             });
-        //         });
-
-        //         describe("suspended", {
-        //             testSuspendedStream(function (middleware) {
-        //                 return new Promise(function (f, _) {
-        //                     var stream = ReactiveStream.create(middleware);
-        //                     var unsubscribe = stream.finally(function () {});
-        //                     unsubscribe();
-        //                     wait(5, f.bind(stream));
-        //                 });
-        //             });
-        //         });
-
-        //         testEndedStream(function () {
-        //             var stream = ReactiveStream.create(function (ctx) {
-        //                 return {
-        //                     attach: function () {},
-        //                     detach: function () {},
-        //                     close: function () {}
-        //                 }
-        //             });
-        //             stream.finally(function () {});
-        //             stream.close();
-        //             return SyncPromise.resolve(stream);
-        //         });
-        //     });
+            testInitStream(function (middleware) return SyncPromise.resolve(ReactiveStream.create(middleware)));
         });
 
-        // describe("ReactiveStream.never()", {
-        //     testNeverStream(function () return SyncPromise.resolve(ReactiveStream.never()));
-        // });
+        describe("ReactiveStream.never()", {
+            testNeverStream(function () return SyncPromise.resolve(ReactiveStream.never()));
+        });
 
-        // describe("ReactiveStream.empty()", {
-        //     testEndedStream(function () return SyncPromise.resolve(ReactiveStream.empty()));
-        // });
+        describe("ReactiveStream.empty()", {
+            testEndedStream(function () return SyncPromise.resolve(ReactiveStream.empty()));
+        });
 
         describe("ReactiveStream.fail()", {
             testFailedStream(function (error) return SyncPromise.resolve(ReactiveStream.fail(error)));
