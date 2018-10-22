@@ -7,6 +7,7 @@ using buddy.Should;
 
 class PromiseTest extends BuddySuite {
     public function new() {
+        #if js
         describe("Promise.new()", {
             timeoutMs = 500;
 
@@ -29,207 +30,112 @@ class PromiseTest extends BuddySuite {
             });
 
             describe("fulfilled", {
-                describe("sync", {
-                    it("should pass", function (done) {
-                        new Promise(function (fulfill, _) {
-                            fulfill();
-                        });
-                        wait(5, done);
+                it("should pass", function (done) {
+                    new Promise(function (fulfill, _) {
+                        fulfill();
                     });
-
-                    it("should pass when it have no fulfilled", function (done) {
-                        new Promise(function (fulfill, _) {
-                            fulfill();
-                        }).then(null, function (_) { fail(); });
-                        wait(5, done);
-                    });
-
-                    it("should call fulfilled(_)", function (done) {
-                        new Promise(function (fulfill, _) {
-                            fulfill();
-                        }).then(
-                            function (_) { done(); },
-                            function (_) { fail(); }
-                        );
-                    });
-
-                    it("should call fulfilled(x)", function (done) {
-                        new Promise(function (fulfill, _) {
-                            fulfill(1);
-                        }).then(
-                            function (x) {
-                                x.should.be(1);
-                                done();
-                            },
-                            function (_) { fail(); }
-                        );
-                    });
+                    wait(5, done);
                 });
 
-                describe("async", {
-                    it("should pass", function (done) {
-                        new Promise(function (fulfill, _) {
-                            wait(5, fulfill.bind());
-                        });
-                        wait(10, done);
-                    });
+                it("should pass when it have no fulfilled", function (done) {
+                    new Promise(function (fulfill, _) {
+                        fulfill();
+                    }).then(null, function (_) { fail(); });
+                    wait(5, done);
+                });
 
-                    it("should pass when it have no fulfilled", function (done) {
-                        new Promise(function (fulfill, _) {
-                            wait(5, fulfill.bind());
-                        }).then(null, function (_) { fail(); });
-                        wait(10, done);
-                    });
+                it("should call fulfilled(_)", function (done) {
+                    new Promise(function (fulfill, _) {
+                        fulfill();
+                    }).then(
+                        function (_) { done(); },
+                        function (_) { fail(); }
+                    );
+                });
 
-                    it("should call fulfilled(_)", function (done) {
-                        new Promise(function (fulfill, _) {
-                            wait(5, fulfill.bind());
-                        }).then(
-                            function (_) { done(); },
-                            function (_) { fail(); }
-                        );
-                    });
-
-                    it("should call fulfilled(x)", function (done) {
-                        new Promise(function (fulfill, _) {
-                            wait(5, fulfill.bind(1));
-                        }).then(
-                            function (x) {
-                                x.should.be(1);
-                                done();
-                            },
-                            function (_) { fail(); }
-                        );
-                    });
+                it("should call fulfilled(x)", function (done) {
+                    new Promise(function (fulfill, _) {
+                        fulfill(1);
+                    }).then(
+                        function (x) {
+                            x.should.be(1);
+                            done();
+                        },
+                        function (_) { fail(); }
+                    );
                 });
             });
 
             describe("rejected", {
-                describe("sync", {
-                    it("should pass", function (done) {
-                        new Promise(function (_, reject) {
-                            reject();
-                        });
-                        wait(5, done);
+                it("should pass", function (done) {
+                    new Promise(function (_, reject) {
+                        reject();
                     });
-
-                    it("should pass when it have no rejected", function (done) {
-                        new Promise(function (_, reject) {
-                            reject();
-                        }).then(function (_) { fail(); });
-                        wait(5, done);
-                    });
-
-                    it("should call rejected(_)", function (done) {
-                        new Promise(function (_, reject) {
-                            reject();
-                        }).then(
-                            function (_) { fail(); },
-                            function (e) {
-                                LangTools.isNull(e).should.be(true);
-                                done();
-                            }
-                        );
-                    });
-
-                    it("should call rejected(_)", function (done) {
-                        new Promise(function (_, reject) {
-                            reject();
-                        }).then(
-                            function (_) { fail(); },
-                            function (e) {
-                                LangTools.isNull(e).should.be(true);
-                                done();
-                            }
-                        );
-                    });
-
-                    it("should call rejected(x)", function (done) {
-                        new Promise(function (_, reject) {
-                            reject("error");
-                        }).then(
-                            function (_) { fail(); },
-                            function (e) {
-                                (e: String).should.be("error");
-                                done();
-                            }
-                        );
-                    });
-
-                    it("should call rejected when it is thrown error", function (done) {
-                        new Promise(function (_, _) {
-                            throw "error";
-                        }).then(
-                            function (_) { fail(); },
-                            function (e) {
-                                (e: String).should.be("error");
-                                done();
-                            }
-                        );
-                    });
+                    wait(5, done);
                 });
 
-                describe("async", {
-                    it("should pass", function (done) {
-                        new Promise(function (_, reject) {
-                            wait(5, reject.bind());
-                        });
-                        wait(10, done);
-                    });
+                it("should pass when it have no rejected", function (done) {
+                    new Promise(function (_, reject) {
+                        reject();
+                    }).then(function (_) { fail(); });
+                    wait(5, done);
+                });
 
-                    it("should pass when it have no rejected", function (done) {
-                        new Promise(function (_, reject) {
-                            wait(5, reject.bind());
-                        }).then(function (_) { fail(); });
-                        wait(10, done);
-                    });
+                it("should call rejected(_)", function (done) {
+                    new Promise(function (_, reject) {
+                        reject();
+                    }).then(
+                        function (_) { fail(); },
+                        function (e) {
+                            LangTools.isNull(e).should.be(true);
+                            done();
+                        }
+                    );
+                });
 
-                    it("should call rejected(_)", function (done) {
-                        new Promise(function (_, reject) {
-                            wait(5, reject.bind());
-                        }).then(
-                            function (_) { fail(); },
-                            function (e) {
-                                LangTools.isNull(e).should.be(true);
-                                done();
-                            }
-                        );
-                    });
+                it("should call rejected(_)", function (done) {
+                    new Promise(function (_, reject) {
+                        reject();
+                    }).then(
+                        function (_) { fail(); },
+                        function (e) {
+                            LangTools.isNull(e).should.be(true);
+                            done();
+                        }
+                    );
+                });
 
-                    it("should call rejected(_)", function (done) {
-                        new Promise(function (_, reject) {
-                            wait(5, reject.bind());
-                        }).then(
-                            function (_) { fail(); },
-                            function (e) {
-                                LangTools.isNull(e).should.be(true);
-                                done();
-                            }
-                        );
-                    });
+                it("should call rejected(x)", function (done) {
+                    new Promise(function (_, reject) {
+                        reject("error");
+                    }).then(
+                        function (_) { fail(); },
+                        function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        }
+                    );
+                });
 
-                    it("should call rejected(x)", function (done) {
-                        new Promise(function (_, reject) {
-                            wait(5, reject.bind("error"));
-                        }).then(
-                            function (_) { fail(); },
-                            function (e) {
-                                LangTools.same(e, "error").should.be(true);
-                                done();
-                            }
-                        );
-                    });
+                it("should call rejected when it is thrown error", function (done) {
+                    new Promise(function (_, _) {
+                        throw "error";
+                    }).then(
+                        function (_) { fail(); },
+                        function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        }
+                    );
                 });
             });
 
-            #if js
             describe("JavaScript compatibility", {
                 it("should be js.Promise", {
                     var promise = new Promise(function (_, _) {});
                     promise.should.beType(js.Promise);
                 });
             });
-            #end
         });
 
         describe("Promise.resolve()", {
@@ -276,59 +182,38 @@ class PromiseTest extends BuddySuite {
                 );
             });
         });
+        #else
+        describe("Promise.new()", {
+            it("should same SyncPromise", {
+                var promise = new Promise(function (_, _) {
+                });
+                Std.is(promise, SyncPromise).should.be(true);
+            });
+        });
+        #end
 
         describe("Promise.then()", {
             timeoutMs = 500;
 
-            describe("sync", {
-                it("should call fulfilled", function (done) {
-                    new Promise(function (fulfill, _) {
-                        fulfill(100);
-                    }).then(function (x) {
-                        x.should.be(100);
-                        done();
-                    }, function (_) {
-                        fail();
-                    });
-                });
-
-                it("should call rejected", function (done) {
-                    new Promise(function (_, reject) {
-                        reject("error");
-                    }).then(function (_) {
-                        fail();
-                    }, function (e) {
-                        (e: String).should.be("error");
-                        done();
-                    });
+            it("should call fulfilled", function (done) {
+                new Promise(function (fulfill, _) {
+                    fulfill(100);
+                }).then(function (x) {
+                    x.should.be(100);
+                    done();
+                }, function (_) {
+                    fail();
                 });
             });
 
-            describe("async", {
-                it("should call fulfilled", function (done) {
-                    new Promise(function (fulfill, _) {
-                        wait(5, function () {
-                            fulfill(100);
-                        });
-                    }).then(function (x) {
-                        x.should.be(100);
-                        done();
-                    }, function (_) {
-                        fail();
-                    });
-                });
-
-                it("should call rejected", function (done) {
-                    new Promise(function (_, reject) {
-                        wait(5, function () {
-                            reject("error");
-                        });
-                    }).then(function (_) {
-                        fail();
-                    }, function (e) {
-                        (e: String).should.be("error");
-                        done();
-                    });
+            it("should call rejected", function (done) {
+                new Promise(function (_, reject) {
+                    reject("error");
+                }).then(function (_) {
+                    fail();
+                }, function (e) {
+                    (e: String).should.be("error");
+                    done();
                 });
             });
 
@@ -562,47 +447,21 @@ class PromiseTest extends BuddySuite {
         describe("Promise.catchError()", {
             timeoutMs = 500;
 
-            describe("sync", {
-                it("should not call", function (done) {
-                    new Promise(function (fulfill, _) {
-                        fulfill(100);
-                    }).catchError(function (_) {
-                        fail();
-                    });
-                    wait(5, done);
+            it("should not call", function (done) {
+                new Promise(function (fulfill, _) {
+                    fulfill(100);
+                }).catchError(function (_) {
+                    fail();
                 });
-
-                it("should call", function (done) {
-                    new Promise(function (_, reject) {
-                        reject("error");
-                    }).catchError(function (e) {
-                        (e: String).should.be("error");
-                        done();
-                    });
-                });
+                wait(5, done);
             });
 
-            describe("async", {
-                it("should not call", function (done) {
-                    new Promise(function (fulfill, _) {
-                        wait(5, function () {
-                            fulfill(100);
-                        });
-                    }).catchError(function (_) {
-                        fail();
-                    });
-                    wait(5, done);
-                });
-
-                it("should call", function (done) {
-                    new Promise(function (_, reject) {
-                        wait(5, function () {
-                            reject("error");
-                        });
-                    }).catchError(function (e) {
-                        (e: String).should.be("error");
-                        done();
-                    });
+            it("should call", function (done) {
+                new Promise(function (_, reject) {
+                    reject("error");
+                }).catchError(function (e) {
+                    (e: String).should.be("error");
+                    done();
                 });
             });
 
@@ -731,43 +590,19 @@ class PromiseTest extends BuddySuite {
         describe("Promise.finally()", {
             timeoutMs = 500;
 
-            describe("sync", {
-                it("should call when it is fulfilled", function (done) {
-                    new Promise(function (fulfill, _) {
-                        fulfill(100);
-                    }).finally(function () {
-                        done();
-                    });
-                });
-
-                it("should call when it is rejected", function (done) {
-                    new Promise(function (_, reject) {
-                        reject("error");
-                    }).finally(function () {
-                        done();
-                    });
+            it("should call when it is fulfilled", function (done) {
+                new Promise(function (fulfill, _) {
+                    fulfill(100);
+                }).finally(function () {
+                    done();
                 });
             });
 
-            describe("async", {
-                it("should call when it is fulfilled", function (done) {
-                    new Promise(function (fulfill, _) {
-                        wait(5, function () {
-                            fulfill(100);
-                        });
-                    }).finally(function () {
-                        done();
-                    });
-                });
-
-                it("should call when it is rejected", function (done) {
-                    new Promise(function (_, reject) {
-                        wait(5, function () {
-                            reject("error");
-                        });
-                    }).finally(function () {
-                        done();
-                    });
+            it("should call when it is rejected", function (done) {
+                new Promise(function (_, reject) {
+                    reject("error");
+                }).finally(function () {
+                    done();
                 });
             });
 

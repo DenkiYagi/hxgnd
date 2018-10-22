@@ -6,4 +6,5 @@
 -js build/node.js
 -D nodejs
 -D buddy-colors
+-debug
 #-cmd node build/node.js

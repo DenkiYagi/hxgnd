@@ -21,7 +21,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
             }
         });
         #else
-        this = new DelayPromise(executor);
+        this = new SyncPromise(executor);
         #end
     }
 
@@ -97,7 +97,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         #if js
         return untyped __js__("Promise.resolve({0})", value);
         #else
-        return DelayPromise.resolve(value);
+        return SyncPromise.resolve(value);
         #end
     }
 
@@ -105,25 +105,52 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         #if js
         return untyped __js__("Promise.reject({0})", error);
         #else
-        return DelayPromise.reject(error);
+        return SyncPromise.reject(error);
         #end
     }
 
+    #if js
     public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
-        #if js
         return untyped __js__("Promise.all({0})", iterable);
-        #else
-        return DelayPromise.all(iterable);
-        #end
     }
+    #else
+    public static function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
+        var length = iterable.length;
+        return if (length <= 0) {
+            SyncPromise.resolve([]);
+        } else {
+            new SyncPromise(function (fulfill, reject) {
+                var values = [for (i in 0...length) null];
+                var count = 0;
+                for (i in 0...length) {
+                    var p = iterable[i];
+                    p.then(function (v) {
+                        values[i] = v;
+                        if (++count >= length) fulfill(values);
+                    }, reject);
+                }
+            });
+        }
+    }
+    #end
 
+    #if js
     public static inline function race<T>(iterable: Array<Promise<T>>): Promise<T> {
-        #if js
         return untyped __js__("Promise.race({0})", iterable);
-        #else
-        return DelayPromise.race(iterable);
-        #end
     }
+    #else
+    public static function race<T>(iterable: Array<Promise<T>>): Promise<T> {
+        return if (iterable.length <= 0) {
+            new SyncPromise(function (_, _) {});
+        } else {
+            new SyncPromise(function (fulfill, reject) {
+                for (p in iterable) {
+                    p.then(fulfill, reject);
+                }
+            });
+        }
+    }
+    #end
 
     #if js
     @:from
@@ -183,166 +210,3 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     }
     #end
 }
-
-#if !js
-class DelayPromise<T> implements IPromise<T> {
-    var result: Maybe<Result<T>>;
-    var onFulfilledHanlders: Delegate<T>;
-    var onRejectedHanlders: Delegate<Dynamic>;
-
-    public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void): Void {
-        result = Maybe.empty();
-        onFulfilledHanlders = new Delegate();
-        onRejectedHanlders = new Delegate();
-
-        inline function removeAllHandlers(): Void {
-            onFulfilledHanlders.removeAll();
-            onRejectedHanlders.removeAll();
-        }
-
-        function fulfill(?value: T): Void {
-            if (result.isEmpty()) {
-                result = Maybe.of(Result.Success(value));
-                onFulfilledHanlders.invoke(value);
-                removeAllHandlers();
-            }
-        }
-
-        function reject(?error: Dynamic): Void {
-            if (result.isEmpty()) {
-                result = Maybe.of(Result.Failure(error));
-                onRejectedHanlders.invoke(error);
-                removeAllHandlers();
-            }
-        }
-
-        try {
-            executor(fulfill, reject);
-        } catch (e: Dynamic) {
-            reject(e);
-        }
-    }
-
-    public function then<TOut>(
-            fulfilled: Null<PromiseCallback<T, TOut>>,
-            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return new DelayPromise<TOut>(function (_fulfill, _reject) {
-            var handleFulfilled = if (fulfilled.nonNull()) {
-                function transformValue(value: T) {
-                    Dispatcher.dispatch(function () {
-                        try {
-                            var next = (fulfilled: T -> Dynamic)(value);
-                            if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                                var nextPromise: Promise<TOut> = cast next;
-                                nextPromise.then(_fulfill, _reject);
-                            } else {
-                                _fulfill(next);
-                            }
-                        } catch (e: Dynamic) {
-                            _reject(e);
-                        }
-                    });
-                }
-            } else {
-                function passValue(value: T) {
-                    Dispatcher.dispatch(function () {
-                        _fulfill(cast value);
-                    });
-                }
-            }
-
-            var handleRejected = if (rejected.nonNull()) {
-                function transformError(error: Dynamic) {
-                    Dispatcher.dispatch(function () {
-                        try {
-                            var next = (rejected: Dynamic -> Dynamic)(error);
-                            if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
-                                var nextPromise: Promise<TOut> = cast next;
-                                nextPromise.then(_fulfill, _reject);
-                            } else {
-                                _fulfill(next);
-                            }
-                        } catch (e: Dynamic) {
-                            _reject(e);
-                        }
-                    });
-                }
-            } else {
-                function passError(error: Dynamic) {
-                    Dispatcher.dispatch(function () {
-                        try {
-                            _reject(error);
-                        } catch (e: Dynamic) {
-                            trace(e);
-                        }
-                    });
-                }
-            }
-
-            if (result.isEmpty()) {
-                onFulfilledHanlders.add(handleFulfilled);
-                onRejectedHanlders.add(handleRejected);
-            } else {
-                switch (result.get()) {
-                    case Success(v): handleFulfilled(v);
-                    case Failure(e): handleRejected(e);
-                }
-            }
-        });
-    }
-
-    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        return then(null, rejected);
-    }
-
-    public function finally(onFinally: Void -> Void): Promise<T> {
-        return then(
-            function (x) { onFinally(); return x; },
-            function (e) { onFinally(); return reject(e); }
-        );
-    }
-
-    public static inline function resolve<T>(?value: T): Promise<T> {
-        return new Promise(function (f, _) {
-            return f(value);
-        });
-    }
-
-    public static inline function reject<T>(?error: Dynamic): Promise<T> {
-        return new Promise(function (_, r) {
-            return r(error);
-        });
-    }
-
-    public static function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
-        var length = iterable.length;
-        return if (length <= 0) {
-            SyncPromise.resolve([]);
-        } else {
-            new SyncPromise(function (fulfill, reject) {
-                var values = [for (i in 0...length) null];
-                var count = 0;
-                for (i in 0...length) {
-                    var p = iterable[i];
-                    p.then(function (v) {
-                        values[i] = v;
-                        if (++count >= length) fulfill(values);
-                    }, reject);
-                }
-            });
-        }
-    }
-
-    public static function race<T>(iterable: Array<Promise<T>>): Promise<T> {
-        return if (iterable.length <= 0) {
-            new SyncPromise(function (_, _) {});
-        } else {
-            new SyncPromise(function (fulfill, reject) {
-                for (p in iterable) {
-                    p.then(fulfill, reject);
-                }
-            });
-        }
-    }
-}
-#end
