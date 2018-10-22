@@ -84,8 +84,8 @@ class ReactiveStream<T> {
 
     function becomeInit(middleware: ReactableStreamMiddleware<T>): Void {
         inline function startPreparing(): Void {
-            becomePreparing(function prepare(callback) {
-                Dispatcher.dispatch(function _prepare() {
+            becomePreparing(function (callback) {
+                function prepare() {
                     if (Type.enumEq(receiver.state, Ended)) return;
                     try {
                         var controller = middleware(createContext());
@@ -93,11 +93,13 @@ class ReactiveStream<T> {
                     } catch (e: Dynamic) {
                         callback(Failure(e));
                     }
-                });
+                }
+                Dispatcher.dispatch(prepare);
             });
         }
 
         receiver = {
+            #if debug internalName: "init", #end
             state: Init,
             subscribe: function (fn) {
                 valueSubscribers.add(fn);
@@ -116,6 +118,21 @@ class ReactiveStream<T> {
     }
 
     function becomePreparing(prepare: (Result<ReactableStreamMiddlewareController> -> Void) -> Void): Void {
+        receiver = {
+            #if debug internalName: "preparing", #end
+            state: Running,
+            subscribe: valueSubscribers.add,
+            unsubscribe: valueSubscribers.remove,
+            subscribeEnd: endSubscribers.add,
+            unsubscribeEnd: endSubscribers.remove,
+            subscribeError: errorSubscribers.add,
+            unsubscribeError: errorSubscribers.remove,
+            onEmit: emit,
+            onEmitEnd: end.bind(),
+            onThrowError: throwError,
+            close: end.bind()
+        }
+
         prepare(function (result) {
             switch (result) {
                 case Success(controller):
@@ -129,20 +146,6 @@ class ReactiveStream<T> {
                     throwError(error);
             }
         });
-
-        receiver = {
-            state: Running,
-            subscribe: valueSubscribers.add,
-            unsubscribe: valueSubscribers.remove,
-            subscribeEnd: endSubscribers.add,
-            unsubscribeEnd: endSubscribers.remove,
-            subscribeError: errorSubscribers.add,
-            unsubscribeError: errorSubscribers.remove,
-            onEmit: emit,
-            onEmitEnd: end.bind(),
-            onThrowError: throwError,
-            close: end.bind()
-        }
     }
 
     function becomeRunning(controller: ReactableStreamMiddlewareController): Void {
@@ -154,6 +157,7 @@ class ReactiveStream<T> {
         }
 
         receiver = {
+            #if debug internalName: "running", #end
             state: Running,
             subscribe: valueSubscribers.add,
             unsubscribe: function (fn) {
@@ -184,6 +188,7 @@ class ReactiveStream<T> {
         }
 
         receiver = {
+            #if debug internalName: "suspended", #end
             state: Suspended,
             subscribe: function (fn) {
                 valueSubscribers.add(fn);
@@ -208,6 +213,7 @@ class ReactiveStream<T> {
 
     function becomeEnded(): Void {
         receiver = {
+            #if debug internalName: "ended", #end
             state: Ended,
             subscribeEnd: function (fn: Void -> Void) {
                 fn();
@@ -222,6 +228,7 @@ class ReactiveStream<T> {
 
     function becomeFailed(error: Dynamic): Void {
         receiver = {
+            #if debug internalName: "failed", #end
             state: Failed(error),
             subscribeError: function (fn: Dynamic -> Void) {
                 fn(error);
@@ -231,6 +238,7 @@ class ReactiveStream<T> {
 
     function becomeRecovering(error: Dynamic, recoverFn: Dynamic -> ReactiveStream<T>): Void {
         receiver = {
+            #if debug internalName: "recovering", #end
             state: Init,
             subscribe: function (fn) {
                 valueSubscribers.add(fn);
@@ -253,6 +261,7 @@ class ReactiveStream<T> {
 
     function becomeNever(): Void {
         receiver = {
+            #if debug internalName: "never", #end
             state: Never,
             subscribeEnd: endSubscribers.add,
             unsubscribeEnd: endSubscribers.remove,
@@ -292,6 +301,8 @@ class ReactiveStream<T> {
     }
 
     function throwError(error: Dynamic): Void {
+        trace("throwError");
+        trace(errorSubscribers);
         becomeFailed(error);
         if (errorSubscribers.nonEmpty()) {
             errorSubscribers.copy().invoke(error);
@@ -304,6 +315,8 @@ class ReactiveStream<T> {
             var internal = fn(error);
             internal.wrapped = true;
 
+            trace("recover");
+            trace(internal.receiver.internalName);
             switch (internal.state) {
                 case Ended:
                     valueSubscribers.removeAll();
@@ -320,6 +333,7 @@ class ReactiveStream<T> {
                 case _:
                     var detach = new Delegate0();
                     function attach() {
+                        trace("attach recover");
                         detach.add(internal.subscribe(emit));
                         detach.add(internal.subscribeEnd(end.bind()));
                         detach.add(internal.subscribeError(throwError));
@@ -397,26 +411,27 @@ class ReactiveStream<T> {
         return if (receiver.catchError.nonNull()) {
             receiver.catchError(fn);
         } else {
+            trace("catchError");
             var child = ReactiveStream.create(function (ctx) {
+                trace("catchError middleware");
                 var detach = new Delegate0();
                 function attach() {
-                    detach.add(this.subscribe(ctx.emit));
-                    detach.add(this.subscribeEnd(ctx.emitEnd));
-                    detach.add(this.subscribeError(function rescue(error) {
+                    trace("attach : catchError");
+                    detach.add(subscribe(ctx.emit));
+                    detach.add(subscribeEnd(ctx.emitEnd));
+                    detach.add(subscribeError(function rescue(error) {
+                        trace("rescue : catchError");
                         detach.removeAll();
                         ctx.stream.recover(error, fn);
                     }));
+                    trace(this.errorSubscribers);
                 }
-
                 return {
                     attach: attach,
                     detach: detach.invoke,
-                    close: function () {
-                        detach.invoke();
-                    },
+                    close: detach.invoke,
                 }
             });
-            // TODO 自分を閉じたら親のcloserを解放する
             childClosers.add(child.close);
             return child;
         }
@@ -515,6 +530,7 @@ enum ReactiveStreamState {
 }
 
 private typedef Receiver<T> = {
+    #if debug var internalName: String; #end
     var state: ReactiveStreamState;
 
     @:optional var subscribe: (T -> Void) -> Void;

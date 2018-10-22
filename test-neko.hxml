@@ -5,6 +5,7 @@
 -lib buddy
 -neko build/neko.n
 -D buddy-colors
+-debug
 #-cmd neko build/neko.n
 
 # -x TestMain
