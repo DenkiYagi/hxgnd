@@ -1,0 +1,9 @@
+-main TestMain
+-cp src
+-cp test
+-lib externtype
+-lib buddy
+-neko build/dummy.n
+-debug
+--no-inline
+--no-output
