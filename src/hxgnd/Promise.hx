@@ -195,34 +195,32 @@ class DelayPromise<T> implements IPromise<T> {
         onFulfilledHanlders = new Delegate();
         onRejectedHanlders = new Delegate();
 
-        Dispatcher.dispatch(function exec() {
-            inline function removeAllHandlers(): Void {
-                onFulfilledHanlders.removeAll();
-                onRejectedHanlders.removeAll();
-            }
+        inline function removeAllHandlers(): Void {
+            onFulfilledHanlders.removeAll();
+            onRejectedHanlders.removeAll();
+        }
 
-            function fulfill(?value: T): Void {
-                if (result.isEmpty()) {
-                    result = Maybe.of(Result.Success(value));
-                    onFulfilledHanlders.invoke(value);
-                    removeAllHandlers();
-                }
+        function fulfill(?value: T): Void {
+            if (result.isEmpty()) {
+                result = Maybe.of(Result.Success(value));
+                onFulfilledHanlders.invoke(value);
+                removeAllHandlers();
             }
+        }
 
-            function reject(?error: Dynamic): Void {
-                if (result.isEmpty()) {
-                    result = Maybe.of(Result.Failure(error));
-                    onRejectedHanlders.invoke(error);
-                    removeAllHandlers();
-                }
+        function reject(?error: Dynamic): Void {
+            if (result.isEmpty()) {
+                result = Maybe.of(Result.Failure(error));
+                onRejectedHanlders.invoke(error);
+                removeAllHandlers();
             }
+        }
 
-            try {
-                executor(fulfill, reject);
-            } catch (e: Dynamic) {
-                reject(e);
-            }
-        });
+        try {
+            executor(fulfill, reject);
+        } catch (e: Dynamic) {
+            reject(e);
+        }
     }
 
     public function then<TOut>(
