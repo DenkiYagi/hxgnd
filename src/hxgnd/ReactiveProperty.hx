@@ -18,7 +18,7 @@ class ReactiveProperty<T> {
     public function set(x: T): Void {
         if (equaler(value, x)) return;
 
-        #if debug
+        #if (js && debug)
         value = LangTools.freeze(x);
         #else
         value = x;

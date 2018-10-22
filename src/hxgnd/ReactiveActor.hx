@@ -29,7 +29,7 @@ class ReactiveActor<TState, TMessage> {
                 emit: function (newState: TState, hasNext = false): Void {
                     if (completed || equaler(state, newState)) return;
 
-                    #if debug
+                    #if (js && debug)
                     state = LangTools.freeze(newState);
                     #else
                     state = newState;
