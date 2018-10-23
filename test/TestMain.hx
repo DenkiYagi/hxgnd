@@ -10,8 +10,8 @@ class TestMain implements Buddy<[
     // hxgnd.DelegateTest,
     // hxgnd.ComputationTest,
     // hxgnd.StreamTest,
-    // hxgnd.PromiseTest,
-    // hxgnd.SyncPromiseTest,
+    hxgnd.PromiseTest,
+    hxgnd.SyncPromiseTest,
     // hxgnd.AbortablePromiseTest,
     // hxgnd.PromiseToolsTest,
     // hxgnd.ReactivePropertyTest,
@@ -25,6 +25,7 @@ class TestMain {
     public static function main() {
         haxe.EntryPoint.run();
         TestTools.run();
+        promhx.base.EventLoop.nextLoop = haxe.EntryPoint.runInMainThread;
 
         var testsDone = false;
         var origTrace = haxe.Log.trace;
@@ -36,8 +37,8 @@ class TestMain {
             // new hxgnd.DelegateTest(),
             // new hxgnd.ComputationTest(),
             // // new hxgnd.StreamTest(),
-            // new hxgnd.PromiseTest(),
-            // new hxgnd.SyncPromiseTest(),
+            new hxgnd.PromiseTest(),
+            new hxgnd.SyncPromiseTest(),
             // new hxgnd.AbortablePromiseTest(),
             // new hxgnd.PromiseToolsTest(),
             // new hxgnd.ReactivePropertyTest(),
