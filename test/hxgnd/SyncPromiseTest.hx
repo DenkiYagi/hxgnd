@@ -19,28 +19,25 @@ class SyncPromiseTest extends BuddySuite {
             });
 
             describe("pending", {
-                it("should be not completed", function (done) {
+                it("should be not completed", {
                     new SyncPromise(function (_, _) {}).then(
                         function (_) { fail(); },
                         function (_) { fail(); }
                     );
-                    wait(5, done);
                 });
             });
 
             describe("fulfilled", {
-                it("should pass", function (done) {
+                it("should pass", {
                     new SyncPromise(function (fulfill, _) {
                         fulfill();
                     });
-                    wait(5, done);
                 });
 
-                it("should pass when it have no fulfilled", function (done) {
+                it("should pass when it have no fulfilled", {
                     new SyncPromise(function (fulfill, _) {
                         fulfill();
                     }).then(null, function (_) { fail(); });
-                    wait(5, done);
                 });
 
                 it("should call fulfilled(_)", function (done) {
@@ -66,18 +63,16 @@ class SyncPromiseTest extends BuddySuite {
             });
 
             describe("rejected", {
-                it("should pass", function (done) {
+                it("should pass", {
                     new SyncPromise(function (_, reject) {
                         reject();
                     });
-                    wait(5, done);
                 });
 
-                it("should pass when it have no rejected", function (done) {
+                it("should pass when it have no rejected", {
                     new SyncPromise(function (_, reject) {
                         reject();
                     }).then(function (_) { fail(); });
-                    wait(5, done);
                 });
 
                 it("should call rejected(_)", function (done) {

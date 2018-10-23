@@ -25,23 +25,21 @@ class PromiseTest extends BuddySuite {
                         function (_) { fail(); },
                         function (_) { fail(); }
                     );
-                    wait(5, done);
+                    wait(10, done);
                 });
             });
 
             describe("fulfilled", {
-                it("should pass", function (done) {
+                it("should pass", {
                     new Promise(function (fulfill, _) {
                         fulfill();
                     });
-                    wait(5, done);
                 });
 
-                it("should pass when it have no fulfilled", function (done) {
+                it("should pass when it have no fulfilled", {
                     new Promise(function (fulfill, _) {
                         fulfill();
                     }).then(null, function (_) { fail(); });
-                    wait(5, done);
                 });
 
                 it("should call fulfilled(_)", function (done) {
@@ -67,18 +65,16 @@ class PromiseTest extends BuddySuite {
             });
 
             describe("rejected", {
-                it("should pass", function (done) {
+                it("should pass", {
                     new Promise(function (_, reject) {
                         reject();
                     });
-                    wait(5, done);
                 });
 
-                it("should pass when it have no rejected", function (done) {
+                it("should pass when it have no rejected", {
                     new Promise(function (_, reject) {
                         reject();
                     }).then(function (_) { fail(); });
-                    wait(5, done);
                 });
 
                 it("should call rejected(_)", function (done) {
@@ -453,7 +449,7 @@ class PromiseTest extends BuddySuite {
                 }).catchError(function (_) {
                     fail();
                 });
-                wait(5, done);
+                wait(10, done);
             });
 
             it("should call", function (done) {
@@ -715,7 +711,7 @@ class PromiseTest extends BuddySuite {
             it("should resolve ordered values", function (done) {
                 Promise.all([
                     new Promise(function (f, _) {
-                        wait(5, f.bind(1));
+                        wait(10, f.bind(1));
                     }),
                     Promise.resolve(2),
                     Promise.resolve(3)
@@ -730,7 +726,7 @@ class PromiseTest extends BuddySuite {
             it("should reject by 2nd promise", function (done) {
                 Promise.all([
                     new Promise(function (_, r) {
-                        wait(5, r.bind("error1"));
+                        wait(10, r.bind("error1"));
                     }),
                     Promise.reject("error2"),
                     new Promise(function (_, r) {
@@ -807,7 +803,7 @@ class PromiseTest extends BuddySuite {
             it("should resolve by 2nd promise", function (done) {
                 Promise.race([
                     new Promise(function (f, _) {
-                        wait(5, f.bind(1));
+                        wait(10, f.bind(1));
                     }),
                     Promise.resolve(2),
                     Promise.resolve(3)
@@ -822,7 +818,7 @@ class PromiseTest extends BuddySuite {
             it("should reject by 2nd promise", function (done) {
                 Promise.race([
                     new Promise(function (_, r) {
-                        wait(5, r.bind("error1"));
+                        wait(10, r.bind("error1"));
                     }),
                     Promise.reject("error2"),
                     new Promise(function (_, r) {

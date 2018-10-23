@@ -28,7 +28,6 @@ class PromiseToolsTest extends BuddySuite {
                         callback(new Error("error"), null);
                     }
                     fnNG.callAsPromise().then(function (x) {
-                        trace(x);
                         fail();
                     }).catchError(function (e) {
                         Std.is(e, Error).should.be(true);
