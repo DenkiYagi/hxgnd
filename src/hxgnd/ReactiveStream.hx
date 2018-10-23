@@ -207,6 +207,11 @@ class ReactiveStream<T> {
             subscribeError: function (fn: Dynamic -> Void) {
                 fn(error);
             },
+            catchError: function (fn: Dynamic -> ReactiveStream<T>) {
+                var nextStream = new ReactiveStream();
+                nextStream.becomeRecovering(error, fn);
+                return nextStream;
+            },
         }
     }
 
@@ -250,12 +255,7 @@ class ReactiveStream<T> {
 
     function end(?closeMiddleware: Void -> Void): Void {
         if (closeMiddleware.nonNull()) {
-            try {
-                closeMiddleware();
-            } catch (e: Dynamic) {
-                throwError(e);
-                return;
-            }
+            closeMiddleware();
         }
 
         becomeEnded();
