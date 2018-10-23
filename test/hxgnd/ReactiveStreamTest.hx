@@ -1098,7 +1098,7 @@ class ReactiveStreamTest extends BuddySuite {
             });
 
             describe("catchError()", {
-                it("should be a failed stream", function (done) {
+                it("should not change the state of the base stream ", function (done) {
                     create("error").then(function (stream) {
                         stream.catchError(function (e) {
                             return ReactiveStream.empty();
@@ -1108,7 +1108,7 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                it("should not call a handler when it is not subscribed", function (done) {
+                it("should not call the handler of catchError() when the recovered stream is not subscribed", function (done) {
                     var called = false;
                     create("error").then(function (stream) {
                         var next = stream.catchError(function (e) {
@@ -1122,7 +1122,7 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                it("should call a handler when it is subscribed", function (done) {
+                it("should call the handler of catchError() when the recovered stream is subscribed", function (done) {
                     var called = false;
                     create("error").then(function (stream) {
                         var next = stream.catchError(function (e) {
@@ -1130,16 +1130,23 @@ class ReactiveStreamTest extends BuddySuite {
                             throw e;
                         });
                         next.finally(function () {});
-                        Dispatcher.dispatch(function () {
-                            called.should.be(true);
-                            stream.state.should.equal(Failed("error"));
-                            next.state.should.not.equal(Init);
-                            done();
-                        });
+                        // #if js
+                        // wait(10, function () {
+                        //     called.should.be(true);
+                        //     stream.state.should.equal(Failed("error"));
+                        //     next.state.should.not.equal(Init);
+                        //     done();
+                        // });
+                        // #else
+                        called.should.be(true);
+                        stream.state.should.equal(Failed("error"));
+                        next.state.should.not.equal(Init);
+                        done();
+                        // #end
                     });
                 });
 
-                function testParentClosing(recover: Dynamic -> ReactiveStream<Int>, state: ReactiveStreamState) {
+                function testBaseClosing(recover: Dynamic -> ReactiveStream<Int>, state: ReactiveStreamState) {
                     describe("closing the parent stream", {
                         it("should ignore close() and it should recover lazy", function (done) {
                             create("xxx").then(function (parent) {
@@ -1194,7 +1201,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     }, true);
 
-                    testParentClosing(function (e) return ReactiveStream.never(), Never);
+                    testBaseClosing(function (e) return ReactiveStream.never(), Never);
                 });
 
                 describe("recovery by the ended stream", {
@@ -1207,7 +1214,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     }, true);
 
-                    testParentClosing(function (e) return ReactiveStream.empty(), Ended);
+                    testBaseClosing(function (e) return ReactiveStream.empty(), Ended);
                 });
 
                 describe("recovery by the failed stream", {
@@ -1217,10 +1224,8 @@ class ReactiveStreamTest extends BuddySuite {
                                 var child = stream.catchError(function (e) return ReactiveStream.fail("error"));
                                 child.state.should.equal(Init);
                                 child.finally(function () {});
-                                wait(10, function () {
-                                    child.state.should.equal(Failed("error"));
-                                    done();
-                                });
+                                child.state.should.equal(Failed("error"));
+                                done();
                             });
                         });
                     } else {
@@ -1233,7 +1238,7 @@ class ReactiveStreamTest extends BuddySuite {
                             });
                         }, true);
 
-                        testParentClosing(function (e) return ReactiveStream.fail("error"), Failed("error"));
+                        testBaseClosing(function (e) return ReactiveStream.fail("error"), Failed("error"));
                     }
                 });
 
@@ -1244,10 +1249,8 @@ class ReactiveStreamTest extends BuddySuite {
                                 var child = stream.catchError(function (e) throw "error");
                                 child.state.should.equal(Init);
                                 child.finally(function () {});
-                                wait(10, function () {
-                                    child.state.should.equal(Failed("error"));
-                                    done();
-                                });
+                                child.state.should.equal(Failed("error"));
+                                done();
                             });
                         });
                     } else {
@@ -1260,7 +1263,7 @@ class ReactiveStreamTest extends BuddySuite {
                             });
                         }, true);
 
-                        testParentClosing(function (e) throw "error", Failed("error"));
+                        testBaseClosing(function (e) throw "error", Failed("error"));
                     }
                 });
             });
@@ -1533,39 +1536,39 @@ class ReactiveStreamTest extends BuddySuite {
             testObservable(create);
 
             describe("catchError()", {
-                function testParentClosing(recover: Dynamic -> ReactiveStream<Int>) {
-                    describe("closing the parent stream", {
+                function testBaseClosing(recover: Dynamic -> ReactiveStream<Int>) {
+                    describe("closing the base stream", {
                         function test(state: ReactiveStreamState, create: Void -> Promise<ReactiveStream<Int>>) {
                             it('should close and it should not recover when it is the ${state.getName()}', function (done) {
-                                var recoverd = false;
-                                create().then(function (parent) {
-                                    parent.state.should.equal(state);
+                                var called = false;
+                                create().then(function (base) {
+                                    base.state.should.equal(state);
 
-                                    var child = parent.catchError(function (error) {
-                                        recoverd = true;
+                                    var recovered = base.catchError(function (error) {
+                                        called = true;
                                         return recover(error);
                                     });
-                                    parent.close();
-                                    child.state.should.equal(Ended);
+                                    base.close();
+                                    recovered.state.should.equal(Ended);
 
-                                    child.finally(function () {
-                                        child.state.should.equal(Ended);
-                                        recoverd.should.be(false);
+                                    recovered.finally(function () {
+                                        recovered.state.should.equal(Ended);
+                                        called.should.be(false);
                                         done();
                                     });
                                 });
                             });
 
                             it("should pass when it is called close() 2-times", function (done) {
-                                create().then(function (parent) {
-                                    var child = parent.catchError(recover);
-                                    parent.close();
-                                    parent.close();
-                                    child.state.should.equal(Ended);
+                                create().then(function (base) {
+                                    var recovered = base.catchError(recover);
+                                    base.close();
+                                    base.close();
+                                    recovered.state.should.equal(Ended);
 
-                                    child.finally(function () {});
+                                    recovered.finally(function () {});
                                     wait(10, function () {
-                                        child.state.should.equal(Ended);
+                                        recovered.state.should.equal(Ended);
                                         done();
                                     });
                                 });
@@ -1581,10 +1584,10 @@ class ReactiveStreamTest extends BuddySuite {
                         test(Running, function () {
                             return create(function (ctx) {
                                 return { attach: function () {}, detach: function () {}, close: function () {} }
-                            }).then(function (parent) {
+                            }).then(function (base) {
                                 return new SyncPromise(function (f, _) {
-                                    parent.finally(function () {});
-                                    wait(10, f.bind(parent));
+                                    base.finally(function () {});
+                                    wait(10, f.bind(base));
                                 });
                             });
                         });
@@ -1592,11 +1595,11 @@ class ReactiveStreamTest extends BuddySuite {
                         test(Suspended, function () {
                             return create(function (ctx) {
                                 return { attach: function () {}, detach: function () {}, close: function () {} }
-                            }).then(function (parent) {
+                            }).then(function (base) {
                                 return new SyncPromise(function (f, _) {
-                                    var un = parent.finally(function () {});
+                                    var un = base.finally(function () {});
                                     un();
-                                    wait(10, f.bind(parent));
+                                    wait(10, f.bind(base));
                                 });
                             });
                         });
@@ -1689,37 +1692,42 @@ class ReactiveStreamTest extends BuddySuite {
                     });
                 });
 
-                // describe("recovery by the never stream", {
-                //     it("should change the state lazy", function (done) {
-                //         return create(function (ctx) {
-                //             ctx.throwError("error");
-                //             return { attach: function () {}, detach: function () {}, close: function () {} }
-                //         }).then(function (stream) {
-                //             var child = stream.catchError(function (e) return ReactiveStream.never());
-                //             child.state.should.equal(Init);
+                describe("recovery by the never stream", {
+                    it("should change the state", function (done) {
+                        return create(function (ctx) {
+                            ctx.throwError("error");
+                            return { attach: function () {}, detach: function () {}, close: function () {} }
+                        }).then(function (stream) {
+                            var child = stream.catchError(function (e) return ReactiveStream.never());
+                            child.state.should.equal(Init);
 
-                //             child.finally(function () {});
-                //             child.state.should.equal(Running);
-                //             wait(10, function () {
-                //                 child.state.should.equal(Never);
-                //                 done();
-                //             });
-                //         });
-                //     });
+                            child.finally(function () {});
+                            #if js
+                            child.state.should.equal(Running);
+                            wait(10, function () {
+                                child.state.should.equal(Never);
+                                done();
+                            });
+                            #else
+                            child.state.should.equal(Never);
+                            done();
+                            #end
+                        });
+                    });
 
-                //     testNeverStream(function () {
-                //         return create(function (ctx) {
-                //             ctx.throwError("error");
-                //             return { attach: function () {}, detach: function () {}, close: function () {} }
-                //         }).then(function (stream) {
-                //             var child = stream.catchError(function (e) return ReactiveStream.never());
-                //             child.finally(function () {});
-                //             return new SyncPromise(function (f, _) wait(10, f.bind(child)));
-                //         });
-                //     }, true);
+                    testNeverStream(function () {
+                        return create(function (ctx) {
+                            ctx.throwError("error");
+                            return { attach: function () {}, detach: function () {}, close: function () {} }
+                        }).then(function (stream) {
+                            var child = stream.catchError(function (e) return ReactiveStream.never());
+                            child.finally(function () {});
+                            return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                        });
+                    }, true);
 
-                //     testParentClosing(function (e) return ReactiveStream.never());
-                // });
+                    testBaseClosing(function (e) return ReactiveStream.never());
+                });
 
                 describe("recovery by the ended stream", {
                     it("should change the state", function (done) {
@@ -1744,18 +1752,18 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                     });
 
-                    // testEndedStream(function () {
-                    //     return create(function (ctx) {
-                    //         ctx.throwError("error");
-                    //         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    //     }).then(function (stream) {
-                    //         var child = stream.catchError(function (e) return ReactiveStream.empty());
-                    //         child.finally(function () {});
-                    //         return new SyncPromise(function (f, _) wait(10, f.bind(child)));
-                    //     });
-                    // }, true);
+                    testEndedStream(function () {
+                        return create(function (ctx) {
+                            ctx.throwError("error");
+                            return { attach: function () {}, detach: function () {}, close: function () {} }
+                        }).then(function (stream) {
+                            var child = stream.catchError(function (e) return ReactiveStream.empty());
+                            child.finally(function () {});
+                            return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                        });
+                    }, true);
 
-                    // testParentClosing(function (e) return ReactiveStream.empty());
+                    testBaseClosing(function (e) return ReactiveStream.empty());
                 });
 
                 // function testRecoveringByFailed(recover: Dynamic -> ReactiveStream<Int>): Void {
@@ -1786,7 +1794,7 @@ class ReactiveStreamTest extends BuddySuite {
                 //             });
                 //         }, true);
 
-                //         testParentClosing(recover);
+                //         testBaseClosing(recover);
                 //     }
                 // }
 
@@ -1815,8 +1823,8 @@ class ReactiveStreamTest extends BuddySuite {
             testEndedStream(function () return SyncPromise.resolve(ReactiveStream.empty()));
         });
 
-        // describe("ReactiveStream.fail()", {
-        //     testFailedStream(function (error) return SyncPromise.resolve(ReactiveStream.fail(error)));
-        // });
+        describe("ReactiveStream.fail()", {
+            testFailedStream(function (error) return SyncPromise.resolve(ReactiveStream.fail(error)));
+        });
     }
 }
