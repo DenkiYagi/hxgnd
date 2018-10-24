@@ -239,7 +239,7 @@ class ReactiveStream<T> {
             catchError: function (fn: Dynamic -> ReactiveStream<T>) {
                 var nextStream = new ReactiveStream();
                 nextStream.becomeNever();
-                subscribeEnd(nextStream.end.bind());
+                childClosers.add(nextStream.close);
                 return nextStream;
             },
             close: end.bind()
