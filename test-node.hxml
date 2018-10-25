@@ -6,5 +6,6 @@
 -js build/node.js
 -D nodejs
 -D buddy-colors
+# -D showUnhandledRejection
 -debug
 #-cmd node build/node.js
