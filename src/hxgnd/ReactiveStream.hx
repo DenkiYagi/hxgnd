@@ -216,6 +216,16 @@ class ReactiveStream<T> {
     }
 
     function becomeRecovering(error: Dynamic, recoverFn: Dynamic -> ReactiveStream<T>): Void {
+        function startPreparing(): Void {
+            becomePreparing(function (callback) {
+                function prepare() {
+                    if (Type.enumEq(receiver.state, Ended)) return;
+                    recover(error, recoverFn);
+                }
+                Dispatcher.dispatch(prepare);
+            });
+        }
+
         receiver = {
             #if debug internalName: "recovering", #end
             state: Init,
@@ -225,7 +235,7 @@ class ReactiveStream<T> {
             unsubscribeEnd: endSubscribers.remove,
             subscribeError: errorSubscribers.add,
             unsubscribeError: errorSubscribers.remove,
-            attach: recover.bind(error, recoverFn),
+            attach: startPreparing,
             close: end.bind()
         }
     }
@@ -300,15 +310,22 @@ class ReactiveStream<T> {
                         detach.add(internal.subscribeError(throwError));
                     }
 
-                    becomeRunning({
+                    var controller = {
                         attach: attach,
                         detach: detach.invoke,
                         close: function () {
                             internal.close();
                             detach.invoke();
                         }
-                    });
+                    }
+
                     attach();
+                    if (hasNoSubscribers()) {
+                        becomeSuspended(controller);
+                        detach.invoke();
+                    } else {
+                        becomeRunning(controller);
+                    }
             }
         } catch (e: Dynamic) {
             throwError(e);
