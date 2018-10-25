@@ -226,7 +226,7 @@ class ReactiveStream<T> {
             subscribeError: errorSubscribers.add,
             unsubscribeError: errorSubscribers.remove,
             attach: recover.bind(error, recoverFn),
-            close: becomeEnded
+            close: end.bind()
         }
     }
 
