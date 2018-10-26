@@ -481,10 +481,17 @@ class ReactiveStream<T> {
     }
 
     public function finally(fn: Void -> Void): Void -> Void {
-        var delegate = new Delegate0();
-        delegate.add(subscribeEnd(fn));
-        delegate.add(subscribeError(function onerror(_) fn()));
-        return delegate.invoke;
+        function handleError(_) fn();
+
+        receiver.subscribeEnd.callIfNotNull(fn);
+        receiver.subscribeError.callIfNotNull(handleError);
+        receiver.attach.callIfNotNull();
+
+        return function unsubscribeFinally() {
+            receiver.unsubscribeEnd.callIfNotNull(fn);
+            receiver.unsubscribeError.callIfNotNull(handleError);
+            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
+        }
     }
 
     public function close(): Void {

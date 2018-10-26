@@ -10,577 +10,229 @@ class ReactiveStreamTest extends BuddySuite {
         var testInitStream: (ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) -> ?Bool -> Void;
 
         function testObservable(create: ReactableStreamMiddleware<Int> -> Promise<ReactiveStream<Int>>) {
-            describe("observable", {
-                it("should pass when it throw error", function (done) {
-                    create(function (ctx) {
-                        throw "error";
-                    }).then(function (stream) {
-                        var values = [];
-                        var countEnd = 0;
-                        var errors = [];
-                        var countFinally = 0;
-                        var caughtErrors = [];
-                        stream.subscribe(function (x) {
-                            values.push(x);
+            describe("observer", {
+                function test(description: String,
+                            middleware: ReactableStreamMiddleware<Int>,
+                            expectation: {data: Array<Int>, end: Int, error: Array<Dynamic>, finally: Int}) {
+                    describe(description, {
+                        it("should pass when it is using subscribe()", function (done) {
+                            create(middleware).then(function (stream) {
+                                var data = [];
+                                stream.subscribe(
+                                    function (x) data.push(x)
+                                );
+                                #if js
+                                wait(10, function () {
+                                    data.should.containExactly(expectation.data);
+                                    done();
+                                });
+                                #else
+                                data.should.containExactly(expectation.data);
+                                done();
+                                #end
+                            });
                         });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
+
+                        it("should pass when it is using subscribeEnd()", function (done) {
+                            create(middleware).then(function (stream) {
+                                var countEnd = 0;
+                                stream.subscribeEnd(
+                                    function () countEnd++
+                                );
+                                #if js
+                                wait(10, function () {
+                                    countEnd.should.be(expectation.end);
+                                    done();
+                                });
+                                #else
+                                countEnd.should.be(expectation.end);
+                                done();
+                                #end
+                            });
                         });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
+
+                        it("should pass when it is using subscribeError()", function (done) {
+                            create(middleware).then(function (stream) {
+                                var errors = [];
+                                stream.subscribeError(
+                                    function (e) errors.push(e)
+                                );
+                                #if js
+                                wait(10, function () {
+                                    errors.should.containExactly(expectation.error);
+                                    done();
+                                });
+                                #else
+                                errors.should.containExactly(expectation.error);
+                                done();
+                                #end
+                            });
                         });
-                        stream.finally(function () {
-                            countFinally++;
+
+                        it("should pass when it is using finally()", function (done) {
+                            create(middleware).then(function (stream) {
+                                var countFinally = 0;
+                                stream.finally(
+                                    function () countFinally++
+                                );
+                                #if js
+                                wait(10, function () {
+                                    countFinally.should.be(expectation.finally);
+                                    done();
+                                });
+                                #else
+                                countFinally.should.be(expectation.finally);
+                                done();
+                                #end
+                            });
                         });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(10, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly(["error"]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
+
+                        it("should pass when it is using subscribeEach()", function (done) {
+                            create(middleware).then(function (stream) {
+                                var data = [];
+                                var countEnd = 0;
+                                var errors = [];
+                                var countFinally = 0;
+                                stream.subscribeEach(
+                                    function (x) data.push(x),
+                                    function () countEnd++,
+                                    function (e) errors.push(e),
+                                    function () countFinally++
+                                );
+                                #if js
+                                wait(10, function () {
+                                    data.should.containExactly(expectation.data);
+                                    countEnd.should.be(expectation.end);
+                                    errors.should.containExactly(expectation.error);
+                                    countFinally.should.be(expectation.finally);
+                                    done();
+                                });
+                                #else
+                                data.should.containExactly(expectation.data);
+                                countEnd.should.be(expectation.end);
+                                errors.should.containExactly(expectation.error);
+                                countFinally.should.be(expectation.finally);
+                                done();
+                                #end
+                            });
                         });
                     });
-                });
+                }
 
-                it("should pass when it call [ emit ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                test(
+                    "throw error",
+                    function (_) throw "error",
+                    {data: [], end: 0, error: ["error"], finally: 1}
+                );
+
+                test(
+                    "[ emit ]",
+                    function (ctx) {
                         ctx.emit(10);
-                        #else
-                        wait(10, function () {
-                            ctx.emit(10);
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([10]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(0);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ emitEnd ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [10], end: 0, error: [], finally: 0}
+                );
+                test(
+                    "[ emitEnd ]",
+                    function (ctx) {
                         ctx.emitEnd();
-                        #else
-                        wait(10, function () {
-                            ctx.emitEnd();
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(1);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ throwError ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [], end: 1, error: [], finally: 1}
+                );
+                test(
+                    "[ throwError ]",
+                    function (ctx) {
                         ctx.throwError("error1");
-                        #else
-                        wait(10, function () {
-                            ctx.throwError("error1");
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly(["error1"]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
+                    },
+                    {data: [], end: 0, error: ["error1"], finally: 1}
+                );
 
-                it("should pass when it call [ emit, emit ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                test(
+                    "[ emit, emit ]",
+                    function (ctx) {
                         ctx.emit(10);
                         ctx.emit(20);
-                        #else
-                        wait(10, function () {
-                            ctx.emit(10);
-                            ctx.emit(20);
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([10, 20]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(0);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ emit, emitEnd ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [10, 20], end: 0, error: [], finally: 0}
+                );
+                test(
+                    "[ emit, emitEnd ]",
+                    function (ctx) {
                         ctx.emit(10);
                         ctx.emitEnd();
-                        #else
-                        wait(10, function () {
-                            ctx.emit(10);
-                            ctx.emitEnd();
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([10]);
-                            countEnd.should.be(1);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ emit, throwError ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [10], end: 1, error: [], finally: 1}
+                );
+                test(
+                    "[ emit, throwError ]",
+                    function (ctx) {
                         ctx.emit(10);
                         ctx.throwError("error2");
-                        #else
-                        wait(10, function () {
-                            ctx.emit(10);
-                            ctx.throwError("error2");
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([10]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly(["error2"]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
+                    },
+                    {data: [10], end: 0, error: ["error2"], finally: 1}
+                );
 
-                it("should pass when it call [ emitEnd, emit ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                test(
+                    "[ emitEnd, emit ]",
+                    function (ctx) {
                         ctx.emitEnd();
                         ctx.emit(20);
-                        #else
-                        wait(10, function () {
-                            ctx.emitEnd();
-                            ctx.emit(20);
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(1);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ emitEnd, emitEnd ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [], end: 1, error: [], finally: 1}
+                );
+                test(
+                    "[ emitEnd, emitEnd ]",
+                    function (ctx) {
                         ctx.emitEnd();
                         ctx.emitEnd();
-                        #else
-                        wait(10, function () {
-                            ctx.emitEnd();
-                            ctx.emitEnd();
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(1);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ emitEnd, throwError ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [], end: 1, error: [], finally: 1}
+                );
+                test(
+                    "[ emitEnd, throwError ]",
+                    function (ctx) {
                         ctx.emitEnd();
                         ctx.throwError("error2");
-                        #else
-                        wait(10, function () {
-                            ctx.emitEnd();
-                            ctx.throwError("error2");
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(1);
-                            errors.should.containExactly([]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
+                    },
+                    {data: [], end: 1, error: [], finally: 1}
+                );
 
-                it("should pass when it call [ throwError, emit ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                test(
+                    "[ throwError, emit ]",
+                    function (ctx) {
                         ctx.throwError("error1");
                         ctx.emit(20);
-                        #else
-                        wait(10, function () {
-                            ctx.throwError("error1");
-                            ctx.emit(20);
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly(["error1"]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ throwError, emitEnd ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [], end: 0, error: ["error1"], finally: 1}
+                );
+                test(
+                    "[ throwError, emitEnd ]",
+                    function (ctx) {
                         ctx.throwError("error1");
                         ctx.emitEnd();
-                        #else
-                        wait(10, function () {
-                            ctx.throwError("error1");
-                            ctx.emitEnd();
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly(["error1"]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
-
-                it("should pass when it call [ throwError, throwError ]", function (done) {
-                    var values = [];
-                    var countEnd = 0;
-                    var errors = [];
-                    var countFinally = 0;
-                    var caughtErrors = [];
-                    create(function (ctx) {
-                        #if js
+                    },
+                    {data: [], end: 0, error: ["error1"], finally: 1}
+                );
+                test(
+                    "[ throwError, throwError ]",
+                    function (ctx) {
                         ctx.throwError("error1");
                         ctx.throwError("error2");
-                        #else
-                        wait(10, function () {
-                            ctx.throwError("error1");
-                            ctx.throwError("error2");
-                        });
-                        #end
                         return { attach: function () {}, detach: function () {}, close: function () {} }
-                    }).then(function (stream) {
-                        stream.subscribe(function (x) {
-                            values.push(x);
-                        });
-                        stream.subscribeEnd(function () {
-                            countEnd++;
-                        });
-                        stream.subscribeError(function (e) {
-                            errors.push(e);
-                        });
-                        stream.finally(function () {
-                            countFinally++;
-                        });
-                        stream.catchError(function (e) {
-                            caughtErrors.push(e);
-                            throw e;
-                        });
-                        wait(20, function () {
-                            values.should.containExactly([]);
-                            countEnd.should.be(0);
-                            errors.should.containExactly(["error1"]);
-                            countFinally.should.be(1);
-                            caughtErrors.should.containExactly([]);
-                            done();
-                        });
-                    });
-                });
+                    },
+                    {data: [], end: 0, error: ["error1"], finally: 1}
+                );
 
                 it("should call all callbacks that is set subscribe()", function (done) {
                     var called1 = 0;
@@ -824,7 +476,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                                 child.finally(function () {});
                                 #if js
-                                wait(5, function () {
+                                wait(10, function () {
                                     child.state.should.equal(Ended);
                                     done();
                                 });
@@ -844,7 +496,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                                 child.finally(function () {});
                                 #if js
-                                wait(5, function () {
+                                wait(10, function () {
                                     child.state.should.equal(Ended);
                                     done();
                                 });
@@ -990,7 +642,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 parent.close();
                                 child.state.should.equal(Ended);
                                 #if js
-                                wait(5, function () {
+                                wait(10, function () {
                                     called.should.be(1);
                                     done();
                                 });
@@ -1145,7 +797,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         next.finally(function () {});
                         #if js
-                        wait(5, function () {
+                        wait(10, function () {
                             called.should.be(true);
                             stream.state.should.equal(Failed("error"));
                             next.state.should.not.equal(Init);
@@ -1170,7 +822,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                                 child.finally(function () {});
                                 #if js
-                                wait(5, function () {
+                                wait(10, function () {
                                     child.state.should.equal(state);
                                     done();
                                 });
@@ -1190,7 +842,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                                 child.finally(function () {});
                                 #if js
-                                wait(5, function () {
+                                wait(10, function () {
                                     child.state.should.equal(state);
                                     done();
                                 });
@@ -1250,7 +902,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.finally(function () {});
                                 #if js
                                 child.state.should.equal(Running);
-                                wait(5, function () {
+                                wait(10, function () {
                                     child.state.should.equal(Failed("error"));
                                     done();
                                 });
@@ -1283,7 +935,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.finally(function () {});
                                 #if js
                                 child.state.should.equal(Running);
-                                wait(5, function () {
+                                wait(10, function () {
                                     child.state.should.equal(Failed("error"));
                                     done();
                                 });
@@ -1342,7 +994,7 @@ class ReactiveStreamTest extends BuddySuite {
                             #if js
                             stream.state.should.equal(Running);
                             called.should.be(0);
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.state.should.equal(Running);
                                 called.should.be(1);
                                 done();
@@ -1364,7 +1016,7 @@ class ReactiveStreamTest extends BuddySuite {
                             trigger(stream);
                             #if js
                             stream.state.should.equal(Ended);
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -1384,7 +1036,7 @@ class ReactiveStreamTest extends BuddySuite {
                             trigger(stream);
                             stream.close();
                             stream.state.should.equal(Ended);
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -1401,7 +1053,7 @@ class ReactiveStreamTest extends BuddySuite {
                             un();
                             stream.state.should.equal(Running);
                             called.should.be(0);
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.state.should.equal(Suspended);
                                 called.should.be(1);
                                 done();
@@ -1418,7 +1070,7 @@ class ReactiveStreamTest extends BuddySuite {
                         }).then(function (stream) {
                             #if js
                             var unsubscribe = trigger(stream);
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.state.should.equal(Running);
                                 called.should.be(1);
 
@@ -1429,7 +1081,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 stream.state.should.equal(Running);
 
                                 stream.subscribe(function (_) fail());
-                                wait(5, function () {
+                                wait(10, function () {
                                     called.should.be(1);
                                     done();
                                 });
@@ -1488,7 +1140,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 closeCalled.should.be(0);
                                 #end
 
-                                wait(5, function () {
+                                wait(10, function () {
                                     stream.state.should.equal(Suspended);
                                     attachCalled.should.be(1);
                                     detachCalled.should.be(1);
@@ -1506,7 +1158,7 @@ class ReactiveStreamTest extends BuddySuite {
                         }).then(function (stream) {
                             trigger(stream);
                             #if js
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.close();
                                 stream.state.should.equal(Ended);
                                 called.should.be(1);
@@ -1529,7 +1181,7 @@ class ReactiveStreamTest extends BuddySuite {
                             stream.close();
                             #if js
                             stream.state.should.equal(Ended);
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -1549,7 +1201,7 @@ class ReactiveStreamTest extends BuddySuite {
                             stream.close();
                             #if js
                             stream.state.should.equal(Ended);
-                            wait(5, function () {
+                            wait(10, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -1625,7 +1277,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                                     recovered.finally(function () {});
                                     #if js
-                                    wait(5, function () {
+                                    wait(10, function () {
                                         recovered.state.should.equal(Ended);
                                         done();
                                     });
@@ -1650,7 +1302,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 return new SyncPromise(function (f, _) {
                                     base.finally(function () {});
                                     #if js
-                                    wait(5, f.bind(base));
+                                    wait(10, f.bind(base));
                                     #else
                                     f(base);
                                     #end
@@ -1666,7 +1318,7 @@ class ReactiveStreamTest extends BuddySuite {
                                     var un = base.finally(function () {});
                                     un();
                                     #if js
-                                    wait(5, f.bind(base));
+                                    wait(10, f.bind(base));
                                     #else
                                     f(base);
                                     #end
@@ -1774,7 +1426,7 @@ class ReactiveStreamTest extends BuddySuite {
                             child.finally(function () {});
                             #if js
                             child.state.should.equal(Running);
-                            wait(5, function () {
+                            wait(10, function () {
                                 child.state.should.equal(Never);
                                 done();
                             });
@@ -1811,7 +1463,7 @@ class ReactiveStreamTest extends BuddySuite {
                             child.finally(function () {});
                             #if js
                             child.state.should.equal(Running);
-                            wait(5, function () {
+                            wait(10, function () {
                                 child.state.should.equal(Ended);
                                 done();
                             });
@@ -1847,7 +1499,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 next.state.should.equal(Init);
                                 next.finally(function () {});
                                 #if js
-                                wait(5, function () {
+                                wait(10, function () {
                                     next.state.should.equal(Failed("error"));
                                     done();
                                 });
@@ -1886,17 +1538,17 @@ class ReactiveStreamTest extends BuddySuite {
         // --------------------------------------------------------------------
         // test main
         // --------------------------------------------------------------------
-        describe("ReactiveStream.create()", {
-            testInitStream(function (middleware) return SyncPromise.resolve(ReactiveStream.create(middleware)));
-        });
+        // describe("ReactiveStream.create()", {
+        //     testInitStream(function (middleware) return SyncPromise.resolve(ReactiveStream.create(middleware)));
+        // });
 
-        describe("ReactiveStream.never()", {
-            testNeverStream(function () return SyncPromise.resolve(ReactiveStream.never()));
-        });
+        // describe("ReactiveStream.never()", {
+        //     testNeverStream(function () return SyncPromise.resolve(ReactiveStream.never()));
+        // });
 
-        describe("ReactiveStream.empty()", {
-            testEndedStream(function () return SyncPromise.resolve(ReactiveStream.empty()));
-        });
+        // describe("ReactiveStream.empty()", {
+        //     testEndedStream(function () return SyncPromise.resolve(ReactiveStream.empty()));
+        // });
 
         describe("ReactiveStream.fail()", {
             testFailedStream(function (error) return SyncPromise.resolve(ReactiveStream.fail(error)));
