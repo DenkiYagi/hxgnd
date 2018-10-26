@@ -149,13 +149,13 @@ class ReactiveStream<T> {
         receiver = {
             #if debug internalName: "running", #end
             state: Running,
+            detach: suspend,
             subscribe: dataSubscribers.add,
             unsubscribe: dataSubscribers.remove,
             subscribeEnd: endSubscribers.add,
             unsubscribeEnd: endSubscribers.remove,
             subscribeError: errorSubscribers.add,
             unsubscribeError: errorSubscribers.remove,
-            detach: suspend,
             onEmit: emit,
             onEmitEnd: end.bind(),
             onThrowError: throwError,
@@ -172,13 +172,13 @@ class ReactiveStream<T> {
         receiver = {
             #if debug internalName: "suspended", #end
             state: Suspended,
+            attach: resume,
             subscribe: dataSubscribers.add,
             unsubscribe: dataSubscribers.remove,
             subscribeEnd: endSubscribers.add,
             unsubscribeEnd: endSubscribers.remove,
             subscribeError: errorSubscribers.add,
             unsubscribeError: errorSubscribers.remove,
-            attach: resume,
             onEmitEnd: end.bind(),
             onThrowError: throwError,
             close: end.bind(controller.close)
@@ -209,13 +209,48 @@ class ReactiveStream<T> {
             },
             catchError: function (fn: Dynamic -> ReactiveStream<T>) {
                 var nextStream = new ReactiveStream();
-                nextStream.becomeRecovering(error, fn);
+                nextStream.__becomeRecovering(error, fn);
                 return nextStream;
             },
         }
     }
 
-    function becomeRecovering(error: Dynamic, recoverFn: Dynamic -> ReactiveStream<T>): Void {
+    function becomeRecoveryReady(controller: ReactableStreamMiddlewareController): Void {
+        function startRecovery(): Void {
+            becomeRecovering();
+            Dispatcher.dispatch(controller.attach);
+        }
+
+        receiver = {
+            #if debug internalName: "recoveryReady", #end
+            state: Init,
+            attach: startRecovery,
+            subscribe: dataSubscribers.add,
+            subscribeEnd: endSubscribers.add,
+            subscribeError: errorSubscribers.add,
+            close: end.bind()
+        }
+    }
+
+    function becomeRecovering(): Void {
+        receiver = {
+            #if debug internalName: "preparing", #end
+            state: Running,
+            subscribe: dataSubscribers.add,
+            unsubscribe: dataSubscribers.remove,
+            subscribeEnd: endSubscribers.add,
+            unsubscribeEnd: endSubscribers.remove,
+            subscribeError: errorSubscribers.add,
+            unsubscribeError: errorSubscribers.remove,
+            onEmit: emit,
+            onEmitEnd: end.bind(),
+            onThrowError: throwError,
+            close: end.bind()
+        }
+    }
+
+
+    function __becomeRecovering(error: Dynamic, recoverFn: Dynamic -> ReactiveStream<T>): Void {
         function startPreparing(): Void {
             becomePreparing(function (callback) {
                 function prepare() {
@@ -229,13 +264,13 @@ class ReactiveStream<T> {
         receiver = {
             #if debug internalName: "recovering", #end
             state: Init,
+            attach: startPreparing,
             subscribe: dataSubscribers.add,
             unsubscribe: dataSubscribers.remove,
             subscribeEnd: endSubscribers.add,
             unsubscribeEnd: endSubscribers.remove,
             subscribeError: errorSubscribers.add,
             unsubscribeError: errorSubscribers.remove,
-            attach: startPreparing,
             close: end.bind()
         }
     }
@@ -305,9 +340,7 @@ class ReactiveStream<T> {
                 case _:
                     var detach = new Delegate0();
                     function attach() {
-                        detach.add(internal.subscribe(emit));
-                        detach.add(internal.subscribeEnd(end.bind()));
-                        detach.add(internal.subscribeError(throwError));
+                        detach.add(internal.subscribeEach(emit, end.bind(), throwError));
                     }
 
                     var controller = {
@@ -320,12 +353,17 @@ class ReactiveStream<T> {
                     }
 
                     attach();
-                    if (hasNoSubscribers()) {
-                        becomeSuspended(controller);
-                        detach.invoke();
-                    } else {
-                        becomeRunning(controller);
+                    switch (internal.state) {
+                        case Init | Running:
+                            if (hasNoSubscribers()) {
+                                becomeSuspended(controller);
+                                detach.invoke();
+                            } else {
+                                becomeRunning(controller);
+                            }
+                        case _:
                     }
+
             }
         } catch (e: Dynamic) {
             throwError(e);
@@ -368,9 +406,7 @@ class ReactiveStream<T> {
         receiver.attach.callIfNotNull();
         return function unsubscribe() {
             receiver.unsubscribe.callIfNotNull(fn);
-            if (receiver.detach.nonNull() && hasNoSubscribers()) {
-                receiver.detach();
-            }
+            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
         }
     }
 
@@ -379,9 +415,7 @@ class ReactiveStream<T> {
         receiver.attach.callIfNotNull();
         return function unsubscribeEnd() {
             receiver.unsubscribeEnd.callIfNotNull(fn);
-            if (receiver.detach.nonNull() && hasNoSubscribers()) {
-                receiver.detach();
-            }
+            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
         }
     }
 
@@ -390,50 +424,59 @@ class ReactiveStream<T> {
         receiver.attach.callIfNotNull();
         return function unsubscribeError() {
             receiver.unsubscribeError.callIfNotNull(fn);
-            if (receiver.detach.nonNull() && hasNoSubscribers()) {
-                receiver.detach();
-            }
+            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
         }
     }
 
-    public function subscribeEach(onData: Null<T -> Void>, onEnd: Null<Void -> Void>, onError: Null<Dynamic -> Void>): Void -> Void {
-        if (onData.isNull() && onEnd.isNull() && onError.isNull()) {
+    public function subscribeEach(onData: Null<T -> Void>, onEnd: Null<Void -> Void>,
+                                  onError: Null<Dynamic -> Void>, ?finally: Void -> Void): Void -> Void {
+        if (onData.isNull() && onEnd.isNull() && onError.isNull() && finally.isNull()) {
             return function () {};
         }
 
-        if (onData.nonNull())  receiver.subscribe(onData);
-        if (onEnd.nonNull())   receiver.subscribeEnd(onEnd);
-        if (onError.nonNull()) receiver.subscribeError(onError);
+        var unsubscribeFinally = new Delegate0();
+
+        if (onData.nonNull())  receiver.subscribe.callIfNotNull(onData);
+        if (onEnd.nonNull())   receiver.subscribeEnd.callIfNotNull(onEnd);
+        if (onError.nonNull()) receiver.subscribeError.callIfNotNull(onError);
+        if (finally.nonNull()) {
+            function handleError(_) finally();
+            receiver.subscribeEnd.callIfNotNull(finally);
+            receiver.subscribeError.callIfNotNull(handleError);
+            unsubscribeFinally.add(function () receiver.unsubscribeEnd.callIfNotNull(finally));
+            unsubscribeFinally.add(function () receiver.unsubscribeError.callIfNotNull(handleError));
+        }
         receiver.attach.callIfNotNull();
 
         return function unsubscribe() {
-            if (onData.nonNull())  receiver.unsubscribe(onData);
-            if (onEnd.nonNull())   receiver.unsubscribeEnd(onEnd);
-            if (onError.nonNull()) receiver.unsubscribeError(onError);
-            if (receiver.detach.nonNull() && hasNoSubscribers()) {
-                receiver.detach.callIfNotNull();
-            }
+            if (onData.nonNull())  receiver.unsubscribe.callIfNotNull(onData);
+            if (onEnd.nonNull())   receiver.unsubscribeEnd.callIfNotNull(onEnd);
+            if (onError.nonNull()) receiver.unsubscribeError.callIfNotNull(onError);
+            unsubscribeFinally.invoke();
+            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
         }
     }
 
-    public function catchError(fn: Dynamic -> ReactiveStream<T>): ReactiveStream<T> {
+    public function catchError(recoveryFn: Dynamic -> ReactiveStream<T>): ReactiveStream<T> {
         // TODO receiverで処理する
         return if (receiver.catchError.nonNull()) {
-            receiver.catchError(fn);
+            receiver.catchError(recoveryFn);
         } else {
-            var child = ReactiveStream.create(function (ctx) {
-                var detach = new Delegate0();
-                function attach() {
-                    detach.add(subscribeEach(ctx.emit, ctx.emitEnd, ctx.stream.recover.bind(_, fn)));
-                }
-                return {
-                    attach: attach,
-                    detach: detach.invoke,
-                    close: detach.invoke,
-                }
+            var stream = new ReactiveStream();
+
+            var detacher = new Delegate0();
+            function attach() {
+                detacher.add(subscribeEach(stream.emit, stream.end.bind(), stream.recover.bind(_, recoveryFn)));
+            }
+
+            stream.becomeRecoveryReady({
+                attach: attach,
+                detach: detacher.invoke,
+                close:  detacher.invoke
             });
-            childClosers.add(child.close);
-            return child;
+            childClosers.add(stream.close);
+
+            return stream;
         }
     }
 
