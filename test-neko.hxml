@@ -1,0 +1,8 @@
+-main TestMain
+-cp src
+-cp test
+-lib externtype
+-lib buddy
+-neko build/neko.n
+-D buddy-colors
+-debug
