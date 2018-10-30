@@ -17,7 +17,7 @@ class ComputationTest extends BuddySuite {
                 });
 
                 it("should pass when it is given { done() }", function (done) {
-                    ComputationTest_no_transform.perform_done(done);
+                    ComputationTest_no_transform.perform_with_async_func(done);
                 });
             });
 
@@ -99,11 +99,11 @@ class ComputationTest extends BuddySuite {
                 });
 
                 it("should pass when it is given { @let 1; done(); }", function (done) {
-                    ComputationTest_EMeta_transform.perform_done(done);
+                    ComputationTest_EMeta_transform.perform_with_async_func(done);
                 });
 
-                it("should pass when it is changed keyword and it is given { @foo 1; done(); }", function (done) {
-                    ComputationTest_EMeta_transform.perform_done_foo(done);
+                it("should pass when it is changed keyword and it is given { @foo 1; }", {
+                    ComputationTest_EMeta_transform.perform_keyword_foo();
                 });
             });
 

@@ -24,7 +24,7 @@ class ComputationTest_no_transform {
         });
     }
 
-    public static macro function perform_done(done: Expr): Expr {
+    public static macro function perform_with_async_func(done: Expr): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) {
                 return macro Dispatcher.dispatch(function () {
@@ -214,7 +214,7 @@ class ComputationTest_EMeta_transform {
         });
     }
 
-    public static macro function perform_done(done: Expr): Expr {
+    public static macro function perform_with_async_func(done: Expr): Expr {
         return Computation.perform({
             buildBind: function (expr: Expr, fn: Expr) {
                 return macro Dispatcher.dispatch(function () {
@@ -229,19 +229,14 @@ class ComputationTest_EMeta_transform {
         });
     }
 
-    public static macro function perform_done_foo(done: Expr): Expr {
+    public static macro function perform_keyword_foo(): Expr {
         return Computation.perform({
             keyword: "foo",
-            buildBind: function (expr: Expr, fn: Expr) {
-                return macro Dispatcher.dispatch(function () {
-                    ${fn}(${expr} * 10);
-                });
-            },
+            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),
             buildReturn: function (expr: Expr) return expr,
             buildZero: function () return macro 0
         }, macro {
             @foo 1;
-            ${done}();
         });
     }
 }
