@@ -5,4 +5,5 @@
 -lib buddy
 -neko build/neko.n
 -D buddy-colors
+-D buddy_ignore_passing_specs
 -debug
