@@ -579,24 +579,34 @@ class LangToolsTest extends BuddySuite {
                 {name: "test"}.combine({name: "hello"}).same({name: "hello"}).should.be(true);
             });
             it("can combine nested object", {
-                {
-                    id: 1,
-                    sub: {
-                        key1: "v1",
-                        key2: "v2"
-                    }
-                }.combine({
-                    sub: {
-                        key3: "v3"
-                    }
-                }).same({
+                LangTools.combine({
                     id: 1,
                     sub: {
                         key1: "v1",
                         key2: "v2",
                         key3: "v3"
                     }
-                });
+                }, {
+                    sub: {
+                        key2: "v2 override",
+                        key3: {
+                            values: [1, 2, 3]
+                        },
+                        key4: "v4"
+                    }
+                })
+                .same({
+                    id: 1,
+                    sub: {
+                        key1: "v1",
+                        key2: "v2 override",
+                        key3: {
+                            values: [1, 2, 3],
+                        },
+                        key4: "v4"
+                    }
+                })
+                .should.be(true);
             });
         });
 

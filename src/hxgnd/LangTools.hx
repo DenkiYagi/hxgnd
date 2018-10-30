@@ -101,29 +101,94 @@ class LangTools {
     #if macro
     static var sequence = 1;
     #end
-    public static macro function combine(rest: Array<ExprOf<{}>>): Expr {
-        if (rest.length <= 0) return Context.error("Not enough arguments", Context.currentPos());
-        if (rest.length == 1) return rest[0];
+    public static macro function combine(objects: Array<ExprOf<{}>>): Expr {
+        if (objects.length <= 0) return Context.error("Not enough arguments", Context.currentPos());
+        if (objects.length == 1) return objects[0];
 
-        var block = [];
-        var map = new Map<String, {field: String, expr: Expr}>();
-        for (rx in rest) {
-            var type = Context.typeof(rx);
-            switch (type.follow()) {
-                case TAnonymous(_.get() => tr):
-                    var name = "__hxgnd_tmp_struct_" + sequence++;
-                    block.push(macro var $name = $rx);
-                    var extVar = macro $i{name};
-                    for (field in tr.fields) {
-                        var fname = field.name;
-                        map.set(fname, { field: fname, expr: macro $extVar.$fname } );
+        var exprs = [];
+        var rootFields = new Map<String, MergingField>();
+        for (obj in objects) {
+            var objName = '__hxgnd_temp_${sequence++}__';
+            exprs.push(macro var $objName = ${obj});
+
+            var type = Context.typeof(obj);
+            switch (Context.toComplexType(type.follow())) {
+                case TAnonymous(fields):
+                    var stack = fields.map(function (f) return {
+                        field: f,
+                        parentPath: [],
+                        parentFields: rootFields,
+                        parentExpr: macro $i{objName},
+                    });
+
+                    while (stack.length > 0) {
+                        var current = stack.pop();
+                        var fname = current.field.name;
+                        var path = current.parentPath.concat([fname]);
+                        var parentFields = current.parentFields;
+                        switch (current.field.kind) {
+                            case FVar(t, _):
+                                switch (t) {
+                                    case TAnonymous(sf):
+                                        var fmap = if (parentFields.exists(fname)) {
+                                            switch (parentFields.get(fname)) {
+                                                case Object(x):
+                                                    x;
+                                                case Value(_):
+                                                    var x = new Map<String, MergingField>();
+                                                    parentFields.set(fname, Object(x));
+                                                    x;
+                                            }
+                                        } else {
+                                            var x = new Map<String, MergingField>();
+                                            parentFields.set(fname, Object(x));
+                                            x;
+                                        }
+                                        stack = stack.concat(sf.map(function (f) return {
+                                            field: f,
+                                            parentPath: path,
+                                            parentFields: fmap,
+                                            parentExpr: macro ${current.parentExpr}.$fname,
+                                        }));
+                                    case _:
+                                        parentFields.set(fname, Value(macro ${current.parentExpr}.$fname));
+                                }
+                            case FProp(get, _, t, e):
+                                return Context.error("Can not combine FProp field: " + path.join("."), current.field.pos);
+                            case FFun(f):
+                                return Context.error("Can not combine FFun field: " + path.join("."), current.field.pos);
+                        }
                     }
                 default:
-                    return Context.error("Object type expected instead of " + type.toString(), rx.pos);
+                    return Context.error("Object type expected instead of " + type.toString(), obj.pos);
             }
         }
-        block.push(macro ${ {expr: EObjectDecl(map.array()), pos: Context.currentPos()} });
-        return macro $b{block};
+
+        var rootFieldExprs = [];
+        exprs.push({expr: EObjectDecl(rootFieldExprs), pos: Context.currentPos()});
+
+        var stack = [{fields: rootFields, exprs: rootFieldExprs}];
+        while (stack.length > 0) {
+            var current = stack.pop();
+            for (fname in current.fields.keys()) {
+                switch (current.fields.get(fname)) {
+                    case Object(fieldMap):
+                        var exprs = [];
+                        current.exprs.push({
+                            field: fname,
+                            expr: {expr: EObjectDecl(exprs), pos: Context.currentPos()}
+                        });
+                        stack.push({fields: fieldMap, exprs: exprs});
+                    case Value(expr):
+                        current.exprs.push({
+                            field: fname,
+                            expr: expr
+                        });
+                }
+            }
+        }
+
+        return macro $b{exprs};
     }
 
     public static function same(value1: Dynamic, value2: Dynamic): Bool {
@@ -298,3 +363,10 @@ class LangTools {
         }
     }
 }
+
+#if macro
+private enum MergingField {
+    Object(fields: Map<String, MergingField>);
+    Value(field: Expr);
+}
+#end
