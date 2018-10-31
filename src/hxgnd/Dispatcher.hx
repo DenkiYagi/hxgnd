@@ -3,11 +3,11 @@ package hxgnd;
 class Dispatcher {
     public static function dispatch(fn: Void -> Void): Void {
         #if (macro || iterp)
-        throw "not implemented";
+        fn();
         #elseif js
         hxgnd.js.JsNative.setImmediate(fn);
         #else
-        fn();
+        haxe.EntryPoint.runInMainThread(fn);
         #end
     }
 }
