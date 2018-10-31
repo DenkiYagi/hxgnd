@@ -3,6 +3,7 @@
 -cp test
 -lib externtype
 -lib buddy
+-lib hxnodejs
 -js build/dummy.js
 -debug
 --no-inline

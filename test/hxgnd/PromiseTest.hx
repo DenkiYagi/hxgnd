@@ -7,10 +7,19 @@ using buddy.Should;
 
 class PromiseTest extends BuddySuite {
     public function new() {
-        #if js
-        describe("Promise.new()", {
-            timeoutMs = 500;
+        timeoutMs = 100;
 
+        #if js
+        function suppress(error: Dynamic) {}
+
+        beforeAll({
+            untyped __js__("process.on('unhandledRejection', {0})", suppress);
+        });
+        afterAll({
+            untyped __js__("process.removeListener('unhandledRejection', {0})", suppress);
+        });
+
+        describe("Promise.new()", {
             describe("executor", {
                 it("should call", function (done) {
                     new Promise(function (_, _) {
@@ -25,7 +34,7 @@ class PromiseTest extends BuddySuite {
                         function (_) { fail(); },
                         function (_) { fail(); }
                     );
-                    wait(10, done);
+                    wait(5, done);
                 });
             });
 
@@ -135,8 +144,6 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.resolve()", {
-            timeoutMs = 500;
-
             it("should call resolved(_)", function (done) {
                 Promise.resolve().then(
                     function (_) { done(); },
@@ -156,8 +163,6 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.reject()", {
-            timeoutMs = 500;
-
            it("should call rejected(x)", function (done) {
                 Promise.reject("error").then(
                     function (_) { fail(); },
@@ -189,8 +194,6 @@ class PromiseTest extends BuddySuite {
         #end
 
         describe("Promise.then()", {
-            timeoutMs = 500;
-
             it("should call fulfilled", function (done) {
                 new Promise(function (fulfill, _) {
                     fulfill(100);
@@ -441,15 +444,13 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.catchError()", {
-            timeoutMs = 500;
-
             it("should not call", function (done) {
                 new Promise(function (fulfill, _) {
                     fulfill(100);
                 }).catchError(function (_) {
                     fail();
                 });
-                wait(10, done);
+                wait(5, done);
             });
 
             it("should call", function (done) {
@@ -584,8 +585,6 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.finally()", {
-            timeoutMs = 500;
-
             it("should call when it is fulfilled", function (done) {
                 new Promise(function (fulfill, _) {
                     fulfill(100);
@@ -675,8 +674,6 @@ class PromiseTest extends BuddySuite {
         #end
 
         describe("Promise.all()", {
-            timeoutMs = 5000;
-
             it("should resolve empty array", function (done) {
                 Promise.all([]).then(function (values) {
                     LangTools.same(values, []).should.be(true);
@@ -711,7 +708,7 @@ class PromiseTest extends BuddySuite {
             it("should resolve ordered values", function (done) {
                 Promise.all([
                     new Promise(function (f, _) {
-                        wait(10, f.bind(1));
+                        wait(5, f.bind(1));
                     }),
                     Promise.resolve(2),
                     Promise.resolve(3)
@@ -726,11 +723,11 @@ class PromiseTest extends BuddySuite {
             it("should reject by 2nd promise", function (done) {
                 Promise.all([
                     new Promise(function (_, r) {
-                        wait(10, r.bind("error1"));
+                        wait(5, r.bind("error1"));
                     }),
                     Promise.reject("error2"),
                     new Promise(function (_, r) {
-                        wait(10, r.bind("error3"));
+                        wait(5, r.bind("error3"));
                     })
                 ]).then(function (values) {
                     fail();
@@ -767,15 +764,13 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise.race()", {
-            timeoutMs = 500;
-
             it("should be pending", function (done) {
                 Promise.race([]).then(function (value) {
                     fail();
                 }, function (_) {
                     fail();
                 });
-                wait(10, done);
+                wait(5, done);
             });
 
             it("should resolve", function (done) {
@@ -803,7 +798,7 @@ class PromiseTest extends BuddySuite {
             it("should resolve by 2nd promise", function (done) {
                 Promise.race([
                     new Promise(function (f, _) {
-                        wait(10, f.bind(1));
+                        wait(5, f.bind(1));
                     }),
                     Promise.resolve(2),
                     Promise.resolve(3)
@@ -818,11 +813,11 @@ class PromiseTest extends BuddySuite {
             it("should reject by 2nd promise", function (done) {
                 Promise.race([
                     new Promise(function (_, r) {
-                        wait(10, r.bind("error1"));
+                        wait(5, r.bind("error1"));
                     }),
                     Promise.reject("error2"),
                     new Promise(function (_, r) {
-                        wait(10, r.bind("error3"));
+                        wait(5, r.bind("error3"));
                     })
                 ]).then(function (value) {
                     fail();
@@ -859,8 +854,6 @@ class PromiseTest extends BuddySuite {
         });
 
         describe("Promise#compute()", {
-            timeoutMs = 500;
-
             describe("excluded expr", {
                 it("should pass when it given {}", function (done) {
                     Promise.compute({}).then(function (_) {

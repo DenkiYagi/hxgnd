@@ -7,13 +7,15 @@ import hxgnd.ReactiveActor;
 
 class ReactiveActorTest extends BuddySuite {
     public function new() {
+        timeoutMs = 100;
+
         describe("ReactiveActor#new()", {
             it("should not call middleware", function (done) {
                 new ReactiveActor(10, function (_, _) {
                     fail();
                     return function () {};
                 });
-                wait(10, done);
+                wait(5, done);
             });
         });
 
@@ -24,13 +26,11 @@ class ReactiveActorTest extends BuddySuite {
                     return function () {};
                 });
                 actor.getState().should.be(10);
-                wait(10, done);
+                wait(5, done);
             });
         });
 
         describe("ReactiveActor#dispatch()", {
-            timeoutMs = 500;
-
             describe("invoke middleware", {
                 it("should call asynchronously", function (done) {
                     var actor = new ReactiveActor(10, function (ctx, message) {
@@ -45,6 +45,7 @@ class ReactiveActorTest extends BuddySuite {
                     var count = 0;
                     var actor = new ReactiveActor(10, function (ctx, message) {
                         count++;
+                        trace(message);
                         switch (count) {
                             case 1: LangTools.same(message, Increment).should.be(true);
                             case 2: LangTools.same(message, Decrement).should.be(true);
@@ -54,7 +55,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.dispatch(Increment);
                     actor.dispatch(Decrement);
-                    wait(10, function () {
+                    wait(5, function () {
                         count.should.be(2);
                         done();
                     });
@@ -83,7 +84,7 @@ class ReactiveActorTest extends BuddySuite {
                     actor.subscribe(function (x) {
                         fail();
                     });
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should call subscriber", function (done) {
@@ -110,7 +111,7 @@ class ReactiveActorTest extends BuddySuite {
                     actor.subscribe(function (x) {
                         fail();
                     });
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should call all subscribers", function (done) {
@@ -129,7 +130,7 @@ class ReactiveActorTest extends BuddySuite {
                         called2 = true;
                     });
                     actor.dispatch(Increment);
-                    wait(10, function () {
+                    wait(5, function () {
                         called1.should.be(true);
                         called2.should.be(true);
                         done();
@@ -174,7 +175,7 @@ class ReactiveActorTest extends BuddySuite {
                     promise.finally(function () {
                         fail();
                     });
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should be pending all", function (done) {
@@ -195,7 +196,7 @@ class ReactiveActorTest extends BuddySuite {
                     promise2.finally(function () {
                         fail();
                     });
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should not call the middleware", function (done) {
@@ -208,7 +209,7 @@ class ReactiveActorTest extends BuddySuite {
 
                     var promise = actor.dispatch(Increment);
                     promise.abort();
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should call the onabort", function (done) {
@@ -249,7 +250,7 @@ class ReactiveActorTest extends BuddySuite {
                             fail();
                         });
                         actor.dispatch(Increment);
-                        wait(10, done);
+                        wait(5, done);
                     });
                 });
 
@@ -266,7 +267,7 @@ class ReactiveActorTest extends BuddySuite {
                         });
                         actor.dispatch(Increment);
 
-                        wait(10, function () {
+                        wait(5, function () {
                             called.should.be(true);
                             done();
                         });
@@ -297,7 +298,7 @@ class ReactiveActorTest extends BuddySuite {
                             fail();
                         });
                         actor.dispatch(Increment);
-                        wait(10, done);
+                        wait(5, done);
                     });
                 });
             });
@@ -337,7 +338,7 @@ class ReactiveActorTest extends BuddySuite {
                         resolved = true;
                     });
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count.should.be(1);
                         resolved.should.be(true);
                         done();
@@ -527,7 +528,7 @@ class ReactiveActorTest extends BuddySuite {
                         called = true;
                     });
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count.should.be(1);
                         called.should.be(true);
                         done();
@@ -694,7 +695,7 @@ class ReactiveActorTest extends BuddySuite {
                         fail();
                     });
 
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should take the emitted state", function (done) {
@@ -717,7 +718,7 @@ class ReactiveActorTest extends BuddySuite {
                         called = true;
                     });
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count.should.be(1);
                         called.should.be(false);
                         done();
@@ -902,7 +903,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
 
                     actor.dispatch(Increment);
-                    wait(10, function () {
+                    wait(5, function () {
                         actor.getState().should.be(3);
                         count.should.be(3);
                         done();
@@ -1216,7 +1217,7 @@ class ReactiveActorTest extends BuddySuite {
                     actor.dispatch(Increment);
                     actor.dispatch(Increment);
 
-                    wait(10, function () {
+                    wait(5, function () {
                         calledAlt.should.be(true);
                         calledObserver.should.be(true);
                         done();
@@ -1247,7 +1248,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.dispatch(3);
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count.should.be(3);
                         done();
                     });
@@ -1262,7 +1263,7 @@ class ReactiveActorTest extends BuddySuite {
                         return function () {};
                     });
                     actor.abort();
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should pass when it is called 2-times", function (done) {
@@ -1271,7 +1272,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
                     actor.abort();
                     actor.abort();
-                    wait(10, done);
+                    wait(5, done);
                 });
             });
 

@@ -7,6 +7,8 @@ using hxgnd.PromiseTools;
 
 class PromiseToolsTest extends BuddySuite {
     public function new() {
+        timeoutMs = 100;
+
         describe("PromiseTools.callAsPromise()", {
             // TODO single arg
 

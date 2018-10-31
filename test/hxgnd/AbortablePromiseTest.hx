@@ -7,9 +7,9 @@ using buddy.Should;
 
 class AbortablePromiseTest extends BuddySuite {
     public function new() {
-        describe("AbortablePromise.new()", {
-            timeoutMs = 500;
+        timeoutMs = 100;
 
+        describe("AbortablePromise.new()", {
             describe("executor", {
                 it("should call", function (done) {
                     new AbortablePromise(function (_, _) {
@@ -79,7 +79,7 @@ class AbortablePromiseTest extends BuddySuite {
                             wait(5, fulfill.bind());
                             return function () {};
                         });
-                        wait(10, done);
+                        wait(5, done);
                     });
 
                     it("should pass when it have no fulfilled", function (done) {
@@ -87,7 +87,7 @@ class AbortablePromiseTest extends BuddySuite {
                             wait(5, fulfill.bind());
                             return function () {};
                         }).then(null, function (_) { fail(); });
-                        wait(10, done);
+                        wait(5, done);
                     });
 
                     it("should call fulfilled(_)", function (done) {
@@ -191,7 +191,7 @@ class AbortablePromiseTest extends BuddySuite {
                             wait(5, reject.bind());
                             return function () {};
                         });
-                        wait(10, done);
+                        wait(5, done);
                     });
 
                     it("should pass when it have no rejected", function (done) {
@@ -199,7 +199,7 @@ class AbortablePromiseTest extends BuddySuite {
                             wait(5, reject.bind());
                             return function () {};
                         }).then(function (_) { fail(); });
-                        wait(10, done);
+                        wait(5, done);
                     });
 
                     it("should call rejected(_)", function (done) {
@@ -256,8 +256,6 @@ class AbortablePromiseTest extends BuddySuite {
         });
 
         describe("AbortablePromise.resolve()", {
-            timeoutMs = 500;
-
             it("should call resolved(_)", function (done) {
                 AbortablePromise.resolve().then(
                     function (_) { done(); },
@@ -288,8 +286,6 @@ class AbortablePromiseTest extends BuddySuite {
         });
 
         describe("AbortablePromise.reject()", {
-            timeoutMs = 500;
-
            it("should call rejected(x)", function (done) {
                 AbortablePromise.reject("error").then(
                     function (_) { fail(); },
@@ -324,8 +320,6 @@ class AbortablePromiseTest extends BuddySuite {
         });
 
         describe("AbortablePromise.then()", {
-            timeoutMs = 500;
-
             describe("sync", {
                 it("should call fulfilled", function (done) {
                     new AbortablePromise(function (fulfill, _) {
@@ -600,8 +594,6 @@ class AbortablePromiseTest extends BuddySuite {
         });
 
         describe("AbortablePromise.catchError()", {
-            timeoutMs = 500;
-
             describe("sync", {
                 it("should not call", function (done) {
                     new AbortablePromise(function (fulfill, _) {
@@ -773,8 +765,6 @@ class AbortablePromiseTest extends BuddySuite {
         });
 
         describe("AbortablePromise.finally()", {
-            timeoutMs = 500;
-
             describe("sync", {
                 it("should call when it is fulfilled", function (done) {
                     new AbortablePromise(function (fulfill, _) {
@@ -877,7 +867,7 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {}
                     });
                     promise.abort();
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should not call the abort callback", function (done) {
@@ -887,7 +877,7 @@ class AbortablePromiseTest extends BuddySuite {
                         }
                     });
                     promise.abort();
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should call rejected that is set before abort()", function (done) {

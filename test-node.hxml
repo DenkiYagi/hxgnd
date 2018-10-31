@@ -7,6 +7,5 @@
 -D nodejs
 -D buddy-colors
 -D buddy_ignore_passing_specs
--D buddy_suppress_unhandled_rejection
 -debug
 #-cmd node build/node.js

@@ -6,6 +6,8 @@ using buddy.Should;
 
 class ReactivePropertyTest extends BuddySuite {
     public function new() {
+        timeoutMs = 100;
+
         describe("ReactiveProperty#new()", {
             it("should pass", {
                 new ReactiveProperty(10);
@@ -35,7 +37,7 @@ class ReactivePropertyTest extends BuddySuite {
                         fail();
                     });
                     property.get();
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should call subscriber 1-time", function (done) {
@@ -69,7 +71,7 @@ class ReactivePropertyTest extends BuddySuite {
                     property.set(-5);
                     property.set(-10);
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count.should.be(2);
                         done();
                     });
@@ -82,7 +84,7 @@ class ReactivePropertyTest extends BuddySuite {
                     });
                     unscribe();
                     property.set(-5);
-                    wait(10, done);
+                    wait(5, done);
                 });
             });
 
@@ -96,7 +98,7 @@ class ReactivePropertyTest extends BuddySuite {
                         fail();
                     });
                     property.get();
-                    wait(10, done);
+                    wait(5, done);
                 });
 
                 it("should call all subscribers 1-time", function (done) {
@@ -114,7 +116,7 @@ class ReactivePropertyTest extends BuddySuite {
                     });
                     property.set(-5);
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count1.should.be(1);
                         count2.should.be(1);
                         done();
@@ -150,7 +152,7 @@ class ReactivePropertyTest extends BuddySuite {
                     property.set(-5);
                     property.set(-10);
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count1.should.be(2);
                         count2.should.be(2);
                         done();
@@ -172,7 +174,7 @@ class ReactivePropertyTest extends BuddySuite {
                     unscribe1();
                     property.set(-5);
 
-                    wait(10, function () {
+                    wait(5, function () {
                         count2.should.be(1);
                         done();
                     });
@@ -191,7 +193,7 @@ class ReactivePropertyTest extends BuddySuite {
                     unscribe2();
                     property.set(-5);
 
-                    wait(10, done);
+                    wait(5, done);
                 });
             });
 
@@ -212,7 +214,7 @@ class ReactivePropertyTest extends BuddySuite {
                             fail();
                         });
                         property.set(10);
-                        wait(10, done);
+                        wait(5, done);
                     });
                 });
 
@@ -226,7 +228,7 @@ class ReactivePropertyTest extends BuddySuite {
                         });
                         property.set(10);
 
-                        wait(10, function () {
+                        wait(5, function () {
                             called.should.be(true);
                             done();
                         });
@@ -251,7 +253,7 @@ class ReactivePropertyTest extends BuddySuite {
                             fail();
                         });
                         property.set(11);
-                        wait(10, done);
+                        wait(5, done);
                     });
                 });
             });
