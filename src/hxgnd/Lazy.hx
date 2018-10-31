@@ -8,12 +8,16 @@ abstract Lazy<T>(Void -> T) {
      * Creates a new lazy initializer.
      * @param factory The function that returns the lazily initialized value.
      */
-    public inline function new(factory: Void -> T) {
+    @:extern public inline function new(factory: Void -> T) {
         this = function lazy_factory() {
             var value = factory();
-            this = retunValue.bind(value);
+            set(retunValue.bind(value));
             return value;
         };
+    }
+
+    inline function set(factory: Void -> T): Void {
+        this = factory;
     }
 
     function retunValue(value: T): T {
@@ -25,7 +29,7 @@ abstract Lazy<T>(Void -> T) {
     * @return T The lazily initialized value.
      */
     @:to
-    public inline function get(): T {
+    @:extern public inline function get(): T {
         return this();
     }
 }
