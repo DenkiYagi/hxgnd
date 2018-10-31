@@ -31,6 +31,13 @@ abstract Delegate<T>(Array<T -> Void>) to ReadOnlyArray<T -> Void> {
         for (f in this.copy()) f(x);
     }
 
+    public inline function invokeAsync(x: T): Void {
+        var list = this.copy();
+        Dispatcher.dispatch(function () {
+            for (f in list) f(x);
+        });
+    }
+
     public inline function copy(): Delegate<T> {
         return new Delegate(this);
     }
@@ -63,6 +70,13 @@ abstract Delegate0(Array<Void -> Void>) to ReadOnlyArray<Void -> Void> {
 
     public inline function invoke(): Void {
         for (f in this.copy()) f();
+    }
+
+    public inline function invokeAsync(): Void {
+        var list = this.copy();
+        Dispatcher.dispatch(function () {
+            for (f in list) f();
+        });
     }
 
     public inline function copy(): Delegate0 {

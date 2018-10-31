@@ -4,9 +4,12 @@ import buddy.BuddySuite;
 using buddy.Should;
 using hxgnd.LangTools;
 import hxgnd.Delegate;
+import TestTools.wait;
 
 class DelegateTest extends BuddySuite {
     public function new() {
+        timeoutMs = 100;
+
         describe("Delegate<T>", {
             describe("Delegate#new()", {
                 it("should be empty", {
@@ -206,6 +209,111 @@ class DelegateTest extends BuddySuite {
                     delegate.invoke(3);
                     count1.should.be(1);
                     count2.should.be(1);
+                });
+            });
+
+            describe("Delegate#invokeAsync()", {
+                it("should pass when it has no items", {
+                    var delegate = new Delegate<Int>();
+                    delegate.invokeAsync(0);
+                });
+
+                it("should pass when it has one item", function (done) {
+                    var delegate = new Delegate<Int>();
+                    delegate.add(function (i) {
+                        i.should.be(1);
+                        done();
+                    });
+
+                    delegate.invokeAsync(1);
+                });
+
+                it("should pass when it has two items", function (done) {
+                    var delegate = new Delegate<Int>();
+                    delegate.add(function (i) {
+                        i.should.be(2);
+                    });
+                    delegate.add(function (i) {
+                        i.should.be(2);
+                        done();
+                    });
+
+                    delegate.invokeAsync(2);
+                });
+
+                it("should pass when it has two items", function (done) {
+                    var count1 = 0;
+                    var count2 = 0;
+
+                    var delegate = new Delegate<Int>();
+                    delegate.add(function (i) {
+                        i.should.be(2);
+                        count1++;
+                    });
+                    delegate.add(function (i) {
+                        i.should.be(2);
+                        count2++;
+                    });
+
+                    delegate.invokeAsync(2);
+                    count1.should.be(0);
+                    count2.should.be(0);
+
+                    wait(5, function () {
+                        count1.should.be(1);
+                        count2.should.be(1);
+                        done();
+                    });
+                });
+
+                it("should pass when it remove itself", function (done) {
+                    var count1 = 0;
+                    var count2 = 0;
+
+                    var delegate = new Delegate<Int>();
+                    delegate.add(function f1(i) {
+                        delegate.remove(f1);
+                        count1++;
+                    });
+                    delegate.add(function f2(i) {
+                        delegate.remove(f2);
+                        count2++;
+                    });
+
+                    delegate.invokeAsync(2);
+                    count1.should.be(0);
+                    count2.should.be(0);
+
+                    wait(5, function () {
+                        count1.should.be(1);
+                        count2.should.be(1);
+
+                        wait(5, function () {
+                            delegate.invoke(3);
+                            count1.should.be(1);
+                            count2.should.be(1);
+                            done();
+                        });
+                    });
+                });
+
+                it("should call all handlers when it calls removeAll() before dispatch", function (done) {
+                    var called1 = 0;
+                    var called2 = 0;
+                    var delegate = new Delegate([
+                        function (i) called1++,
+                        function (i) called2++,
+                    ]);
+                    delegate.invokeAsync(1);
+                    delegate.removeAll();
+
+                    called1.should.be(0);
+                    called2.should.be(0);
+                    wait(5, function () {
+                        called1.should.be(1);
+                        called2.should.be(1);
+                        done();
+                    });
                 });
             });
 
@@ -424,6 +532,91 @@ class DelegateTest extends BuddySuite {
                     delegate.invoke();
                     count1.should.be(1);
                     count2.should.be(1);
+                });
+            });
+
+            describe("Delegate0#invokeAsync()", {
+                it("should pass when it has no items", {
+                    var delegate = new Delegate0();
+                    delegate.invokeAsync();
+                });
+
+                it("should pass when it has one item", function (done) {
+                    var delegate = new Delegate0();
+                    delegate.add(function () {
+                        done();
+                    });
+
+                    delegate.invokeAsync();
+                });
+
+                it("should pass when it has two items", function (done) {
+                    var count1 = 0;
+                    var count2 = 0;
+
+                    var delegate = new Delegate0();
+                    delegate.add(function () {
+                        count1++;
+                    });
+                    delegate.add(function () {
+                        count2++;
+                    });
+
+                    delegate.invokeAsync();
+                    count1.should.be(0);
+                    count2.should.be(0);
+
+                    wait(5, function () {
+                        count1.should.be(1);
+                        count2.should.be(1);
+                        done();
+                    });
+                });
+
+                it("should pass when it remove itself", function (done) {
+                    var count1 = 0;
+                    var count2 = 0;
+
+                    var delegate = new Delegate0();
+                    delegate.add(function f1() {
+                        delegate.remove(f1);
+                        count1++;
+                    });
+                    delegate.add(function f2() {
+                        delegate.remove(f2);
+                        count2++;
+                    });
+
+                    delegate.invokeAsync();
+                    wait(5, function () {
+                        count1.should.be(1);
+                        count2.should.be(1);
+                        wait(5, function () {
+                            delegate.invokeAsync();
+                            count1.should.be(1);
+                            count2.should.be(1);
+                            done();
+                        });
+                    });
+                });
+
+                it("should call all handlers when it calls removeAll() before dispatch", function (done) {
+                    var called1 = 0;
+                    var called2 = 0;
+                    var delegate = new Delegate0([
+                        function () called1++,
+                        function () called2++,
+                    ]);
+                    delegate.invokeAsync();
+                    delegate.removeAll();
+
+                    called1.should.be(0);
+                    called2.should.be(0);
+                    wait(5, function () {
+                        called1.should.be(1);
+                        called2.should.be(1);
+                        done();
+                    });
                 });
             });
 
