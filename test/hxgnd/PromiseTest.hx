@@ -18,6 +18,7 @@ class PromiseTest extends BuddySuite {
         afterAll({
             untyped __js__("process.removeListener('unhandledRejection', {0})", suppress);
         });
+        #end
 
         describe("Promise.new()", {
             describe("executor", {
@@ -135,12 +136,14 @@ class PromiseTest extends BuddySuite {
                 });
             });
 
+            #if js
             describe("JavaScript compatibility", {
                 it("should be js.Promise", {
                     var promise = new Promise(function (_, _) {});
                     promise.should.beType(js.Promise);
                 });
             });
+            #end
         });
 
         describe("Promise.resolve()", {
@@ -183,15 +186,6 @@ class PromiseTest extends BuddySuite {
                 );
             });
         });
-        #else
-        describe("Promise.new()", {
-            it("should same SyncPromise", {
-                var promise = new Promise(function (_, _) {
-                });
-                Std.is(promise, SyncPromise).should.be(true);
-            });
-        });
-        #end
 
         describe("Promise.then()", {
             it("should call fulfilled", function (done) {

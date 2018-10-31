@@ -4,6 +4,10 @@ import hxgnd.internal.IPromise;
 import hxgnd.Maybe;
 import hxgnd.Result;
 import externtype.Mixed;
+#if js
+import hxgnd.js.JsObject;
+import hxgnd.js.JsNative;
+#end
 using hxgnd.LangTools;
 
 class SyncPromise<T> implements IPromise<T> {
@@ -13,46 +17,49 @@ class SyncPromise<T> implements IPromise<T> {
 
     #if js
     static function __init__() {
-        untyped __js__("{0}.prototype.__proto__ = Promise.prototype", SyncPromise);
+        // Make this class compatible with js.Promise
+        var prototype = JsObject.create(untyped js.Promise.prototype);
+        var orignal = untyped SyncPromise.prototype;
+        for (k in JsObject.getOwnPropertyNames(orignal)) {
+            Reflect.setField(prototype, k, Reflect.field(orignal, k));
+        }
+        prototype.constructor = SyncPromise;
+        Reflect.setField(prototype, "catch", prototype.catchError);
+        untyped SyncPromise.prototype = prototype;
     }
     #end
 
     public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void) {
-        // compatible JS Promise
-        #if js
-        Reflect.setField(this, "catch", catchError);
-        #end
-
         result = Maybe.empty();
         onFulfilledHanlders = new Delegate();
         onRejectedHanlders = new Delegate();
 
-        inline function removeAllHandlers(): Void {
-            onFulfilledHanlders.removeAll();
-            onRejectedHanlders.removeAll();
-        }
-
-        function fulfill(?value: T): Void {
-            if (result.isEmpty()) {
-                result = Maybe.of(Success(value));
-                onFulfilledHanlders.invoke(value);
-                removeAllHandlers();
-            }
-        }
-
-        function reject(?error: Dynamic): Void {
-            if (result.isEmpty()) {
-                result = Maybe.of(Failure(error));
-                onRejectedHanlders.invoke(error);
-                removeAllHandlers();
-            }
-        }
-
         try {
-            executor(fulfill, reject);
+            executor(onFulfilled, onRejected);
         } catch (e: Dynamic) {
-            reject(e);
+            onRejected(e);
         }
+    }
+
+    function onFulfilled(?value: T): Void {
+        if (result.isEmpty()) {
+            result = Maybe.of(Success(value));
+            onFulfilledHanlders.invoke(value);
+            removeAllHandlers();
+        }
+    }
+
+    function onRejected(?error: Dynamic): Void {
+        if (result.isEmpty()) {
+            result = Maybe.of(Failure(error));
+            onRejectedHanlders.invoke(error);
+            removeAllHandlers();
+        }
+    }
+
+    inline function removeAllHandlers(): Void {
+        onFulfilledHanlders.removeAll();
+        onRejectedHanlders.removeAll();
     }
 
     public function then<TOut>(
@@ -63,7 +70,7 @@ class SyncPromise<T> implements IPromise<T> {
                 function transformValue(value: T) {
                     try {
                         var next = (fulfilled: T -> Dynamic)(value);
-                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                        if (#if js JsNative.instanceof(next, js.Promise) || #end Std.is(next, IPromise)) {
                             var nextPromise: Promise<TOut> = cast next;
                             nextPromise.then(_fulfill, _reject);
                         } else {
@@ -83,7 +90,7 @@ class SyncPromise<T> implements IPromise<T> {
                 function transformError(error: Dynamic) {
                     try {
                         var next = (rejected: Dynamic -> Dynamic)(error);
-                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                        if (#if js JsNative.instanceof(next, js.Promise) || #end Std.is(next, IPromise)) {
                             var nextPromise: Promise<TOut> = cast next;
                             nextPromise.then(_fulfill, _reject);
                         } else {
