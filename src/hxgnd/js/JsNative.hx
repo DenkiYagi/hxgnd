@@ -55,6 +55,10 @@ class JsNative {
         return untyped __typeof__(x);
     }
 
+    public static inline function instanceof(a: Dynamic, b: Dynamic): Bool {
+        return untyped __js__("{0} instanceof {1}", a, b);
+    }
+
     public static var setImmediate(default, null): (Void -> Void) -> Int;
 
     public static var clearImmediate(default, null): Int -> Void;
@@ -65,6 +69,10 @@ class JsNative {
 
     public static macro function delete(expression: Expr): ExprOf<Void> {
         return macro untyped __js__("delete {0}", ${expression});
+    }
+
+    public static inline function getPrototype(x: Dynamic): Dynamic {
+        return untyped __js__("{0}.prototype", x);
     }
 
     static var functions = [];

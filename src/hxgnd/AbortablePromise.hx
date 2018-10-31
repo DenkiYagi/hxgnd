@@ -4,6 +4,10 @@ import hxgnd.internal.IPromise;
 import hxgnd.Maybe;
 import hxgnd.Result;
 import externtype.Mixed;
+#if js
+import hxgnd.js.JsObject;
+import hxgnd.js.JsNative;
+#end
 using hxgnd.LangTools;
 
 class AbortablePromise<T> implements IPromise<T> {
@@ -14,16 +18,19 @@ class AbortablePromise<T> implements IPromise<T> {
 
     #if js
     static function __init__() {
-        untyped __js__("{0}.prototype.__proto__ = Promise.prototype", AbortablePromise);
+        // Make this class compatible with js.Promise
+        var prototype = JsObject.create(untyped js.Promise.prototype);
+        var orignal = untyped AbortablePromise.prototype;
+        for (k in JsObject.getOwnPropertyNames(orignal)) {
+            Reflect.setField(prototype, k, Reflect.field(orignal, k));
+        }
+        prototype.constructor = AbortablePromise;
+        Reflect.setField(prototype, "catch", prototype.catchError);
+        untyped AbortablePromise.prototype = prototype;
     }
     #end
 
     public function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)) {
-        // compatible JS Promise
-        #if js
-        Reflect.setField(this, "catch", catchError);
-        #end
-
         result = Maybe.empty();
         onFulfilledHanlders = new Delegate();
         onRejectedHanlders = new Delegate();
@@ -71,7 +78,7 @@ class AbortablePromise<T> implements IPromise<T> {
                 function chain(value: T) {
                     try {
                         var next = (fulfilled: T -> Dynamic)(value);
-                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                        if (#if js JsNative.instanceof(next, js.Promise) || #end Std.is(next, IPromise)) {
                             var nextPromise: Promise<TOut> = cast next;
                             nextPromise.then(_fulfill, _reject);
                         } else {
@@ -91,7 +98,7 @@ class AbortablePromise<T> implements IPromise<T> {
                 function rescue(error: Dynamic) {
                     try {
                         var next = (rejected: Dynamic -> Dynamic)(error);
-                        if (#if js Std.is(next, js.Promise) #else Std.is(next, IPromise) #end) {
+                        if (#if js JsNative.instanceof(next, js.Promise) || #end Std.is(next, IPromise)) {
                             var nextPromise: Promise<TOut> = cast next;
                             nextPromise.then(_fulfill, _reject);
                         } else {
@@ -150,28 +157,16 @@ class AbortablePromise<T> implements IPromise<T> {
     }
 
     public static function resolve<T>(?value: T): AbortablePromise<T> {
-        return new ResolvedAbortablePromise(value);
+        return new AbortablePromise(function (f, _) {
+            f(value);
+            return null;
+        });
     }
 
     public static function reject<T>(error: Dynamic): AbortablePromise<T> {
-        return new RejectedAbortablePromise(error);
-    }
-}
-
-private class ResolvedAbortablePromise<T> extends AbortablePromise<T> {
-    public override function new(value: T) {
-        super(null);
-        result = Maybe.of(Result.Success(value));
-    }
-    override function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
-    }
-}
-
-private class RejectedAbortablePromise<T> extends AbortablePromise<T> {
-    public override function new(error: Dynamic) {
-        super(null);
-        result = Maybe.of(Result.Failure(error));
-    }
-    override function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
+        return new AbortablePromise(function (_, r) {
+            r(error);
+            return null;
+        });
     }
 }
