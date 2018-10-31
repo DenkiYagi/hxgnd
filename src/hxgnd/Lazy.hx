@@ -3,25 +3,13 @@ package hxgnd;
 /**
  * Provides support for lazy initialization.
  */
-abstract Lazy<T>(Void -> T) {
+abstract Lazy<T>(State<T>) {
     /**
      * Creates a new lazy initializer.
      * @param factory The function that returns the lazily initialized value.
      */
     @:extern public inline function new(factory: Void -> T) {
-        this = function lazy_factory() {
-            var value = factory();
-            set(retunValue.bind(value));
-            return value;
-        };
-    }
-
-    inline function set(factory: Void -> T): Void {
-        this = factory;
-    }
-
-    function retunValue(value: T): T {
-        return value;
+        this = Pending(factory);
     }
 
     /**
@@ -30,6 +18,18 @@ abstract Lazy<T>(Void -> T) {
      */
     @:to
     @:extern public inline function get(): T {
-        return this();
+        return switch (this) {
+            case Pending(factroy):
+                var value = factroy();
+                this = Initialized(value);
+                value;
+            case Initialized(value):
+                value;
+        }
     }
+}
+
+private enum State<T> {
+    Pending(factory: Void -> T);
+    Initialized(value: T);
 }
