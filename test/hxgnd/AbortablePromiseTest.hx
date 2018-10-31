@@ -322,18 +322,22 @@ class AbortablePromiseTest extends BuddySuite {
         describe("AbortablePromise.then()", {
             describe("sync", {
                 it("should call fulfilled", function (done) {
+                    var called = false;
                     new AbortablePromise(function (fulfill, _) {
                         fulfill(100);
                         return function () {};
                     }).then(function (x) {
                         x.should.be(100);
-                        done();
+                        called = true;
+                        wait(5, done);
                     }, function (_) {
                         fail();
                     });
+                    called.should.be(false);
                 });
 
                 it("should call rejected", function (done) {
+                    var called = false;
                     new AbortablePromise(function (_, reject) {
                         reject("error");
                         return function () {};
@@ -341,13 +345,16 @@ class AbortablePromiseTest extends BuddySuite {
                         fail();
                     }, function (e) {
                         (e: String).should.be("error");
-                        done();
+                        called = true;
+                        wait(5, done);
                     });
+                    called.should.be(false);
                 });
             });
 
             describe("async", {
                 it("should call fulfilled", function (done) {
+                    var called = false;
                     new AbortablePromise(function (fulfill, _) {
                         wait(5, function () {
                             fulfill(100);
@@ -355,13 +362,16 @@ class AbortablePromiseTest extends BuddySuite {
                         return function () {};
                     }).then(function (x) {
                         x.should.be(100);
-                        done();
+                        called = true;
+                        wait(5, done);
                     }, function (_) {
                         fail();
                     });
+                    called.should.be(false);
                 });
 
                 it("should call rejected", function (done) {
+                    var called = false;
                     new AbortablePromise(function (_, reject) {
                         wait(5, function () {
                             reject("error");
@@ -371,8 +381,10 @@ class AbortablePromiseTest extends BuddySuite {
                         fail();
                     }, function (e) {
                         (e: String).should.be("error");
-                        done();
+                        called = true;
+                        wait(5, done);
                     });
+                    called.should.be(false);
                 });
             });
 
@@ -606,13 +618,16 @@ class AbortablePromiseTest extends BuddySuite {
                 });
 
                 it("should call", function (done) {
+                    var called = false;
                     new AbortablePromise(function (_, reject) {
                         reject("error");
                         return function () {};
                     }).catchError(function (e) {
                         (e: String).should.be("error");
-                        done();
+                        called = true;
+                        wait(5, done);
                     });
+                    called.should.be(false);
                 });
             });
 
@@ -861,25 +876,6 @@ class AbortablePromiseTest extends BuddySuite {
 
         describe("AbortablePromise.abort()", {
             describe("before execution", {
-                it("should not call the executor", function (done) {
-                    var promise = new AbortablePromise(function (_, _) {
-                        fail();
-                        return function () {}
-                    });
-                    promise.abort();
-                    wait(5, done);
-                });
-
-                it("should not call the abort callback", function (done) {
-                    var promise = new AbortablePromise(function (_, _) {
-                        return function () {
-                            fail();
-                        }
-                    });
-                    promise.abort();
-                    wait(5, done);
-                });
-
                 it("should call rejected that is set before abort()", function (done) {
                     var promise = new AbortablePromise(function (_, _) {
                         return function () {};

@@ -33,21 +33,19 @@ class AbortablePromise<T> implements IPromise<T> {
     }
 
     function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
-        Dispatcher.dispatch(function exec() {
-            if (result.isEmpty()) {
-                try {
-                    abortCallback = Maybe.ofNullable(executor(onFulfilled, onRejected));
-                } catch (e: Dynamic) {
-                    onRejected(e);
-                }
+        if (result.isEmpty()) {
+            try {
+                abortCallback = Maybe.ofNullable(executor(onFulfilled, onRejected));
+            } catch (e: Dynamic) {
+                onRejected(e);
             }
-        });
+        }
     }
 
     function onFulfilled(?value: T): Void {
         if (result.isEmpty()) {
             result = Maybe.of(Result.Success(value));
-            onFulfilledHanlders.invoke(value);
+            onFulfilledHanlders.invokeAsync(value);
             removeAllHandlers();
         }
     }
@@ -55,7 +53,7 @@ class AbortablePromise<T> implements IPromise<T> {
     function onRejected(?error: Dynamic): Void {
         if (result.isEmpty()) {
             result = Maybe.of(Result.Failure(error));
-            onRejectedHanlders.invoke(error);
+            onRejectedHanlders.invokeAsync(error);
             removeAllHandlers();
         }
     }
@@ -118,8 +116,8 @@ class AbortablePromise<T> implements IPromise<T> {
                 onRejectedHanlders.add(handleRejected);
             } else {
                 switch (result.get()) {
-                    case Success(v): handleFulfilled(v);
-                    case Failure(e): handleRejected(e);
+                    case Success(v): Dispatcher.dispatch(handleFulfilled.bind(v));
+                    case Failure(e): Dispatcher.dispatch(handleRejected.bind(e));
                 }
             }
             return abort;

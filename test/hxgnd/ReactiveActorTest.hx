@@ -345,7 +345,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
                 });
 
-                it("should replace state asynchronously", function (done) {
+                it("should replace state", function (done) {
                     var actor = new ReactiveActor(10, function (ctx, message) {
                         switch (message) {
                             case Increment:
@@ -357,7 +357,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
 
                     var promise1 = actor.dispatch(Increment);
-                    actor.getState().should.be(10);
+                    actor.getState().should.be(11);
 
                     promise1.then(function (_) {
                         actor.getState().should.be(11);
@@ -535,7 +535,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
                 });
 
-                it("should replace state asynchronously", function (done) {
+                it("should replace state", function (done) {
                     var actor = new ReactiveActor(10, function (ctx, message) {
                         switch (message) {
                             case Increment:
@@ -547,12 +547,13 @@ class ReactiveActorTest extends BuddySuite {
                     });
 
                     var promise1 = actor.dispatch(Increment);
-                    actor.getState().should.be(10);
+                    actor.getState().should.be(11);
 
                     promise1.then(function (_) {
                         actor.getState().should.be(11);
 
                         var promise2 = actor.dispatch(Decrement);
+                        actor.getState().should.be(9);
                         promise2.then(function (_) {
                             actor.getState().should.be(9);
                             done();
@@ -725,7 +726,7 @@ class ReactiveActorTest extends BuddySuite {
                     });
                 });
 
-                it("should replace state asynchronously", function (done) {
+                it("should replace state", function (done) {
                     var actor = new ReactiveActor(10, function (ctx, message) {
                         switch (message) {
                             case Increment:
@@ -740,20 +741,14 @@ class ReactiveActorTest extends BuddySuite {
                     promise1.finally(function () {
                         fail();
                     });
-                    actor.getState().should.be(10);
+                    actor.getState().should.be(11);
 
-                    wait(5, function () {
-                        actor.getState().should.be(11);
-
-                        var promise2 = actor.dispatch(Decrement);
-                        promise2.finally(function () {
-                            fail();
-                        });
-                        wait(5, function () {
-                            actor.getState().should.be(9);
-                            done();
-                        });
+                    var promise2 = actor.dispatch(Decrement);
+                    promise2.finally(function () {
+                        fail();
                     });
+                    actor.getState().should.be(9);
+                    done();
                 });
 
                 it("should call the onabort", function (done) {
