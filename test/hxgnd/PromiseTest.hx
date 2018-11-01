@@ -1,6 +1,7 @@
 package hxgnd;
 
 import buddy.BuddySuite;
+import extype.Unit;
 import TestTools.wait;
 using hxgnd.LangTools;
 using buddy.Should;

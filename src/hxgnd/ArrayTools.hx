@@ -1,5 +1,7 @@
 package hxgnd;
 
+import extype.Maybe;
+import extype.Error;
 using hxgnd.LangTools;
 
 class ArrayTools {

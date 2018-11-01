@@ -2,7 +2,7 @@ package hxgnd;
 
 using hxgnd.ArrayTools;
 
-abstract Delegate<T>(Array<T -> Void>) to ReadOnlyArray<T -> Void> {
+abstract Delegate<T>(Array<T -> Void>) to extype.ReadOnlyArray<T -> Void> {
     public inline function new(?array: Array<T -> Void>) {
         this = (array == null) ? [] : array.copy();
     }
@@ -43,7 +43,7 @@ abstract Delegate<T>(Array<T -> Void>) to ReadOnlyArray<T -> Void> {
     }
 }
 
-abstract Delegate0(Array<Void -> Void>) to ReadOnlyArray<Void -> Void> {
+abstract Delegate0(Array<Void -> Void>) to extype.ReadOnlyArray<Void -> Void> {
     public inline function new(?array: Array<Void -> Void>) {
         this = (array == null) ? [] : array.copy();
     }

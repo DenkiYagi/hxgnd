@@ -5,10 +5,10 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
 #end
+import extype.Maybe;
+import extype.Result;
+import extype.extern.Mixed;
 import hxgnd.internal.IPromise;
-import externtype.Mixed;
-import hxgnd.Maybe;
-import hxgnd.Result;
 using hxgnd.LangTools;
 
 abstract Promise<T>(IPromise<T>) from IPromise<T> {

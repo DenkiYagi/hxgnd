@@ -1,7 +1,7 @@
 package hxgnd;
 
 import buddy.BuddySuite;
-import hxgnd.Error;
+import extype.Error;
 using buddy.Should;
 using hxgnd.PromiseTools;
 

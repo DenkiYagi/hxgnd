@@ -1,5 +1,6 @@
 package hxgnd;
 
+import extype.Unit;
 import hxgnd.Delegate;
 
 class ReactiveActor<TState, TMessage> {

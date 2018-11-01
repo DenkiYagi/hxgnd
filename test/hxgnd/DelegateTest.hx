@@ -1,6 +1,7 @@
 package hxgnd;
 
 import buddy.BuddySuite;
+import extype.ReadOnlyArray;
 using buddy.Should;
 using hxgnd.LangTools;
 import hxgnd.Delegate;

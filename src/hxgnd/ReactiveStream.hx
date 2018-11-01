@@ -1,7 +1,7 @@
 package hxgnd;
 
+import extype.Result;
 import hxgnd.Delegate;
-import hxgnd.Result;
 using hxgnd.LangTools;
 
 class ReactiveStream<T> {

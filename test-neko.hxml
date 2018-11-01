@@ -1,7 +1,7 @@
 -main TestMain
 -cp src
 -cp test
--lib externtype
+-lib extype
 -lib buddy
 -neko build/neko.n
 -D buddy-colors

@@ -1,6 +1,7 @@
 package hxgnd;
 
 #if macro
+import extype.Maybe;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 using hxgnd.ArrayTools;

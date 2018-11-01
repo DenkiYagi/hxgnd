@@ -1,9 +1,9 @@
 package hxgnd;
 
 import hxgnd.internal.IPromise;
-import hxgnd.Maybe;
-import hxgnd.Result;
-import externtype.Mixed;
+import extype.Maybe;
+import extype.Result;
+import extype.extern.Mixed;
 #if js
 import hxgnd.js.JsObject;
 import hxgnd.js.JsNative;

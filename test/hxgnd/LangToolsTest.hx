@@ -2,7 +2,7 @@ package hxgnd;
 
 import buddy.BuddySuite;
 import haxe.ds.Option;
-import hxgnd.Result;
+import extype.Result;
 import haxe.io.Bytes;
 import haxe.ds.StringMap;
 #if js

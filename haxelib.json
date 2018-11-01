@@ -6,9 +6,9 @@
     "description": "Haxe/JS utility",
     "version": "1.0.0-alpha.1",
     "classPath": "src/",
-    "releasenote": "1.0.0 alpha-1",
-    "contributors": ["terurou"],
+    "releasenote": "1.0.0 alpha.1",
+    "contributors": ["denkiyagi"],
     "dependencies": {
-        "externtype": ""
+        "extype": ""
     }
 }

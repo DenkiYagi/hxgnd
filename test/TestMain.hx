@@ -5,7 +5,6 @@ import buddy.*;
 class TestMain implements Buddy<[
     hxgnd.LangToolsTest,
     hxgnd.ArrayToolsTest,
-    hxgnd.MaybeTest,
     hxgnd.LazyTest,
     hxgnd.DelegateTest,
     hxgnd.ComputationTest,

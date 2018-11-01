@@ -2,7 +2,8 @@ package hxgnd;
 
 import haxe.io.Bytes;
 import haxe.Constraints.IMap;
-import hxgnd.Tuple;
+import extype.Tuple;
+import extype.Maybe;
 #if js
 import hxgnd.js.JsNative;
 import hxgnd.js.JsObject;

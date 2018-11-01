@@ -1,7 +1,7 @@
 -main TestMain
 -cp src
 -cp test
--lib externtype
+-lib extype
 -lib buddy
 -neko build/dummy.n
 -debug

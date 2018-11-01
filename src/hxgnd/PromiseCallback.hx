@@ -1,6 +1,6 @@
 package hxgnd;
 
-import externtype.Mixed;
+import extype.extern.Mixed;
 import hxgnd.internal.IPromise;
 
 abstract PromiseCallback<T, TOut>(T -> Dynamic)
