@@ -6,7 +6,7 @@ import haxe.macro.Context;
 using hxgnd.ArrayTools;
 #end
 
-class PromiseTools {
+class FunctionTools {
     public static macro function callAsPromise(
             fn: ExprOf<haxe.Constraints.Function>, args: Array<Expr>): Expr {
         var argTypes = getCallbackArgTypes(fn, args);

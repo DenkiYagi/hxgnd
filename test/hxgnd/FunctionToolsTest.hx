@@ -3,13 +3,13 @@ package hxgnd;
 import buddy.BuddySuite;
 import extype.Error;
 using buddy.Should;
-using hxgnd.PromiseTools;
+using hxgnd.FunctionTools;
 
-class PromiseToolsTest extends BuddySuite {
+class FunctionToolsTest extends BuddySuite {
     public function new() {
         timeoutMs = 100;
 
-        describe("PromiseTools.callAsPromise()", {
+        describe("FunctionTools.callAsPromise()", {
             // TODO single arg
 
             describe("2 args callback", {
@@ -129,7 +129,7 @@ class PromiseToolsTest extends BuddySuite {
             });
         });
 
-        describe("PromiseTools.callAsPromiseUnsafe()", {
+        describe("FunctionTools.callAsPromiseUnsafe()", {
             // TODO single arg
 
             describe("2 args callback", {

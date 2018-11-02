@@ -11,7 +11,7 @@ class TestMain implements Buddy<[
     hxgnd.PromiseTest,
     hxgnd.SyncPromiseTest,
     hxgnd.AbortablePromiseTest,
-    hxgnd.PromiseToolsTest,
+    hxgnd.FunctionToolsTest,
 //         // new hxgnd.StreamTest(),
     hxgnd.ReactivePropertyTest,
     hxgnd.ReactiveActorTest,
