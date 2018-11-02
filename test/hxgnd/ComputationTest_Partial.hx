@@ -179,7 +179,19 @@ class ComputationTest_EVars_transform_with_EMeta {
         });
     }
 
-    public static macro function perform_single_var_return_foo(): Expr {
+    public static macro function perform_multi_var_return_4(): Expr {
+        return Computation.perform({
+            buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr}),
+            buildReturn: function (expr: Expr) return expr,
+            buildZero: function () return macro 0
+        }, macro {
+            var a = @let 1;
+            var b = @let 2 + a;
+            b + 10;
+        });
+    }
+
+    public static macro function perform_keyword_foo(): Expr {
         return Computation.perform({
             keyword: "foo",
             buildBind: function (expr: Expr, fn: Expr) return macro ${fn}(${expr} * 10),

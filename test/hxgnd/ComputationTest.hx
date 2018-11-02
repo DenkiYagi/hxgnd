@@ -83,8 +83,12 @@ class ComputationTest extends BuddySuite {
                         ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_3().should.be(30);
                     });
 
+                    it("should pass when it is given { var a = @let 1; var b = @let 2 + a; b + 1; }", {
+                        ComputationTest_EVars_transform_with_EMeta.perform_multi_var_return_4().should.be(13);
+                    });
+
                     it("should pass when it is changed keyword and it is given { var a = @foo 1; a; }", {
-                        ComputationTest_EVars_transform_with_EMeta.perform_single_var_return_foo().should.be(10);
+                        ComputationTest_EVars_transform_with_EMeta.perform_keyword_foo().should.be(10);
                     });
                 });
             });
