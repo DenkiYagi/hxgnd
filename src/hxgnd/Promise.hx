@@ -180,7 +180,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
 
     #if macro
     static function buildBind(expr: Expr, fn: Expr): Expr {
-        return if (isUnifiable(expr)) {
+        return if (isPromise(expr)) {
             macro hxgnd.internal.PromiseComputationHelper.implicitCast(${expr}).then(${fn});
         } else {
             macro new hxgnd.SyncPromise(function (f, _) {
@@ -199,7 +199,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         return macro hxgnd.SyncPromise.resolve();
     }
 
-    static function isUnifiable(expr: Expr): Bool {
+    static function isPromise(expr: Expr): Bool {
         try {
             var type = Context.typeof(expr);
             return switch (type) {
