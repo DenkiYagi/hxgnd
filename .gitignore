@@ -1,3 +1,4 @@
 .haxelib/
 build/
 TestMain.n
+*.dot
