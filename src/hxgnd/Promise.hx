@@ -169,7 +169,6 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     public static macro function compute<T>(blockExpr: Expr): ExprOf<Promise<T>> {
         return Computation.perform(
             {
-                keyword: "await",
                 buildBind: buildBind,
                 buildReturn: buildReturn,
                 buildZero: buildZero

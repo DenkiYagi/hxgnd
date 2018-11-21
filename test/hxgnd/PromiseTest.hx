@@ -858,7 +858,7 @@ class PromiseTest extends BuddySuite {
 
                 it("should pass it given { 1 }", function (done) {
                     Promise.compute({
-                        1;
+                        return 1;
                     }).then(function (x) {
                         x.should.be(1);
                         done();
@@ -867,7 +867,7 @@ class PromiseTest extends BuddySuite {
 
                 it("should pass it given { 1 + 2 }", function (done) {
                     Promise.compute({
-                        1 + 2;
+                        return 1 + 2;
                     }).then(function (x) {
                         x.should.be(3);
                         done();
@@ -885,7 +885,7 @@ class PromiseTest extends BuddySuite {
                 it("should pass it given { var a = 1; a + 1; }", function (done) {
                     Promise.compute({
                         var a = 1;
-                        a + 1;
+                        return a + 1;
                     }).then(function (x) {
                         x.should.be(2);
                         done();
@@ -909,7 +909,7 @@ class PromiseTest extends BuddySuite {
                     }
 
                     Promise.compute({
-                        fn();
+                        return fn();
                     }).then(function (x) {
                         x.should.be(1);
                         done();
@@ -917,26 +917,26 @@ class PromiseTest extends BuddySuite {
                 });
             });
 
-            describe("action", {
-                it("should pass when it given { @await 2 }", function (done) {
+            describe("@do", {
+                it("should pass when it given { @do 2 }", function (done) {
                     Promise.compute({
-                        @await 2;
+                        @do 2;
                     }).then(function (_) {
                         done();
                     });
                 });
 
-                it("should pass when it given { @await Promise.resolve(3) }", function (done) {
+                it("should pass when it given { @do Promise.resolve(3) }", function (done) {
                     Promise.compute({
-                        @await Promise.resolve(3);
+                        @do Promise.resolve(3);
                     }).then(function (_) {
                         done();
                     });
                 });
 
-                it("should pass when it given { @await Promise.reject('error') }", function (done) {
+                it("should pass when it given { @do Promise.reject('error') }", function (done) {
                     Promise.compute({
-                        @await Promise.reject("error");
+                        @do Promise.reject("error");
                     }).then(function (_) {
                         fail();
                     }).catchError(function (e) {
@@ -945,39 +945,39 @@ class PromiseTest extends BuddySuite {
                     });
                 });
 
-                it("should pass when it given { @await fn() }", function (done) {
+                it("should pass when it given { @do fn() }", function (done) {
                     function fn() {
                         return Promise.resolve(1);
                     }
 
                     Promise.compute({
-                        @await fn();
+                        @do fn();
                     }).then(function (_) {
                         done();
                     });
                 });
 
-                it("should pass when it given { @await 1; @await 2; @await 3; }", function (done) {
+                it("should pass when it given { @do 1; @do 2; @do 3; }", function (done) {
                     Promise.compute({
-                        @await 1;
-                        @await 2;
-                        @await 3;
+                        @do 1;
+                        @do 2;
+                        @do 3;
                     }).then(function (_) {
                         done();
                     });
                 });
 
-                it("should pass when it given { @await Promise.resolve(1); @await Promise.resolve(2); @await Promise.resolve(3); }", function (done) {
+                it("should pass when it given { @do Promise.resolve(1); @do Promise.resolve(2); @do Promise.resolve(3); }", function (done) {
                     Promise.compute({
-                        @await Promise.resolve(1);
-                        @await Promise.resolve(2);
-                        @await Promise.resolve(3);
+                        @do Promise.resolve(1);
+                        @do Promise.resolve(2);
+                        @do Promise.resolve(3);
                     }).then(function (_) {
                         done();
                     });
                 });
 
-                it("should pass when it given { @await fn1(); @await fn2(); @await fn3(); }", function (done) {
+                it("should pass when it given { @do fn1(); @do fn2(); @do fn3(); }", function (done) {
                     function fn1() {
                         return Promise.resolve(1);
                     }
@@ -989,9 +989,9 @@ class PromiseTest extends BuddySuite {
                     }
 
                     Promise.compute({
-                        @await fn1();
-                        @await fn2();
-                        @await fn3();
+                        @do fn1();
+                        @do fn2();
+                        @do fn3();
                     }).then(function (_) {
                         done();
                     });
@@ -999,30 +999,30 @@ class PromiseTest extends BuddySuite {
             });
 
             describe("bind", {
-                it("should pass when it given { var a = @await 2; a; }", function (done) {
+                it("should pass when it given { @var a = 2; a; }", function (done) {
                     Promise.compute({
-                        var a = @await 2;
-                        a;
+                        @var a = 2;
+                        return a;
                     }).then(function (x) {
                         x.should.be(2);
                         done();
                     });
                 });
 
-                it("should pass when it given { var a = @await Promise.resolve(3); a; }", function (done) {
+                it("should pass when it given { @var a = Promise.resolve(3); a; }", function (done) {
                     Promise.compute({
-                        var a = @await Promise.resolve(3);
-                        a;
+                        @var a = Promise.resolve(3);
+                        return a;
                     }).then(function (x) {
                         x.should.be(3);
                         done();
                     });
                 });
 
-                it("should pass when it given { var a = @await Promise.reject('error'); a; }", function (done) {
+                it("should pass when it given { @var a = Promise.reject('error'); a; }", function (done) {
                     Promise.compute({
-                        var a = @await Promise.reject("error");
-                        a;
+                        @var a = Promise.reject("error");
+                        return a;
                     }).then(function (_) {
                         fail();
                     }).catchError(function (e) {
@@ -1031,45 +1031,45 @@ class PromiseTest extends BuddySuite {
                     });
                 });
 
-                it("should pass when it given { @await fn() }", function (done) {
+                it("should pass when it given { @var a = fn() }", function (done) {
                     function fn() {
                         return Promise.resolve(1);
                     }
 
                     Promise.compute({
-                        var a = @await fn();
-                        a;
+                        @var a = fn();
+                        return a;
                     }).then(function (x) {
                         x.should.be(1);
                         done();
                     });
                 });
 
-                it("should pass when it given { var a = @await 1; var b = @await 2; var c = @await 3; a + b + c; }", function (done) {
+                it("should pass when it given { @var a = 1; @var b = 2; @var c = 3; a + b + c; }", function (done) {
                     Promise.compute({
-                        var a = @await 1;
-                        var b = @await 2;
-                        var c = @await 3;
-                        a + b + c;
+                        @var a = 1;
+                        @var b = 2;
+                        @var c = 3;
+                        return a + b + c;
                     }).then(function (x) {
                         x.should.be(6);
                         done();
                     });
                 });
 
-                it("should pass when it given { var a = @await Promise.resolve(1); var b = @await Promise.resolve(2); var c =@await Promise.resolve(3); }", function (done) {
+                it("should pass when it given { @var a = Promise.resolve(1); @var b = Promise.resolve(2); @var c =Promise.resolve(3); }", function (done) {
                     Promise.compute({
-                        var a = @await Promise.resolve(1);
-                        var b = @await Promise.resolve(2);
-                        var c = @await Promise.resolve(3);
-                        a + b + c;
+                        @var a = Promise.resolve(1);
+                        @var b = Promise.resolve(2);
+                        @var c = Promise.resolve(3);
+                        return a + b + c;
                     }).then(function (x) {
                         x.should.be(6);
                         done();
                     });
                 });
 
-                it("should pass when it given { @await fn1(); @await fn2(); @await fn3(); }", function (done) {
+                it("should pass when it given { @var a = fn1(); @var b = fn2(); @var c = fn3(); }", function (done) {
                     function fn1() {
                         return Promise.resolve(1);
                     }
@@ -1081,75 +1081,12 @@ class PromiseTest extends BuddySuite {
                     }
 
                     Promise.compute({
-                        var a = @await fn1();
-                        var b = @await fn2();
-                        var c = @await fn3();
-                        a + b + c;
+                        @var a = fn1();
+                        @var b = fn2();
+                        @var c = fn3();
+                        return a + b + c;
                     }).then(function (x) {
                         x.should.be(6);
-                        done();
-                    });
-                });
-            });
-
-            describe("throw", {
-                it("should pass when it given { throw 'error' }", function (done) {
-                    Promise.compute({
-                        throw "error";
-                    }).catchError(function (e) {
-                        done();
-                    });
-                });
-
-                it("should pass when it given { @await 1; throw 'error' }", function (done) {
-                    Promise.compute({
-                        @await 1;
-                        throw "error";
-                    }).catchError(function (e) {
-                        (e: String).should.be("error");
-                        done();
-                    });
-                });
-
-                it("should pass when it given { var a = @await 1; throw 'error' }", function (done) {
-                    Promise.compute({
-                        var a = @await 1;
-                        throw "error";
-                    }).catchError(function (e) {
-                        (e: String).should.be("error");
-                        done();
-                    });
-                });
-
-                it("should pass when it given { @await Promise.reject('rejected'); throw 'error' }", function (done) {
-                    Promise.compute({
-                        @await Promise.reject("rejected");
-                        throw "error";
-                    }).catchError(function (e) {
-                        (e: String).should.be("rejected");
-                        done();
-                    });
-                });
-
-                it("should pass when it given { var a = @await Promise.reject('rejected'); throw 'error' }", function (done) {
-                    Promise.compute({
-                        var a = @await Promise.reject("rejected");
-                        throw "error";
-                    }).catchError(function (e) {
-                        (e: String).should.be("rejected");
-                        done();
-                    });
-                });
-
-                it("should pass when it given { @await fn() }", function (done) {
-                    function fn(): Int {
-                        throw "error";
-                    }
-
-                    Promise.compute({
-                        @await fn();
-                    }).catchError(function (e) {
-                        (e: String).should.be("error");
                         done();
                     });
                 });
@@ -1159,11 +1096,11 @@ class PromiseTest extends BuddySuite {
                 it("should resolve", function (done) {
                     Promise.compute({
                         var a = 1;
-                        var b = @await Promise.resolve(2);
+                        @var b = Promise.resolve(2);
                         var c = 3;
                         var d = a + b + c;
-                        @await Promise.resolve(4);
-                        d * 2;
+                        @do Promise.resolve(4);
+                        return d * 2;
                     }).then(function (x) {
                         x.should.be(12);
                         done();
@@ -1173,13 +1110,11 @@ class PromiseTest extends BuddySuite {
                 it("should reject", function (done) {
                     Promise.compute({
                         var a = 1;
-                        var b = @await Promise.resolve(2);
-                        var c = 3;
-                        // throw "error"  <- can not compile on Haxe 3.4.7
-                        if (b < 10) throw "error";
+                        @var b = Promise.resolve(2);
+                        @var c = Promise.reject("error"); //reject!
                         var d = a + b + c;
-                        @await Promise.resolve(4);
-                        d * 2;
+                        @do Promise.resolve(4);
+                        return d * 2;
                     }).catchError(function (e) {
                         (e: String).should.be("error");
                         done();
@@ -1190,12 +1125,12 @@ class PromiseTest extends BuddySuite {
             describe("nest", {
                 it("should resolve", function (done) {
                     Promise.compute({
-                        var a = @await 1;
-                        var b = @await Promise.compute({
-                            var x = @await 2;
-                            x + 1;
+                        @var a = 1;
+                        @var b = Promise.compute({
+                            @var x = 2;
+                            return x + 1;
                         });
-                        a + b;
+                        return a + b;
                     }).then(function (x) {
                         x.should.be(4);
                         done();
@@ -1207,10 +1142,10 @@ class PromiseTest extends BuddySuite {
             describe("using js.Promise and SyncPromise", {
                 it("should pass", function (done) {
                     Promise.compute({
-                        var a = @await js.Promise.resolve(1);
-                        var b = @await Promise.resolve(2);
-                        var c = @await SyncPromise.resolve(3);
-                        a + b + c;
+                        @var a = js.Promise.resolve(1);
+                        @var b = Promise.resolve(2);
+                        @var c = SyncPromise.resolve(3);
+                        return a + b + c;
                     }).then(function (x) {
                         x.should.be(6);
                         done();
