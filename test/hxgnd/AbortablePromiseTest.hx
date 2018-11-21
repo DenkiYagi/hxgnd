@@ -1145,8 +1145,8 @@ class AbortablePromiseTest extends BuddySuite {
         describe("Promise.compute()", {
             it("should use AbortablePromise", function (done) {
                 Promise.compute({
-                    var a = @await AbortablePromise.resolve(3);
-                    var b = @await Promise.resolve(2);
+                    @var a = AbortablePromise.resolve(3);
+                    @var b = Promise.resolve(2);
                     a + b;
                 }).then(function (x) {
                     x.should.be(5);
