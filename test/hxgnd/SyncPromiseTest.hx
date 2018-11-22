@@ -628,7 +628,7 @@ class SyncPromiseTest extends BuddySuite {
                 Promise.compute({
                     @var a = SyncPromise.resolve(3);
                     @var b = Promise.resolve(2);
-                    a + b;
+                    return a + b;
                 }).then(function (x) {
                     x.should.be(5);
                     done();
