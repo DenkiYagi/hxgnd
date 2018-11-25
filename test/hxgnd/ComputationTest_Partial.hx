@@ -527,7 +527,7 @@ class ComputationTest_if_else {
             } else {
                 return a - 1;
             }
-            return b;
+            return b + 1;
         });
         // trace(expr.toString());
         return expr;
@@ -545,7 +545,7 @@ class ComputationTest_if_else {
             } else {
                 return a - 1;
             }
-            return b;
+            return b + 1;
         });
         // trace(expr.toString());
         return expr;
@@ -565,7 +565,7 @@ class ComputationTest_if_else {
                 @var x = Some(3);
                 return a - x;
             }
-            return b;
+            return b + 1;
         });
         // trace(expr.toString());
         return expr;
@@ -585,7 +585,7 @@ class ComputationTest_if_else {
                 @var x = Some(3);
                 return a - x;
             }
-            return b;
+            return b + 1;
         });
         // trace(expr.toString());
         return expr;
@@ -1281,6 +1281,24 @@ class ComputationTest_buildCombine {
                     }
                 }
             };
+        });
+        // trace(expr.toString());
+        return expr;
+    }
+
+    public static macro function perform_with_post_expr(): Expr {
+        var expr = Computation.perform({
+            buildBind: function (m, fn) return macro ${fn}(${m}),
+            buildReturn: function (value) return value,
+            buildZero: function () return macro 0,
+            // buildCombine: function (expr1, expr2) return macro ${expr1} * ${expr2},
+        }, macro {
+            var x = 1;
+            if (x > 0) {
+                x = x + 1;
+            }
+            var y = x + 1;
+            return y;
         });
         // trace(expr.toString());
         return expr;

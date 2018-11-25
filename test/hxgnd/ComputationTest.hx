@@ -133,7 +133,7 @@ class ComputationTest extends BuddySuite {
 
                 describe("+ @var + return", {
                     it("should pass when cond = true", {
-                        ComputationTest_if.perform_with_bind_true().should.equal(Some(2));
+                        ComputationTest_if.perform_with_bind_true().should.equal(Some(3));
                     });
 
                     it("should pass when cond = false", {
@@ -141,7 +141,7 @@ class ComputationTest extends BuddySuite {
                     });
 
                     it("should pass when it has @var in if_expr", {
-                        ComputationTest_if.perform_with_bind_nested().should.equal(Some(3));
+                        ComputationTest_if.perform_with_bind_nested().should.equal(Some(4));
                     });
                 });
             });
@@ -364,6 +364,10 @@ class ComputationTest extends BuddySuite {
 
                 it("should pass when it doesn't have buildCombine", {
                     ComputationTest_buildCombine.perform_default().should.be(6);
+                });
+
+                it("should pass when it has post expr", {
+                    ComputationTest_buildCombine.perform_with_post_expr().should.be(3);
                 });
             });
         });
