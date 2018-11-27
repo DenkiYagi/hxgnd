@@ -176,7 +176,7 @@ private class VirtualExprTransformer<T, M> {
             case Do:
                 var cexpr = currentBlock.build();
                 popBlock();
-                currentBlock.emitBinding("_", null, cexpr.expr);
+                currentBlock.emitBinding(null, null, cexpr.expr);
             case Bind(name, type):
                 var cexpr = currentBlock.build();
                 popBlock();
@@ -327,55 +327,53 @@ private class ComputationBlock<T, M> {
     public var vexpr(default, null): VirtualExpr;
 
     var builder: ComputationExprBuilder<T, M>;
-    var bindings: Array<{name: String, type: Null<ComplexType>, preExprs: Array<Expr>, cexpr: Expr}>;
-    var preExprs: Array<Expr>;
-    var cexpr: Maybe<Expr>;
+    var fragments: Array<CexprFragment>;
     var isReturned: Bool;
 
     public function new(vexpr: VirtualExpr, builder: ComputationExprBuilder<T, M>) {
         this.vexpr = vexpr;
         this.builder = builder;
-        this.bindings = [];
-        this.preExprs = [];
-        this.cexpr = Maybe.empty();
+        this.fragments = [{
+            preExprs: [],
+            cexpr: Maybe.empty(),
+            binding: Maybe.empty(),
+        }];
         this.isReturned = false;
     }
 
     public function emitRawExpr(expr: Expr): Void {
         if (isReturned) return;
 
-        preExprs.push(expr);
+        var fragment = currentFragment();
+        if (fragment.cexpr.nonEmpty()) {
+            fragments.push({
+                preExprs: [expr],
+                cexpr: Maybe.empty(),
+                binding: Maybe.empty(),
+            });
+        } else {
+            fragment.preExprs.push(expr);
+        }
     }
 
     public function emitCexpr(cexpr: ComputationExpr): Void {
         if (isReturned) return;
 
-        _emitCexpr(cexpr.expr);
-        isReturned = cexpr.isReturn;
-    }
-
-    private inline function _emitCexpr(expr: Expr) {
-        if (cexpr.isEmpty()) {
-            cexpr = expr;
-        } else if (builder.buildCombine.nonNull()) {
-            cexpr = builder.buildCombine(build().expr, expr);
-            preExprs = [];
-            bindings = [];
-        } else {
-            bindings.push({
-                name: "_",
-                type: null,
-                preExprs: preExprs,
-                cexpr: cexpr.get(),
+        var fragment = currentFragment();
+        if (fragment.cexpr.nonEmpty()) {
+            fragments.push({
+                preExprs: [],
+                cexpr: cexpr.expr,
+                binding: Maybe.empty(),
             });
-            cexpr = expr;
-            preExprs = [];
+            isReturned = cexpr.isReturn;
+        } else {
+            fragment.cexpr = cexpr.expr;
+            isReturned = cexpr.isReturn;
         }
     }
 
     public function emitReturn(cexpr: ComputationExpr): Void {
-        if (isReturned) return;
-
         emitCexpr({
             expr: cexpr.isReturn ? cexpr.expr : macro return ${builder.buildReturn(cexpr.expr)},
             isReturn: true
@@ -383,94 +381,112 @@ private class ComputationBlock<T, M> {
     }
 
     public function emitReturnFrom(cexpr: ComputationExpr): Void {
-        if (isReturned) return;
-
         emitCexpr({
             expr: cexpr.isReturn ? cexpr.expr : macro return ${cexpr.expr},
             isReturn: true
         });
     }
 
-    public function emitBinding(name: String, type: Null<ComplexType>, expr: Expr): Void {
+    public function emitBinding(name: Null<String>, type: Null<ComplexType>, expr: Expr): Void {
         if (isReturned) return;
 
-        bindings.push({
-            name: name,
-            type: type,
-            preExprs: preExprs,
-            cexpr: expr,
+        var fragment = currentFragment();
+        if (fragment.cexpr.nonEmpty()) {
+            fragments.push({
+                preExprs: [],
+                cexpr: expr,
+                binding: {name: name, type: type},
+            });
+        } else {
+            fragment.cexpr = expr;
+            fragment.binding = {name: name, type: type};
+        }
+
+        fragments.push({
+            preExprs: [],
+            cexpr: Maybe.empty(),
+            binding: Maybe.empty(),
         });
-        preExprs = [];
-        cexpr = Maybe.empty();
     }
 
     public function build(): ComputationExpr {
-        return if (bindings.isEmpty()) {
-            var acc = if (cexpr.isEmpty()) {
-                switch (vexpr) {
-                    case Var(_, _) | Bind(_, _) | Do | Return | ReturnFrom:
-                        switch (preExprs.length) {
-                            case 0: null;
-                            case 1: preExprs[0];
-                            case _: macro $b{preExprs}
-                        }
-                    case _:
-                        if (preExprs.isEmpty()) {
-                            builder.buildZero();
+        return if (fragments.length == 1) {
+            var fragment = fragments.last().get();
+            var expr = switch (vexpr) {
+                case Var(_, _) | Bind(_, _) | Do | Return | ReturnFrom:
+                    if (fragment.preExprs.isEmpty()) {
+                        if (fragment.cexpr.isEmpty()) {
+                            null;
                         } else {
-                            macro $b{preExprs.concat([builder.buildZero()])};
+                            fragment.cexpr.get();
                         }
-                }
-            } else {
-                if (preExprs.isEmpty()) {
-                    cexpr.get();
-                } else {
-                    macro $b{preExprs.concat([cexpr.get()])};
-                }
+                    } else {
+                        if (fragment.cexpr.isEmpty()) {
+                            toBlockExpr(fragment.preExprs.copy());
+                        } else {
+                            toBlockExpr(fragment.preExprs.concat([ fragment.cexpr.get() ]));
+                        }
+                    }
+                case _:
+                    toBlockExpr(fragment.preExprs.concat([ fragment.cexpr.getOrElse(builder.buildZero()) ]));
             }
 
-            {expr: acc, isReturn: isReturned};
+            { expr: expr, isReturn: isReturned };
         } else {
-            var acc = if (cexpr.isEmpty()) {
-                if (preExprs.isEmpty()) {
-                    builder.buildZero();
-                } else {
-                    macro $b{preExprs.concat([builder.buildZero()])};
-                }
-            } else {
-                if (preExprs.isEmpty()) {
-                    cexpr.get();
-                } else {
-                    macro $b{preExprs.concat([cexpr.get()])};
-                }
-            }
+            var fragment = fragments.last().get();
+            var acc = {
+                preExprs: fragment.preExprs,
+                cexpr: fragment.cexpr.getOrElse(builder.buildZero()),
+                isReturn: isReturned
+            };
 
-            if (!isReturned) {
-                acc = macro return ${acc};
-            }
-
-            var i = bindings.length;
+            var i = fragments.length - 1;
             while (i > 0) {
-                var binding = bindings[--i];
-
-                acc = builder.buildBind(binding.cexpr, {
-                    expr: EFunction(null, {
-                        args: [{name: binding.name, type: binding.type}],
-                        ret: null,
-                        expr: macro ${acc}
-                    }),
-                    pos: binding.cexpr.pos
-                });
-
-                if (binding.preExprs.nonEmpty()) {
-                    acc = macro $b{binding.preExprs.concat([acc])};
+                var fragment = fragments[--i];
+                if (fragment.binding.nonEmpty() || builder.buildCombine.isNull()) {
+                    var binding = fragment.binding.getOrElse({name: Maybe.empty(), type: Maybe.empty()});
+                    acc = {
+                        preExprs: fragment.preExprs,
+                        cexpr: builder.buildBind(fragment.cexpr.get(), {
+                            expr: EFunction(null, {
+                                args: [{name: binding.name.getOrElse("_"), type: binding.type.get()}],
+                                ret: null,
+                                expr: if (acc.isReturn) {
+                                    toBlockExpr(acc.preExprs.concat([acc.cexpr]));
+                                } else {
+                                    toBlockExpr(acc.preExprs.concat([macro return ${acc.cexpr}]));
+                                }
+                            }),
+                            pos: fragment.cexpr.get().pos
+                        }),
+                        isReturn: false
+                    };
+                } else {
+                    acc = {
+                        preExprs: fragment.preExprs,
+                        cexpr: builder.buildCombine(
+                            fragment.cexpr.getOrElse(builder.buildZero()),
+                            toBlockExpr(acc.preExprs.concat([acc.cexpr]))
+                        ),
+                        isReturn: acc.isReturn
+                    };
                 }
-
-                acc = macro return ${acc};
             }
 
-            {expr: acc, isReturn: true};
+            { expr: toBlockExpr(acc.preExprs.concat([acc.cexpr])), isReturn: acc.isReturn };
         }
+    }
+
+    inline function toBlockExpr(exprs: Array<Expr>): Expr {
+        return if (exprs.length == 1) {
+            exprs[0];
+        } else {
+            macro $b{exprs};
+        }
+    }
+
+    private inline function currentFragment(): CexprFragment {
+        return fragments.last().get();
     }
 }
 
@@ -498,6 +514,12 @@ private enum VirtualExpr {
     Try;
     Catch(name: String, type: ComplexType);
     End;
+}
+
+private typedef CexprFragment = {
+    var preExprs: Array<Expr>;
+    var cexpr: Maybe<Expr>;
+    var binding: Maybe<{name: Maybe<String>, type: Maybe<ComplexType>}>;
 }
 
 private typedef ComputationExpr = {

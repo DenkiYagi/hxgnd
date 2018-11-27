@@ -1291,7 +1291,7 @@ class ComputationTest_buildCombine {
             buildBind: function (m, fn) return macro ${fn}(${m}),
             buildReturn: function (value) return value,
             buildZero: function () return macro 0,
-            // buildCombine: function (expr1, expr2) return macro ${expr1} * ${expr2},
+            buildCombine: function (expr1, expr2) return macro $b{[expr1, expr2]},
         }, macro {
             var x = 1;
             if (x > 0) {
