@@ -106,6 +106,16 @@ class ComputationTest extends BuddySuite {
                 });
             });
 
+            describe("{| { cexpr } |}", {
+                it("should pass when it is given { @return { return 1; } }", {
+                    ComputationTest_block.perform_with_return().should.equal(Some(1));
+                });
+
+                it("should pass when it is given { @return { 1 } }", {
+                    ComputationTest_block.perform_without_return().should.equal(None);
+                });
+            });
+
             describe("{| if (cond) cexpr1 |}", {
                 it("should pass when it is given { var a = 0; if (a == 0) { a++; } }", {
                     ComputationTest_if.perform().should.equal(None);
@@ -173,7 +183,7 @@ class ComputationTest extends BuddySuite {
 
                 describe("+ @var + return", {
                     it("should pass when cond = true", {
-                        ComputationTest_if_else.perform_with_bind_true().should.equal(Some(2));
+                        ComputationTest_if_else.perform_with_bind_true().should.equal(Some(3));
                     });
 
                     it("should pass when cond = false", {
@@ -181,11 +191,11 @@ class ComputationTest extends BuddySuite {
                     });
 
                     it("should pass when it has @var in if_expr", {
-                        ComputationTest_if_else.perform_with_bind_nested_true().should.equal(Some(3));
+                        ComputationTest_if_else.perform_with_bind_nested_true().should.equal(Some(4));
                     });
 
                     it("should pass when it has @var in else_expr", {
-                        ComputationTest_if_else.perform_with_bind_nested_false().should.equal(Some(-2));
+                        ComputationTest_if_else.perform_with_bind_nested_false().should.equal(Some(-1));
                     });
                 });
             });

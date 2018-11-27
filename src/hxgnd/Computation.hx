@@ -93,18 +93,6 @@ class Computation {
     }
 }
 
-typedef ComputationExprBuilder<T, M> = {
-    var buildZero: Void -> ExprOf<M>;
-    var buildBind: ExprOf<M> -> ExprOf<T -> M> -> ExprOf<M>;
-    var buildReturn: ExprOf<T> -> ExprOf<M>;
-    @:optional var buildReturnFrom: ExprOf<M -> M>;
-    @:optional var buildWhile: ExprOf<Void -> Bool> -> ExprOf<Void -> M> -> ExprOf<M>;
-    @:optional var buildFor: Expr -> ExprOf<Void -> M> -> ExprOf<M>;
-    @:optional var buildRun: ExprOf<Void -> M> -> ExprOf<M>;
-    @:optional var buildDelay: ExprOf<Void -> M> -> ExprOf<Void -> M>;
-    @:optional var buildCombine: ExprOf<M> -> ExprOf<M> -> ExprOf<M>;
-}
-
 private class VirtualExprTransformer<T, M> {
     var builder: ComputationExprBuilder<T, M>;
     var blockStack: Array<ComputationBlock<T, M>>;
@@ -143,9 +131,9 @@ private class VirtualExprTransformer<T, M> {
             case Expr(expr):
                 currentBlock.emitRawExpr(expr);
             case ReturnZero:
-                currentBlock.emitReturnFrom({
-                    expr: builder.buildZero(),
-                    isReturn: false
+                currentBlock.emitCexpr({
+                    expr: macro return ${builder.buildZero()},
+                    isReturn: true
                 });
             case End:
                 buildBlock();
@@ -159,11 +147,17 @@ private class VirtualExprTransformer<T, M> {
             case Return:
                 var cexpr = currentBlock.build();
                 popBlock();
-                currentBlock.emitReturn(cexpr);
+                currentBlock.emitCexpr({
+                    expr: cexpr.isReturn ? cexpr.expr : macro return ${builder.buildReturn(cexpr.expr)},
+                    isReturn: true
+                });
             case ReturnFrom:
                 var cexpr = currentBlock.build();
                 popBlock();
-                currentBlock.emitReturnFrom(cexpr);
+                currentBlock.emitCexpr({
+                    expr: cexpr.isReturn ? cexpr.expr : macro return ${cexpr.expr},
+                    isReturn: true
+                });
 
             case Var(name, type):
                 var cexpr = currentBlock.build();
@@ -185,7 +179,12 @@ private class VirtualExprTransformer<T, M> {
             case Block:
                 var cexpr = currentBlock.build();
                 popBlock();
-                currentBlock.emitCexpr(cexpr);
+                currentBlock.emitCexpr({
+                    expr: cexpr.isReturn
+                        ? macro ${{expr: EFunction(null, {args: [], ret: null, expr: cexpr.expr}), pos: Context.currentPos()}}()
+                        : cexpr.expr,
+                    isReturn: false
+                });
 
             case If(cond):
                 var cif = currentBlock.build();
@@ -373,20 +372,6 @@ private class ComputationBlock<T, M> {
         }
     }
 
-    public function emitReturn(cexpr: ComputationExpr): Void {
-        emitCexpr({
-            expr: cexpr.isReturn ? cexpr.expr : macro return ${builder.buildReturn(cexpr.expr)},
-            isReturn: true
-        });
-    }
-
-    public function emitReturnFrom(cexpr: ComputationExpr): Void {
-        emitCexpr({
-            expr: cexpr.isReturn ? cexpr.expr : macro return ${cexpr.expr},
-            isReturn: true
-        });
-    }
-
     public function emitBinding(name: Null<String>, type: Null<ComplexType>, expr: Expr): Void {
         if (isReturned) return;
 
@@ -488,6 +473,18 @@ private class ComputationBlock<T, M> {
     private inline function currentFragment(): CexprFragment {
         return fragments.last().get();
     }
+}
+
+typedef ComputationExprBuilder<T, M> = {
+    var buildZero: Void -> ExprOf<M>;
+    var buildBind: ExprOf<M> -> ExprOf<T -> M> -> ExprOf<M>;
+    var buildReturn: ExprOf<T> -> ExprOf<M>;
+    @:optional var buildReturnFrom: ExprOf<M -> M>;
+    @:optional var buildWhile: ExprOf<Void -> Bool> -> ExprOf<Void -> M> -> ExprOf<M>;
+    @:optional var buildFor: Expr -> ExprOf<Void -> M> -> ExprOf<M>;
+    @:optional var buildRun: ExprOf<Void -> M> -> ExprOf<M>;
+    @:optional var buildDelay: ExprOf<Void -> M> -> ExprOf<Void -> M>;
+    @:optional var buildCombine: ExprOf<M> -> ExprOf<M> -> ExprOf<M>;
 }
 
 private enum TraversingExpr {

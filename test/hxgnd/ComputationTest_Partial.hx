@@ -296,6 +296,36 @@ class ComputationTest_do {
     }
 }
 
+class ComputationTest_block {
+    public static macro function perform_without_return(): Expr {
+        var expr = Computation.perform({
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None
+        }, macro {
+            @return {
+                1;
+            }
+        });
+        // trace(expr.toString());
+        return expr;
+    }
+
+    public static macro function perform_with_return(): Expr {
+        var expr = Computation.perform({
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None
+        }, macro {
+            @return {
+                return 1;
+            }
+        });
+        // trace(expr.toString());
+        return expr;
+    }
+}
+
 /**
  * {| if (expr) cexpr1 |}"
  */
@@ -384,7 +414,7 @@ class ComputationTest_if {
             @var b = if (a > 0) {
                 return a + 1;
             }
-            return b;
+            return b + 1;
         });
         // trace(expr.toString());
         return expr;
@@ -400,7 +430,7 @@ class ComputationTest_if {
             @var b = if (a <= 0) {
                 return a + 1;
             }
-            return b;
+            return b + 1;
         });
         // trace(expr.toString());
         return expr;
@@ -417,7 +447,7 @@ class ComputationTest_if {
                 @var x = Some(2);
                 return a + x;
             }
-            return b;
+            return b + 1;
         });
         // trace(expr.toString());
         return expr;
@@ -543,7 +573,7 @@ class ComputationTest_if_else {
             @var b = if (a > 10) {
                 return a + 1;
             } else {
-                return a - 1;
+                return a - 2;
             }
             return b + 1;
         });
