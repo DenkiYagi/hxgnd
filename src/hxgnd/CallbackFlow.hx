@@ -44,14 +44,18 @@ class CallbackFlow {
                 var placeholder = findPlaceholder(params);
 
                 var arguments = getArguments(Context.typeof(e), e.pos);
+                if (params.length > (arguments.length - (placeholder.isEmpty() ? 1 : 0))) {
+                    return Context.error("Too many arguments", cexpr.pos);
+                }
+
                 var bindedArgs = getArguments(Context.typeof({expr: ECall(macro ${e}.bind, params), pos: e.pos}), e.pos);
                 if (bindedArgs.length <= 0) {
                     return Context.error("Too many arguments", cexpr.pos);
                 } else if (bindedArgs.length >= 2) {
                     return Context.error("Not enough arguments.", cexpr.pos);
                 }
-                var cbArguments = getArguments(bindedArgs[0].t, e.pos);
 
+                var cbArguments = getArguments(bindedArgs[0].t, e.pos);
                 switch (cbArguments.length) {
                     case 0:
                         macro function CallbackFlow_callback() fulfill(new extype.Unit());
