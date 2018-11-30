@@ -7,6 +7,7 @@ import haxe.macro.Type;
 import extype.Maybe;
 using hxgnd.ArrayTools;
 using hxgnd.LangTools;
+using haxe.macro.ExprTools;
 #end
 
 class CallbackFlow {
@@ -42,28 +43,31 @@ class CallbackFlow {
             case ECall(e, params):
                 var placeholder = findPlaceholder(params);
 
-                var argSize = getCallbackArgSize(e, placeholder);
-                var callback = switch (style) {
-                    case Standard: starndardStyleCallback(argSize);
-                    case NodeJs: nodeJsStyleCallback(argSize);
+                var arguments = getArguments(Context.typeof(e), e.pos);
+                var bindedArgs = getArguments(Context.typeof({expr: ECall(macro ${e}.bind, params), pos: e.pos}), e.pos);
+                if (bindedArgs.length <= 0) {
+                    return Context.error("Too many arguments", cexpr.pos);
+                } else if (bindedArgs.length >= 2) {
+                    return Context.error("Not enough arguments.", cexpr.pos);
                 }
+                var cbArguments = getArguments(bindedArgs[0].t, e.pos);
 
-                switch (argSize) {
+                switch (cbArguments.length) {
                     case 0:
                         macro function CallbackFlow_callback() fulfill(new extype.Unit());
                     case 1:
                         macro function CallbackFlow_callback(x) fulfill(x);
                     case _:
-                        var args = [ for (i in 0...argSize) {name: 'arg${i}', type: null} ];
+                        var args = [ for (i in 0...cbArguments.length) {name: 'arg${i}', type: null} ];
                         var tuple = {
                             expr: ENew(
                                 {
                                     pack: ["extype"],
                                     name: "Tuple",
-                                    sub: 'Tuple${argSize}',
+                                    sub: 'Tuple${arguments.length}',
                                     params: [],
                                 },
-                                [ for (i in 0...argSize) macro $i{'arg${i}'} ]
+                                [ for (i in 0...cbArguments.length) macro $i{'arg${i}'} ]
                             ),
                             pos: Context.currentPos()
                         };
@@ -79,6 +83,10 @@ class CallbackFlow {
                 }
 
                 var newParams = params.copy();
+                var callback = switch (style) {
+                    case Standard: starndardStyleCallback(cbArguments.length);
+                    case NodeJs: nodeJsStyleCallback(cbArguments.length);
+                }
                 if (placeholder.nonEmpty()) {
                     newParams[placeholder.get()] = callback;
                 } else {
@@ -198,31 +206,18 @@ class CallbackFlow {
         }
     }
 
-    static function getCallbackArgSize(fn: Expr, index: Maybe<Int>): Int {
-        switch (Context.typeof(fn)) {
-            case TFun(args, _) if (args.length >= 1):
-                return if (index.nonEmpty()) {
-                    resolveArgSize(args[index.get()].t, fn.pos);
-                } else {
-                    resolveArgSize(args.last().get().t, fn.pos);
-                }
-            case _:
-        }
-        return Context.error("Can not get the argument size.", fn.pos);
-    }
-
-    static function resolveArgSize(type: Type, pos: Position): Int {
+    static function getArguments(type: Type, pos: Position): Array<{name: String, opt: Bool, t: Type}> {
         while (true) {
             switch (type) {
                 case TFun(args, ret):
-                    return args.length;
+                    return args;
                 case TType(typeRef, typeParams):
                     type = typeRef.get().type;
                 case _:
                     break;
             }
         }
-        return Context.error("Can not get the argument size.", pos);
+        return Context.error('${type.getName()} is not a function', pos);
     }
     #end
 }
