@@ -20,7 +20,7 @@ class CallbackFlow {
             },
             blockExpr
         );
-        // trace(haxe.macro.ExprTools.toString(expr));
+        trace(haxe.macro.ExprTools.toString(expr));
         return expr;
     }
 
