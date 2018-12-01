@@ -115,10 +115,7 @@ private class VirtualExprTransformer<T, M> {
     }
 
     function buildDelay(cexpr: ComputationExpr): ExprOf<Void-> M> {
-        var fn = cexpr.isReturn
-                ? macro function delay() ${cexpr.expr}
-                : macro function delay() return ${cexpr.expr};
-
+        var fn = macro function delay() return ${cexpr.expr};
         return if (builder.buildDelay.nonNull()) {
             builder.buildDelay(fn);
         } else {
@@ -132,7 +129,7 @@ private class VirtualExprTransformer<T, M> {
                 currentBlock.emitRawExpr(expr);
             case ReturnZero:
                 currentBlock.emitCexpr({
-                    expr: macro return ${builder.buildZero()},
+                    expr: builder.buildZero(),
                     isReturn: true
                 });
             case End:
@@ -148,14 +145,14 @@ private class VirtualExprTransformer<T, M> {
                 var cexpr = currentBlock.build();
                 popBlock();
                 currentBlock.emitCexpr({
-                    expr: cexpr.isReturn ? cexpr.expr : macro return ${builder.buildReturn(cexpr.expr)},
+                    expr: builder.buildReturn(cexpr.expr),
                     isReturn: true
                 });
             case ReturnFrom:
                 var cexpr = currentBlock.build();
                 popBlock();
                 currentBlock.emitCexpr({
-                    expr: cexpr.isReturn ? cexpr.expr : macro return ${cexpr.expr},
+                    expr: cexpr.expr,
                     isReturn: true
                 });
 
@@ -181,7 +178,7 @@ private class VirtualExprTransformer<T, M> {
                 popBlock();
                 currentBlock.emitCexpr({
                     expr: cexpr.isReturn
-                        ? macro ${{expr: EFunction(null, {args: [], ret: null, expr: cexpr.expr}), pos: Context.currentPos()}}()
+                        ? macro ${{expr: EFunction(null, {args: [], ret: null, expr: macro return ${cexpr.expr}}), pos: Context.currentPos()}}()
                         : cexpr.expr,
                     isReturn: false
                 });
@@ -269,7 +266,7 @@ private class VirtualExprTransformer<T, M> {
                             expr: EFunction(null, {
                                 args: [{name: ident, type: null}],
                                 ret: null,
-                                expr: body.isReturn ? body.expr : macro return ${body.expr}
+                                expr: macro return ${body.expr}
                             }),
                             pos: Context.currentPos()
                         }}),
@@ -422,7 +419,6 @@ private class ComputationBlock<T, M> {
             var acc = {
                 preExprs: fragment.preExprs,
                 cexpr: fragment.cexpr.getOrElse(builder.buildZero()),
-                isReturn: isReturned
             };
 
             var i = fragments.length - 1;
@@ -436,15 +432,10 @@ private class ComputationBlock<T, M> {
                             expr: EFunction(null, {
                                 args: [{name: binding.name.getOrElse("_"), type: binding.type.get()}],
                                 ret: null,
-                                expr: if (acc.isReturn) {
-                                    toBlockExpr(acc.preExprs.concat([acc.cexpr]));
-                                } else {
-                                    toBlockExpr(acc.preExprs.concat([macro return ${acc.cexpr}]));
-                                }
+                                expr: toBlockExpr(acc.preExprs.concat([macro return ${acc.cexpr}]))
                             }),
                             pos: fragment.cexpr.get().pos
                         }),
-                        isReturn: false
                     };
                 } else {
                     acc = {
@@ -453,12 +444,11 @@ private class ComputationBlock<T, M> {
                             fragment.cexpr.getOrElse(builder.buildZero()),
                             toBlockExpr(acc.preExprs.concat([acc.cexpr]))
                         ),
-                        isReturn: acc.isReturn
                     };
                 }
             }
 
-            { expr: toBlockExpr(acc.preExprs.concat([acc.cexpr])), isReturn: acc.isReturn };
+            { expr: toBlockExpr(acc.preExprs.concat([acc.cexpr])), isReturn: isReturned };
         }
     }
 

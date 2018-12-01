@@ -4,12 +4,12 @@ import buddy.*;
 
 class TestMain implements Buddy<[
     // hxgnd.LangToolsTest,
-    // hxgnd.ArrayToolsTest,
+    hxgnd.ArrayToolsTest,
     // hxgnd.OptionToolsTest,
     // hxgnd.LazyTest,
     // hxgnd.DelegateTest,
-    hxgnd.ComputationTest,
-    hxgnd.PromiseTest,
+    // hxgnd.ComputationTest,
+    // hxgnd.PromiseTest,
     // hxgnd.SyncPromiseTest,
     // hxgnd.AbortablePromiseTest,
     hxgnd.CallbackFlowTest,
