@@ -9,7 +9,7 @@ class TestMain implements Buddy<[
     // hxgnd.LazyTest,
     // hxgnd.DelegateTest,
     // hxgnd.ComputationTest,
-    // hxgnd.PromiseTest,
+    hxgnd.PromiseTest,
     // hxgnd.SyncPromiseTest,
     // hxgnd.AbortablePromiseTest,
     hxgnd.CallbackFlowTest,

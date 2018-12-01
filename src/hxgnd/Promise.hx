@@ -171,13 +171,45 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
             {
                 buildBind: buildBind,
                 buildReturn: buildReturn,
-                buildZero: buildZero
+                buildZero: buildZero,
+                buildWhile: buildWhile,
+                buildFor: buildFor
             },
             blockExpr
         );
     }
 
     #if macro
+    static function buildReturn(expr: Expr): Expr {
+        return macro new hxgnd.SyncPromise(function (f, _) {
+            f(${expr});
+        });
+    }
+
+    static function buildZero(): Expr {
+        return macro hxgnd.SyncPromise.resolve(new extype.Unit());
+    }
+
+    static function buildWhile(cond: Expr, body: Expr): Expr {
+        return macro function _while(cond: Void -> Bool, body: Void -> SyncPromise<extype.Unit>): SyncPromise<extype.Unit> {
+            return if (cond()) {
+                body().then(function (_) return _while(cond, body));
+            } else {
+                ${buildZero()};
+            }
+        }(${cond}, ${body});
+    }
+
+    static function buildFor(iter: Expr, body: Expr): Expr {
+        return macro function _for(iter, body: Int -> SyncPromise<extype.Unit>): SyncPromise<extype.Unit> {
+            return if (iter.hasNext()) {
+                body(iter.next()).then(function (_) return _for(iter, body));
+            } else {
+                ${buildZero()};
+            }
+        }(${iter}, ${body});
+    }
+
     static function buildBind(expr: Expr, fn: Expr): Expr {
         return if (isPromise(expr)) {
             macro hxgnd.internal.PromiseComputationHelper.implicitCast(${expr}).then(${fn});
@@ -186,16 +218,6 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
                 f(${expr});
             }).then(${fn});
         }
-    }
-
-    static function buildReturn(expr: Expr): Expr {
-        return macro new hxgnd.SyncPromise(function (f, _) {
-            f(${expr});
-        });
-    }
-
-    static function buildZero(): Expr {
-        return macro hxgnd.SyncPromise.resolve();
     }
 
     static function isPromise(expr: Expr): Bool {
