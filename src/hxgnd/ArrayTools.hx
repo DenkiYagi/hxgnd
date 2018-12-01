@@ -144,10 +144,20 @@ class ArrayTools {
         }
     }
 
-    // public static function flatten<A>(array: Array<Array<A>>): Array<A> {
-    //     function concat<A>(a1: Array<A>, a2: Array<A>){ return a2.concat(a1); }
-    //     return Lambda.array(Lambda.fold(array, concat, []));
-    // }
+    public static function flatten<A>(array: Array<Array<A>>): Array<A> {
+        return switch (array.length) {
+            case 0:
+                [];
+            case 1:
+                array[0].copy();
+            case _:
+                var acc = array[0].copy();
+                for (i in 1...array.length) {
+                    acc = acc.concat(array[i]);
+                }
+                acc;
+        }
+    }
 
     // public static function span<A>(array: Array<A>, cond: A -> Bool): {first: Array<A>, rest: Array<A>} {
     //     var i = 0;

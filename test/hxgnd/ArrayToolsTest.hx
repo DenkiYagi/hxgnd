@@ -213,5 +213,19 @@ class ArrayToolsTest extends BuddySuite {
                 [1, 2, 3].last().should.be(3);
             });
         });
+
+        describe("ArrayTools.flatten()", {
+            it("should pass when it is given []", {
+                [].flatten().isEmpty().should.be(true);
+            });
+
+            it("should pass when it is given [ [1, 2] ]", {
+                [ [1, 2] ].flatten().should.containExactly([1, 2]);
+            });
+
+            it("should pass when it is given [ [1, 2], [], [3, 4], [5, 6] ]", {
+                [ [1, 2], [], [3, 4], [5, 6] ].flatten().should.containExactly([1, 2, 3, 4, 5, 6]);
+            });
+        });
     }
 }
