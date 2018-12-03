@@ -4,8 +4,6 @@ package hxgnd;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import hxgnd.internal.CallbackFlowComputation;
-
-typedef CallbackBuilder = Int -> String -> String -> Expr;
 #end
 
 class CallbackFlow {
