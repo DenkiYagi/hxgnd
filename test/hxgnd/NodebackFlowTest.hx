@@ -4,14 +4,14 @@ import buddy.BuddySuite;
 import buddy.CompilationShould;
 using buddy.Should;
 
-class CallbackFlowTest extends BuddySuite {
+class NodebackFlowTest extends BuddySuite {
     public function new() {
         timeoutMs = 100;
 
-        describe("CallbackFlow.compute()", {
+        describe("NodebackFlow.compute()", {
             describe("empty expr", {
                 it("should pass", function (done) {
-                    CallbackFlow.compute({}).then(function (_) {
+                    NodebackFlow.compute({}).then(function (_) {
                         done();
                     });
                 });
@@ -22,7 +22,7 @@ class CallbackFlowTest extends BuddySuite {
                     it("should not be able to compile when it evaluates a function that has no argument", CompilationShould.failFor({
                         function f1() return 10;
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1();
                         });
                     }));
@@ -30,7 +30,7 @@ class CallbackFlowTest extends BuddySuite {
                     it("should not be able to compile when it evaluates a function that has some arguments", CompilationShould.failFor({
                         function f1(a: Int, b: Int) return a + b;
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(1, 2);
                         });
                     }));
@@ -40,7 +40,7 @@ class CallbackFlowTest extends BuddySuite {
                     it("should pass when it evaluates a function that has no argument", function (done) {
                         function f1(cb: Void -> Void) cb();
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1();
                         }).then(function (_) {
                             done();
@@ -54,7 +54,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(10, 20);
                         }).then(function (_) {
                             done();
@@ -66,7 +66,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(10);
                         }).then(function (_) {
                             fail();
@@ -78,7 +78,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(1, 2, 3);
                         });
                     }));
@@ -90,7 +90,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(_);
                         }).then(function (_) {
                             done();
@@ -104,7 +104,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(_, 10, 20);
                         }).then(function (_) {
                             done();
@@ -116,7 +116,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(_, 10);
                         }).then(function (_) {
                             fail();
@@ -128,7 +128,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @do f1(_, 1, 2, 3);
                         });
                     }));
@@ -140,7 +140,7 @@ class CallbackFlowTest extends BuddySuite {
                             cb();
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
                             @var a = f1();
                             a.should.be(new extype.Unit());
                         }).then(function (_) {
@@ -148,12 +148,55 @@ class CallbackFlowTest extends BuddySuite {
                         });
                     });
 
-                    it("should pass when it is given (Int -> Void)", function (done) {
-                        function f1(cb: Int -> Void) {
-                            cb(10);
+                    it("should pass when it is given (\"error\" -> Void)", function (done) {
+                        function f1(cb: Null<String> -> Void) {
+                            cb("error");
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
+                            @var a = f1();
+                        }).then(function (_) {
+                            fail();
+                        }, function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+
+                    it("should pass when it is given (null -> Void)", function (done) {
+                        function f1(cb: Null<String> -> Void) {
+                            cb(null);
+                        }
+
+                        NodebackFlow.compute({
+                            @var a = f1();
+                            a.should.be(new extype.Unit());
+                        }).then(function (_) {
+                            done();
+                        });
+                    });
+
+                    it("should pass when it is given (\"error\" -> Int -> Void)", function (done) {
+                        function f1(cb: Null<String> -> Int -> Void) {
+                            cb("error", 20);
+                        }
+
+                        NodebackFlow.compute({
+                            @var a = f1();
+                        }).then(function (_) {
+                            fail();
+                        }, function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+
+                    it("should pass when it is given (null -> Int -> Void)", function (done) {
+                        function f1(cb: Null<String> -> Int -> Void) {
+                            cb(null, 10);
+                        }
+
+                        NodebackFlow.compute({
                             @var a = f1();
                             a.should.be(10);
                         }).then(function (_) {
@@ -161,12 +204,27 @@ class CallbackFlowTest extends BuddySuite {
                         });
                     });
 
-                    it("should pass when it is given (Int -> Int -> Void)", function (done) {
-                        function f1(cb: Int -> Int -> Void) {
-                            cb(10, 20);
+                    it("should pass when it is given (\"error\" -> Int -> Int -> Void)", function (done) {
+                        function f1(cb: Null<String> -> Int -> Int -> Void) {
+                            cb("error", 10, 20);
                         }
 
-                        CallbackFlow.compute({
+                        NodebackFlow.compute({
+                            @var a = f1();
+                        }).then(function (_) {
+                            fail();
+                        }, function (e) {
+                            (e: String).should.be("error");
+                            done();
+                        });
+                    });
+
+                    it("should pass when it is given (null -> Int -> Int -> Void)", function (done) {
+                        function f1(cb: Null<String> -> Int -> Int -> Void) {
+                            cb(null, 10, 20);
+                        }
+
+                        NodebackFlow.compute({
                             @var a = f1();
                             a.value1.should.be(10);
                             a.value2.should.be(20);
@@ -179,11 +237,11 @@ class CallbackFlowTest extends BuddySuite {
 
             describe("return", {
                 it("should pass", function (done) {
-                    function f1(cb: Int -> Void) {
-                        cb(10);
+                    function f1(cb: Null<String> -> Int -> Void) {
+                        cb(null, 10);
                     }
 
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         @var a = f1();
                         return a * 10;
                     }).then(function (x) {
@@ -195,7 +253,7 @@ class CallbackFlowTest extends BuddySuite {
 
             describe("@return", {
                 it("should pass", function (done) {
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         @return Promise.resolve(10);
                     }).then(function (x) {
                         x.should.be(10);
@@ -206,11 +264,11 @@ class CallbackFlowTest extends BuddySuite {
 
             describe("if", {
                 it("should pass when it is given true", function (done) {
-                    function f1(cb: Bool -> Void) {
-                        cb(true);
+                    function f1(cb: Null<Dynamic> -> Bool -> Void) {
+                        cb(null, true);
                     }
 
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         @var a = f1();
                         var b = 0;
                         if (a) {
@@ -225,11 +283,11 @@ class CallbackFlowTest extends BuddySuite {
                 });
 
                 it("should pass when it is given false", function (done) {
-                    function f1(cb: Bool -> Void) {
-                        cb(false);
+                    function f1(cb: Null<Dynamic> -> Bool -> Void) {
+                        cb(null, false);
                     }
 
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         @var a = f1();
                         var b = 0;
                         if (a) {
@@ -246,11 +304,11 @@ class CallbackFlowTest extends BuddySuite {
 
             describe("while", {
                 it("should pass", function (done) {
-                    function f1(a: Int, cb: Int -> Void) {
-                        cb(a);
+                    function f1(a: Int, cb: Null<Dynamic> -> Int -> Void) {
+                        cb(null, a);
                     }
 
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         var acc = 0;
                         var i = 0;
                         while (i < 5) {
@@ -267,11 +325,11 @@ class CallbackFlowTest extends BuddySuite {
 
             describe("for", {
                 it("should pass", function (done) {
-                    function f1(a: Int, cb: Int -> Void) {
-                        cb(a);
+                    function f1(a: Int, cb: Null<Dynamic> -> Int -> Void) {
+                        cb(null, a);
                     }
 
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         var acc = 0;
                         for (i in 0...4) {
                             @var x = f1(i, _);
@@ -287,15 +345,15 @@ class CallbackFlowTest extends BuddySuite {
 
             describe("mixed pattern", {
                 it("should pass", function (done) {
-                    function f1(cb: Int -> Void) {
-                        cb(10);
+                    function f1(cb: Null<Dynamic> -> Int -> Void) {
+                        cb(null, 10);
                     }
 
-                    function f2(cb: Int -> String -> Void) {
-                        cb(20, "hello");
+                    function f2(cb: Null<Dynamic> -> Int -> String -> Void) {
+                        cb(null, 20, "hello");
                     }
 
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         @var a = f1();
                         @var b = f2();
                         return { value: a + b.value1, message: b.value2 };
@@ -307,17 +365,17 @@ class CallbackFlowTest extends BuddySuite {
                 });
 
                 it("should pass when it is nested pattern", function (done) {
-                    function f1(cb: Int -> Void) {
-                        cb(10);
+                    function f1(cb: Null<Dynamic> -> Int -> Void) {
+                        cb(null, 10);
                     }
 
-                    function f2(cb: Int -> Void) {
-                        cb(20);
+                    function f2(cb: Null<Dynamic> -> Int -> Void) {
+                        cb(null, 20);
                     }
 
-                    CallbackFlow.compute({
+                    NodebackFlow.compute({
                         @var a = f1();
-                        @return CallbackFlow.compute({
+                        @return NodebackFlow.compute({
                             @var b = f2();
                             return a + b;
                         });
