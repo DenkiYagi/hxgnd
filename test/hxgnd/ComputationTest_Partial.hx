@@ -1012,17 +1012,16 @@ class ComputationTest_switch_default {
 class ComputationTest_while {
     public static macro function perform(): Expr {
         var expr = Computation.perform({
-            buildBind: function (m, fn) return macro ${fn}(${m}),
-            buildReturn: function (value) return value,
-            buildZero: function () return macro 0,
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None,
             buildWhile: function (cond, body) {
                 return macro function _while(cond, body) {
                     return if (cond()) {
-                        var x = body();
+                        body();
                         _while(cond, body);
-                        x;
                     } else {
-                        0;
+                        Some(new extype.Unit());
                     }
                 }(${cond}, ${body});
             },
@@ -1039,9 +1038,9 @@ class ComputationTest_while {
 
     public static macro function perform_no_builder(): Expr {
         var expr = Computation.perform({
-            buildBind: function (m, fn) return macro fn(${m}),
-            buildReturn: function (value) return value,
-            buildZero: function () return macro 0,
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None,
         }, macro {
             var i = 0;
             while (i < 3) { //remove expr
@@ -1052,6 +1051,35 @@ class ComputationTest_while {
         // trace(expr.toString());
         return expr;
     }
+
+    public static macro function perform_inside_bind(): Expr {
+        var expr = Computation.perform({
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None,
+            buildWhile: function (cond, body) {
+                return macro function _while(cond, body) {
+                    return if (cond()) {
+                        body();
+                        _while(cond, body);
+                    } else {
+                        Some(new extype.Unit());
+                    }
+                }(${cond}, ${body});
+            },
+        }, macro {
+            var i = 0;
+            var acc = 0;
+            while (i < 4) {
+                @var x = Some(i);
+                acc += x;
+                i++;
+            }
+            return acc;
+        });
+        //trace(expr.toString());
+        return expr;
+    }
 }
 
 /**
@@ -1060,17 +1088,16 @@ class ComputationTest_while {
 class ComputationTest_for {
     public static macro function perform(): Expr {
         var expr = Computation.perform({
-            buildBind: function (m, fn) return macro ${fn}(${m}),
-            buildReturn: function (value) return value,
-            buildZero: function () return macro 0,
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None,
             buildFor: function (iter, body) {
                 return macro function _for(iter, body) {
                     return if (iter.hasNext()) {
                         var x = body(iter.next());
                         _for(iter, body);
-                        x;
                     } else {
-                        0;
+                        Some(new extype.Unit());
                     }
                 }(${iter}, ${body});
             },
@@ -1087,15 +1114,42 @@ class ComputationTest_for {
 
     public static macro function perform_no_builder(): Expr {
         var expr = Computation.perform({
-            buildBind: function (m, fn) return macro ${fn}(${m}),
-            buildReturn: function (value) return value,
-            buildZero: function () return macro 0,
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None,
         }, macro {
             var x = 0;
             for (i in 0...3) {
                 x += i;
             }
             return x;
+        });
+        // trace(expr.toString());
+        return expr;
+    }
+
+    public static macro function perform_inside_bind(): Expr {
+        var expr = Computation.perform({
+            buildBind: function (m, fn) return macro OptionTools.flatMap(${m}, ${fn}),
+            buildReturn: function (value) return macro Some(${value}),
+            buildZero: function () return macro None,
+            buildFor: function (iter, body) {
+                return macro function _for(iter, body) {
+                    return if (iter.hasNext()) {
+                        var x = body(iter.next());
+                        _for(iter, body);
+                    } else {
+                        Some(new extype.Unit());
+                    }
+                }(${iter}, ${body});
+            },
+        }, macro {
+            var acc = 0;
+            for (i in 0...4) {
+                @var x = Some(i);
+                acc += x;
+            }
+            return acc;
         });
         // trace(expr.toString());
         return expr;
