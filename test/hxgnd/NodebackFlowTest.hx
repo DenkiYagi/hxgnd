@@ -386,5 +386,219 @@ class NodebackFlowTest extends BuddySuite {
                 });
             });
         });
+
+        describe("NodebackFlow.promisifyCall()", {
+            describe("no callback", {
+                it("should not be able to compile when it evaluates a function that has no argument", CompilationShould.failFor({
+                    function f1() return 10;
+
+                    NodebackFlow.promisifyCall(f1);
+                }));
+
+                it("should not be able to compile when it evaluates a function that has some arguments", CompilationShould.failFor({
+                    function f1(a: Int, b: Int) return a + b;
+
+                    NodebackFlow.promisifyCall(f1, 1, 2);
+                }));
+            });
+
+            describe("without placeholder", {
+                it("should pass when it evaluates a function that has no argument", function (done) {
+                    function f1(cb: Void -> Void) cb();
+
+                    NodebackFlow.promisifyCall(f1).then(function (_) {
+                        done();
+                    });
+                });
+
+                it("should pass when it evaluates a function that has some arguments", function (done) {
+                    function f1(a: Int, b: Int, cb: Void -> Void) {
+                        a.should.be(10);
+                        b.should.be(20);
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1, 10, 20).then(function (_) {
+                        done();
+                    });
+                });
+
+                it("should not be able to compile when it is not enough arguments", CompilationShould.failFor({
+                    function f1(a: Int, b: Int, cb: Void -> Void) {
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1, 10);
+                }));
+
+                it("should not be able to compile when it is too many arguments", CompilationShould.failFor({
+                    function f1(a: Int, b: Int, cb: Void -> Void) {
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1, 1, 2, 3);
+                }));
+            });
+
+            describe("with placeholder", {
+                it("should pass when it evaluates a function that has no argument", function (done) {
+                    function f1(cb: Void -> Void) {
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1, _).then(function (_) {
+                        done();
+                    });
+                });
+
+                it("should pass when it evaluates a function that has some arguments", function (done) {
+                    function f1(cb: Void -> Void, a: Int, b: Int) {
+                        a.should.be(10);
+                        b.should.be(20);
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1, _, 10, 20).then(function (_) {
+                        done();
+                    });
+                });
+
+                it("should not be able to compile when it is not enough arguments", CompilationShould.failFor({
+                    function f1(cb: Void -> Void, a: Int, b: Int) {
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1, _, 10).then(function (_) {
+                        fail();
+                    });
+                }));
+
+                it("should not be able to compile when it is too many arguments", CompilationShould.failFor({
+                    function f1(cb: Void -> Void, a: Int, b: Int) {
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1, _, 1, 2, 3);
+                }));
+            });
+
+            describe("callback argument", {
+                it("should pass when it is given (Void -> Void)", function (done) {
+                    function f1(cb: Void -> Void) {
+                        cb();
+                    }
+
+                    NodebackFlow.promisifyCall(f1).then(function (x) {
+                        x.should.be(new extype.Unit());
+                        done();
+                    });
+                });
+
+                it("should pass when it is given (\"error\" -> Void)", function (done) {
+                    function f1(cb: Null<String> -> Void) {
+                        cb("error");
+                    }
+
+                    NodebackFlow.promisifyCall(f1)
+                    .then(function (_) {
+                        fail();
+                    }, function (e) {
+                        (e: String).should.be("error");
+                        done();
+                    });
+                });
+
+                it("should pass when it is given (null -> Void)", function (done) {
+                    function f1(cb: Null<String> -> Void) {
+                        cb(null);
+                    }
+
+                    NodebackFlow.promisifyCall(f1).then(function (x) {
+                        x.should.be(new extype.Unit());
+                        done();
+                    });
+                });
+
+                it("should pass when it is given (\"error\" -> Int -> Void)", function (done) {
+                    function f1(cb: Null<String> -> Int -> Void) {
+                        cb("error", 20);
+                    }
+
+                    NodebackFlow.promisifyCall(f1)
+                    .then(function (_) {
+                        fail();
+                    }, function (e) {
+                        (e: String).should.be("error");
+                        done();
+                    });
+                });
+
+                it("should pass when it is given (null -> Int -> Void)", function (done) {
+                    function f1(cb: Null<String> -> Int -> Void) {
+                        cb(null, 10);
+                    }
+
+                    NodebackFlow.promisifyCall(f1).then(function (x) {
+                        x.should.be(10);
+                        done();
+                    });
+                });
+
+                it("should pass when it is given (\"error\" -> Int -> Int -> Void)", function (done) {
+                    function f1(cb: Null<String> -> Int -> Int -> Void) {
+                        cb("error", 10, 20);
+                    }
+
+                    NodebackFlow.promisifyCall(f1)
+                    .then(function (_) {
+                        fail();
+                    }, function (e) {
+                        (e: String).should.be("error");
+                        done();
+                    });
+                });
+
+                it("should pass when it is given (null -> Int -> Int -> Void)", function (done) {
+                    function f1(cb: Null<String> -> Int -> Int -> Void) {
+                        cb(null, 10, 20);
+                    }
+
+                    NodebackFlow.promisifyCall(f1).then(function (x) {
+                        x.value1.should.be(10);
+                        x.value2.should.be(20);
+                        done();
+                    });
+                });
+            });
+
+            describe("typedef", {
+                it("should pass when it is given a typedef callback function", function (done) {
+                    function f1(cb: Callback2<Int>) {
+                        cb(null, 10);
+                    }
+
+                    NodebackFlow.promisifyCall(f1).then(function (x) {
+                        x.should.be(10);
+                        done();
+                    });
+                });
+
+                it("should pass when it is given a typedef-alias callback function", function (done) {
+                    function f1(cb: Callback3_Alias<Int, Int>) {
+                        cb(null, 10, 20);
+                    }
+
+                    NodebackFlow.promisifyCall(f1).then(function (x) {
+                        x.value1.should.be(10);
+                        x.value2.should.be(20);
+                        done();
+                    });
+                });
+            });
+        });
     }
 }
+
+private typedef Callback2<T> = extype.Error -> T -> Void;
+private typedef Callback3<T1, T2> = extype.Error -> T1 -> T2 -> Void;
+private typedef Callback3_Alias<T1, T2> = Callback3<T1, T2>;

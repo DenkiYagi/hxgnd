@@ -1,18 +1,34 @@
 package hxgnd;
 
+import haxe.Constraints.Function;
 #if macro
-import haxe.macro.Context;
 import haxe.macro.Expr;
-import hxgnd.internal.CallbackFlowComputation;
+import haxe.macro.Context;
+import hxgnd.internal.CallbackFlowMacro;
 #end
 
 class NodebackFlow {
-    public static macro function compute(blockExpr: Expr): Expr {
-        return CallbackFlowComputation.perform(buildCallback, blockExpr);
+    /**
+     * Perform a nodeback-flow comutation.
+     * @param expr A computation expr.
+     * @return ExprOf<SyncPromise<T>>
+     */
+    public static macro function compute<T>(expr: Expr): ExprOf<SyncPromise<T>> {
+        return CallbackFlowMacro.perform(buildNodeback, expr);
+    }
+
+    /**
+     * Promisify and call a nodeback-function.
+     * @param fn A nodeback-function.
+     * @param params Some parameters to pass as arguments.
+     * @return A instance of SyncPromise that has a specified function result.
+     */
+    public static macro function promisifyCall<T>(fn: ExprOf<Function>, params: Array<Expr>): ExprOf<SyncPromise<T>> {
+        return CallbackFlowMacro.promisifyCall(buildNodeback, fn, params);
     }
 
     #if macro
-    static function buildCallback(argSize: Int, fulfill: String, reject: String): Expr {
+    static function buildNodeback(argSize: Int, fulfill: String, reject: String): Expr {
         return switch (argSize) {
             case 0:
                 macro function CallbackFlow_callback() fulfill(new extype.Unit());

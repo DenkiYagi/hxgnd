@@ -1,6 +1,5 @@
 package hxgnd.internal;
 
-#if macro
 import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.Type;
@@ -10,11 +9,13 @@ using hxgnd.ArrayTools;
 using hxgnd.LangTools;
 using haxe.macro.ExprTools;
 
-typedef CallbackBuilder = Int -> String -> String -> Expr;
-#end
-
-class CallbackFlowComputation {
-    #if macro
+class CallbackFlowMacro {
+    /**
+     * Perform a "Callback Flow" computation.
+     * @param builder
+     * @param blockExpr
+     * @return ExprOf<SyncPromise<T>>
+     */
     public static function perform<T>(builder: CallbackBuilder, blockExpr: Expr): ExprOf<SyncPromise<T>> {
         var expr = Computation.perform(
             {
@@ -29,6 +30,15 @@ class CallbackFlowComputation {
         );
         // trace(haxe.macro.ExprTools.toString(expr));
         return expr;
+    }
+
+    static function buildBind(builder: CallbackBuilder, cexpr: Expr, fn: Expr): Expr {
+        switch (cexpr.expr) {
+            case ECall(e, params):
+                return macro ${promisifyCall(builder, e, params)}.then(${fn});
+            case _:
+                return cexpr;
+        }
     }
 
     static function buildReturn(expr: Expr): Expr {
@@ -63,61 +73,67 @@ class CallbackFlowComputation {
         return macro ${expr1}.then(function (_) return ${expr2});
     }
 
-    static function buildBind(builder: CallbackBuilder, cexpr: Expr, fn: Expr): Expr {
-        switch (cexpr.expr) {
-            case ECall(e, params):
-                var placeholder = findPlaceholder(params);
+    /**
+     * Promisify and call a function.
+     * @param builder
+     * @param fn
+     * @param params
+     * @return ExprOf<SyncPromise<T>>
+     */
+    public static function promisifyCall<T>(builder: CallbackBuilder,
+            fn: ExprOf<haxe.Constraints.Function>, params: Array<Expr>): ExprOf<hxgnd.SyncPromise<T>> {
+        var placeholder = findPlaceholder(params);
 
-                var arguments = getArguments(Context.typeof(e), e.pos);
-                if (params.length > (arguments.length - (placeholder.isEmpty() ? 1 : 0))) {
-                    return Context.error("Too many arguments", cexpr.pos);
-                }
-
-                var cbArguments = getCallbackArguments(e, params, cexpr.pos);
-                switch (cbArguments.length) {
-                    case 0:
-                        macro function CallbackFlow_callback() fulfill(new extype.Unit());
-                    case 1:
-                        macro function CallbackFlow_callback(x) fulfill(x);
-                    case _:
-                        var args = [ for (i in 0...cbArguments.length) {name: 'arg${i}', type: null} ];
-                        var tuple = {
-                            expr: ENew(
-                                {
-                                    pack: ["extype"],
-                                    name: "Tuple",
-                                    sub: 'Tuple${arguments.length}',
-                                    params: [],
-                                },
-                                [ for (i in 0...cbArguments.length) macro $i{'arg${i}'} ]
-                            ),
-                            pos: Context.currentPos()
-                        };
-
-                        {
-                            expr: EFunction("CallbackFlow_callback", {
-                                args: args,
-                                ret: null,
-                                expr: macro fulfill(${tuple}),
-                            }),
-                            pos: Context.currentPos()
-                        };
-                }
-
-                var newParams = params.copy();
-                var callback = builder(cbArguments.length, "fulfill", "reject");
-                if (placeholder.nonEmpty()) {
-                    newParams[placeholder.get()] = callback;
-                } else {
-                    newParams.push(callback);
-                }
-
-                return macro new hxgnd.SyncPromise(function (fulfill, reject) {
-                    ${{expr: ECall(macro ${e}, newParams), pos: cexpr.pos}};
-                }).then(${fn});
-            case _:
-                return cexpr;
+        var arguments = getArguments(Context.typeof(fn), fn.pos);
+        if (arguments.length <= 0) {
+            return Context.error('${fn.toString()} does not have a callback argument.' , fn.pos);
         }
+        if (params.length > (arguments.length - (placeholder.isEmpty() ? 1 : 0))) {
+            return Context.error("Too many arguments", fn.pos);
+        }
+
+        var cbArguments = getCallbackArguments(fn, params, fn.pos);
+        switch (cbArguments.length) {
+            case 0:
+                macro function CallbackFlow_callback() fulfill(new extype.Unit());
+            case 1:
+                macro function CallbackFlow_callback(x) fulfill(x);
+            case _:
+                var args = [ for (i in 0...cbArguments.length) {name: 'arg${i}', type: null} ];
+                var tuple = {
+                    expr: ENew(
+                        {
+                            pack: ["extype"],
+                            name: "Tuple",
+                            sub: 'Tuple${arguments.length}',
+                            params: [],
+                        },
+                        [ for (i in 0...cbArguments.length) macro $i{'arg${i}'} ]
+                    ),
+                    pos: Context.currentPos()
+                };
+
+                {
+                    expr: EFunction("CallbackFlow_callback", {
+                        args: args,
+                        ret: null,
+                        expr: macro fulfill(${tuple}),
+                    }),
+                    pos: Context.currentPos()
+                };
+        }
+
+        var newParams = params.copy();
+        var callback = builder(cbArguments.length, "fulfill", "reject");
+        if (placeholder.nonEmpty()) {
+            newParams[placeholder.get()] = callback;
+        } else {
+            newParams.push(callback);
+        }
+
+        return macro new hxgnd.SyncPromise(function (fulfill, reject) {
+            ${{expr: ECall(macro ${fn}, newParams), pos: fn.pos}};
+        });
     }
 
     static function findPlaceholder(params: Array<Expr>): Maybe<Int> {
@@ -227,5 +243,6 @@ class CallbackFlowComputation {
 
         return getArguments(bindedArgs[0].t, fn.pos);
     }
-    #end
 }
+
+typedef CallbackBuilder = Int -> String -> String -> haxe.macro.Expr;
