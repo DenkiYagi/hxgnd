@@ -1,14 +1,16 @@
 package hxgnd;
 
-#if macro
-import haxe.macro.Context;
-import haxe.macro.Expr;
-import haxe.macro.Type;
-#end
 import extype.Maybe;
 import extype.Result;
 import extype.extern.Mixed;
 import hxgnd.internal.IPromise;
+import hxgnd.internal.PromiseComputationHelper.implicitCast;
+#if macro
+import haxe.macro.Context;
+import haxe.macro.Expr;
+import haxe.macro.Type;
+import hxgnd.internal.MacroTools;
+#end
 using hxgnd.LangTools;
 
 abstract Promise<T>(IPromise<T>) from IPromise<T> {
@@ -167,31 +169,33 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     #end
 
     public static macro function compute<T>(blockExpr: Expr): ExprOf<Promise<T>> {
-        return Computation.perform(
+        var expr = Computation.perform(
             {
                 buildBind: buildBind,
                 buildReturn: buildReturn,
                 buildZero: buildZero,
                 buildWhile: buildWhile,
-                buildFor: buildFor
+                buildFor: buildFor,
+                buildCombine: buildCombine,
             },
             blockExpr
         );
+        // trace(haxe.macro.ExprTools.toString(expr));
+        return expr;
     }
 
     #if macro
     static function buildReturn(expr: Expr): Expr {
-        return macro new hxgnd.SyncPromise(function (f, _) {
-            f(${expr});
-        });
+        var promise = macro new hxgnd.SyncPromise(function (f, _) f(${expr}));
+        return macro hxgnd.internal.PromiseComputationHelper.implicitCast(${promise});
     }
 
     static function buildZero(): Expr {
-        return macro hxgnd.SyncPromise.resolve(new extype.Unit());
+        return macro (hxgnd.SyncPromise.resolve(new extype.Unit()): hxgnd.Promise<extype.Unit>);
     }
 
     static function buildWhile(cond: Expr, body: Expr): Expr {
-        return macro function _while(cond: Void -> Bool, body: Void -> SyncPromise<extype.Unit>): SyncPromise<extype.Unit> {
+        return macro function _while(cond: Void -> Bool, body: Void -> Promise<extype.Unit>): Promise<extype.Unit> {
             return if (cond()) {
                 body().then(function (_) return _while(cond, body));
             } else {
@@ -201,7 +205,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     }
 
     static function buildFor(iter: Expr, body: Expr): Expr {
-        return macro function _for(iter, body: Int -> SyncPromise<extype.Unit>): SyncPromise<extype.Unit> {
+        return macro function _for(iter, body: Int -> Promise<extype.Unit>): Promise<extype.Unit> {
             return if (iter.hasNext()) {
                 body(iter.next()).then(function (_) return _for(iter, body));
             } else {
@@ -210,26 +214,24 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         }(${iter}, ${body});
     }
 
-    static function buildBind(expr: Expr, fn: Expr): Expr {
-        return if (isPromise(expr)) {
-            macro hxgnd.internal.PromiseComputationHelper.implicitCast(${expr}).then(${fn});
-        } else {
-            macro new hxgnd.SyncPromise(function (f, _) {
-                f(${expr});
-            }).then(${fn});
-        }
+    static function buildBind(m: Expr, fn: Expr): Expr {
+        var promise = isPromise(m) ? m : macro new hxgnd.SyncPromise(function (f, _) f(${m}));
+        return macro hxgnd.internal.PromiseComputationHelper.implicitCast(${promise}).then(${fn});
     }
 
     static function isPromise(expr: Expr): Bool {
         try {
-            var type = Context.typeof(expr);
-            return switch (type) {
-                case TMono(_): false;  // workaround for Promise.compute({ throw xxx; })
-                case _: Context.unify(type, Context.getType("hxgnd.Promise"));
-            }
+            var type = Context.typeof(MacroTools.correctUndefinedVars(expr));
+            return Context.unify(type, Context.getType("hxgnd.Promise"));
         } catch (e: Dynamic) {
             return false;
         }
+    }
+
+    static function buildCombine(expr1: Expr, expr2: Expr): Expr {
+        return macro ${expr1}.then(function (_) {
+            return ${expr2};
+        });
     }
     #end
 }

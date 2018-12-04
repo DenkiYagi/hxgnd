@@ -1092,12 +1092,34 @@ class PromiseTest extends BuddySuite {
                 });
             });
 
+            describe("if", {
+                it("should pass", function (done) {
+                    Promise.compute({
+                        @var x = Promise.resolve(true);
+                        if (x) {
+                            @var y = Promise.resolve(false);
+                            if (y) {
+                                return 1;
+                            } else {
+                                return 2;
+                            }
+                        } else {
+                            return 3;
+                        }
+                    }).then(function (x) {
+                        x.should.be(2);
+                        done();
+                    });
+                });
+            });
+
             describe("while", {
                 it("should pass", function (done) {
                     Promise.compute({
                         var i = 0;
                         var acc = 0;
                         while (i < 5) {
+                            @var x = Promise.resolve(i);
                             acc += i;
                             i++;
                         }
@@ -1114,7 +1136,8 @@ class PromiseTest extends BuddySuite {
                     Promise.compute({
                         var acc = 0;
                         for (i in 0...4) {
-                            acc += i;
+                            @var x = Promise.resolve(i);
+                            acc += x;
                         }
                         return acc;
                     }).then(function (x) {

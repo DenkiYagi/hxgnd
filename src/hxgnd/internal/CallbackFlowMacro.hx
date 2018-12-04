@@ -5,9 +5,10 @@ import haxe.macro.Expr;
 import haxe.macro.Type;
 import extype.Maybe;
 import hxgnd.Computation;
+import hxgnd.internal.MacroTools;
+using haxe.macro.ExprTools;
 using hxgnd.ArrayTools;
 using hxgnd.LangTools;
-using haxe.macro.ExprTools;
 
 class CallbackFlowMacro {
     /**
@@ -166,75 +167,9 @@ class CallbackFlowMacro {
     }
 
     static function getCallbackArguments(fn: Expr, params: Array<Expr>, pos: Position): Array<{name: String, opt: Bool, t: Type}> {
-        var bindExpr = [];
+        var bindExpr = MacroTools.correctUndefinedVars({expr: ECall(macro ${fn}.bind, params), pos: fn.pos});
 
-        var stack = params.copy();
-        var map = new haxe.ds.StringMap();
-        map.set("_", true);
-        while (stack.length > 0) {
-            var expr = stack.pop();
-            switch (expr.expr) {
-                case EConst(CIdent(x)) if (!map.exists(x)):
-                    try {
-                        Context.typeof(expr);
-                    } catch (_: Dynamic) {
-                        bindExpr.push({expr: EVars([{name: x, type: null, expr: null}]), pos: Context.currentPos()});
-                    }
-                    map.set(x, true);
-                case EArray(e1, e2):
-                    stack.push(e1);
-                    stack.push(e2);
-                case EBinop(_, e1, e2):
-                    stack.push(e1);
-                    stack.push(e2);
-                case EField(e, _):
-                    stack.push(e);
-                case EParenthesis(e):
-                    stack.push(e);
-                case EObjectDecl(fields):
-                    stack = stack.concat(fields.map(function (x) return x.expr));
-                case EArrayDecl(values):
-                    stack = stack.concat(values);
-                case ECall(e, params):
-                    stack.push(e);
-                    stack = stack.concat(params);
-                case ENew(_, params):
-                    stack = stack.concat(params);
-                case EUnop(_, _, e):
-                    stack.push(e);
-                case EBlock(exprs):
-                    stack = stack.concat(exprs);
-                case EIf(econd, e, eelse):
-                    stack.push(econd);
-                    stack.push(e);
-                    if (eelse != null) stack.push(eelse);
-                case ESwitch(e, cases, edef):
-                    stack.push(e);
-                    stack = stack.concat(cases.map(function (x) {
-                        var acc = x.values.copy();
-                        if (x.expr != null) acc.push(x.expr);
-                        if (x.guard != null) acc.push(x.guard);
-                        return acc;
-                    }).flatten());
-                    stack.push(edef);
-                case EUntyped(e):
-                    stack.push(e);
-                case ECast(e, _):
-                    stack.push(e);
-                case ETernary(econd, eif, eelse):
-                    stack.push(econd);
-                    stack.push(eif);
-                    stack.push(eelse);
-                case ECheckType(e, _):
-                    stack.push(e);
-                case EMeta(_, e):
-                    stack.push(e);
-                case _:
-            }
-        }
-        bindExpr.push({expr: ECall(macro ${fn}.bind, params), pos: fn.pos});
-
-        var bindedArgs = getArguments(Context.typeof(macro $b{bindExpr}), fn.pos);
+        var bindedArgs = getArguments(Context.typeof(macro ${bindExpr}), fn.pos);
         if (bindedArgs.length <= 0) {
             return Context.error("Too many arguments", pos);
         } else if (bindedArgs.length >= 2) {
