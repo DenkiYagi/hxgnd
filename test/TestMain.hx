@@ -3,18 +3,19 @@ package;
 import buddy.*;
 
 class TestMain implements Buddy<[
-    hxgnd.LangToolsTest,
-    hxgnd.ArrayToolsTest,
-    hxgnd.OptionToolsTest,
-    hxgnd.LazyTest,
-    hxgnd.DelegateTest,
-    hxgnd.ComputationTest,
-    hxgnd.PromiseTest,
-    hxgnd.SyncPromiseTest,
-    hxgnd.AbortablePromiseTest,
-    hxgnd.CallbackFlowTest,
-    hxgnd.NodebackFlowTest,
-    hxgnd.ReactivePropertyTest,
-    hxgnd.ReactiveActorTest,
-    hxgnd.ReactiveStreamTest
+    // hxgnd.LangToolsTest,
+    // hxgnd.ArrayToolsTest,
+    // hxgnd.OptionToolsTest,
+    // hxgnd.LazyTest,
+    // hxgnd.DelegateTest,
+    // hxgnd.ComputationTest,
+    // hxgnd.PromiseTest,
+    // hxgnd.SyncPromiseTest,
+    // hxgnd.AbortablePromiseTest,
+    // hxgnd.CallbackFlowTest,
+    // hxgnd.NodebackFlowTest,
+    hxgnd.SubscriptionTest,
+    // hxgnd.ReactivePropertyTest,
+    // hxgnd.ReactiveActorTest,
+    // hxgnd.ReactiveStreamTest
 ]> {}

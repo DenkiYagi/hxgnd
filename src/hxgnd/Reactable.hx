@@ -5,8 +5,6 @@ typedef Reactable<T> = {
 
     function next(): Promise<T>;
 
-    // function forEach(fn: T ->  Void): Void;
-
     function map<U>(fn: T -> U): Reactable<U>;
     function flatMap<U>(fn: T -> Reactable<U>): Reactable<U>;
 

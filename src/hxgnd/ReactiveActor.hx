@@ -94,16 +94,19 @@ class ReactiveActor<TState, TMessage> {
     //     return ReactableHelper.filter(this, fn);
     // }
 
+    // function skip(count: Int): Reactable<T>;
+    // function skipWhile(fn: T -> Bool): Reactable<T>;
+    // function skipUntil(promise: Promise<Dynamic>): Reactable<T>;
+    // function take(count: Int): Reactable<T>;
+    // function takeWhile(fn: T -> Bool): Reactable<T>;
+    // function takeUntil(promise: Promise<Dynamic>): Reactable<T>;
+
     // public function reduce(fn: TState -> TState -> TState): Reactable<TState> {
     //     return ReactableHelper.reduce(this, fn);
     // }
 
     // public function fold<U>(init: U, fn: U -> TState -> U): Reactable<U> {
     //     return ReactableHelper.fold(this, init, fn);
-    // }
-
-    // public function skip(count: Int): Reactable<TState> {
-    //     return ReactableHelper.skip(this, count);
     // }
 
     // public function throttle(msec: Int): Reactable<TState> {
@@ -113,6 +116,9 @@ class ReactiveActor<TState, TMessage> {
     // public function debounce(msec: Int): Reactable<TState> {
     //     return ReactableHelper.debounce(this, msec);
     // }
+
+    // function delay(msec: Int): Reactable<T>;
+    // function timeout(msec: Int): Reactable<T>;
 }
 
 typedef ReactiveActorMiddleware<TState, TMessage> = ReactiveActorContext<TState, TMessage> -> TMessage -> (Void -> Void);
