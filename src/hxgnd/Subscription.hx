@@ -6,16 +6,14 @@ class Subscription<T> {
     public var isDisposed(default, null): Bool;
 
     var subscriber: Delegate<T>;
-    var unsubscribe: Void -> Void;
     var disposer: Delegate0;
 
     public function new<U>(subscribable: Subscribable<U>, collector: (T -> Void) -> U -> Void) {
         this.isDisposed = false;
         this.subscriber = new Delegate();
-        this.unsubscribe = subscribable.subscribe(function (x) {
-            collector(onEmit, x);
-        });
-        this.disposer = new Delegate0();
+        this.disposer = new Delegate0([
+            subscribable.subscribe(function (x) collector(onEmit, x))
+        ]);
     }
 
     function onEmit(x: T): Void {
@@ -36,7 +34,6 @@ class Subscription<T> {
     }
 
     public function dispose(): Void {
-        unsubscribe();
         subscriber.removeAll();
         disposer.invoke();
         disposer.removeAll();
