@@ -14,7 +14,7 @@ class TestMain implements Buddy<[
     // hxgnd.AbortablePromiseTest,
     // hxgnd.CallbackFlowTest,
     // hxgnd.NodebackFlowTest,
-    hxgnd.SubscriptionTest,
+    hxgnd.ReactionTest,
     // hxgnd.ReactivePropertyTest,
     // hxgnd.ReactiveActorTest,
     // hxgnd.ReactiveStreamTest

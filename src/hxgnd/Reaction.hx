@@ -2,7 +2,7 @@ package hxgnd;
 
 import hxgnd.Delegate;
 
-class Subscription<T> {
+class Reaction<T> {
     public var isDisposed(default, null): Bool;
 
     var subscriber: Delegate<T>;
@@ -25,8 +25,8 @@ class Subscription<T> {
         return subscriber.remove.bind(fn);
     }
 
-    public function map<U>(fn: T -> U): Subscription<U> {
-        var subscription = new Subscription(this, function (emit, x) {
+    public function map<U>(fn: T -> U): Reaction<U> {
+        var subscription = new Reaction(this, function (emit, x) {
             emit(fn(x));
         });
         disposer.add(subscription.dispose);
