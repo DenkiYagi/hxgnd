@@ -32,21 +32,21 @@ class Reactor<T> {
     }
 
     public function map<U>(fn: T -> U): Reactor<U> {
-        var Reactor = new Reactor(this, function (emit, x) {
+        var reactor = new Reactor(this, function (emit, x) {
             emit(fn(x));
         });
-        disposer.add(Reactor.dispose);
-        return Reactor;
+        disposer.add(reactor.dispose);
+        return reactor;
     }
 
     public function flatMap<U>(fn: T -> Reactor<U>): Reactor<U> {
-        var Reactor = new Reactor(this, function (emit, x) {
+        var reactor = new Reactor(this, function (emit, x) {
             var ret = fn(x);
             ret.subscribe(emit);
             disposer.add(ret.dispose);
         });
-        disposer.add(Reactor.dispose);
-        return Reactor;
+        disposer.add(reactor.dispose);
+        return reactor;
     }
 
     public function dispose(): Void {

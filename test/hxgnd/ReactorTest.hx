@@ -9,10 +9,10 @@ class ReactorTest extends BuddySuite {
         describe("Reactor#new()", {
             it("should pass", {
                 var publisher = new Publisher();
-                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
+                var reactor = new Reactor(publisher, function (emit, x) emit(x));
 
                 var buff = [];
-                Reactor.subscribe(function (x) {
+                reactor.subscribe(function (x) {
                     buff.push(x);
                 });
 
@@ -25,10 +25,10 @@ class ReactorTest extends BuddySuite {
 
             it("should collect", {
                 var publisher = new Publisher();
-                var Reactor = new Reactor(publisher, function (emit, x) if ((x % 2) == 0) emit(x * 10));
+                var reactor = new Reactor(publisher, function (emit, x) if ((x % 2) == 0) emit(x * 10));
 
                 var buff = [];
-                Reactor.subscribe(function (x) {
+                reactor.subscribe(function (x) {
                     buff.push(x);
                 });
 
@@ -44,15 +44,15 @@ class ReactorTest extends BuddySuite {
         describe("Reactor#subscribe()", {
             it("should pass", {
                 var publisher = new Publisher();
-                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
+                var reactor = new Reactor(publisher, function (emit, x) emit(x));
 
                 var buff = [];
                 function f(x) buff.push(x);
 
-                Reactor.subscribe(f);
+                reactor.subscribe(f);
 
                 publisher.publish(1);
-                Reactor.unsubscribe(f);
+                reactor.unsubscribe(f);
                 publisher.publish(2);
                 publisher.publish(3);
                 publisher.publish(4);
@@ -62,10 +62,10 @@ class ReactorTest extends BuddySuite {
 
             it("should not call callback when it is disposed", {
                 var publisher = new Publisher();
-                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
+                var reactor = new Reactor(publisher, function (emit, x) emit(x));
 
-                Reactor.subscribe(function (x) fail());
-                Reactor.dispose();
+                reactor.subscribe(function (x) fail());
+                reactor.dispose();
 
                 publisher.publish(1);
             });
@@ -74,7 +74,7 @@ class ReactorTest extends BuddySuite {
         // describe("Reactor#forEach()", {
         //     it("should pass", {
         //         var publisher = new Publisher();
-        //         var Reactor = new Reactor(publisher, function (emit, x) emit(x));
+        //         var reactor = new Reactor(publisher, function (emit, x) emit(x));
 
         //         var buff = [];
         //         Reactor.forEach(function (x) {
@@ -90,7 +90,7 @@ class ReactorTest extends BuddySuite {
 
         //     it("should not call callback when it is disposed", {
         //         var publisher = new Publisher();
-        //         var Reactor = new Reactor(publisher, function (emit, x) emit(x));
+        //         var reactor = new Reactor(publisher, function (emit, x) emit(x));
 
         //         Reactor.forEach(function (x) fail());
         //         Reactor.dispose();
@@ -102,10 +102,10 @@ class ReactorTest extends BuddySuite {
         describe("Reactor#map()", {
             it("should apply mapper", {
                 var publisher = new Publisher();
-                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
+                var reactor = new Reactor(publisher, function (emit, x) emit(x));
 
                 var buff = [];
-                Reactor.map(function (x) return x * 10).subscribe(function (x) {
+                reactor.map(function (x) return x * 10).subscribe(function (x) {
                     buff.push(x);
                 });
 
@@ -132,7 +132,7 @@ class ReactorTest extends BuddySuite {
         // describe("Reactor#flatMap()", {
         //     it("should apply mapper", {
         //         var publisher = new Publisher();
-        //         var Reactor = new Reactor(publisher, function (emit, x) emit(x));
+        //         var reactor = new Reactor(publisher, function (emit, x) emit(x));
 
         //         var buff = [];
         //         Reactor.flatMap(function (x) return new Reactor()  x * 10).subscribe(function (x) {
@@ -160,23 +160,23 @@ class ReactorTest extends BuddySuite {
 
         describe("Reactor#dispose()", {
             it("should change true after it is disposed", {
-                var Reactor = new Reactor({
+                var reactor = new Reactor({
                     subscribe: function (fn) {},
                     unsubscribe: function (fn) {}
                 }, function (emit, x) {});
 
-                Reactor.isDisposed.should.be(false);
-                Reactor.dispose();
-                Reactor.isDisposed.should.be(true);
+                reactor.isDisposed.should.be(false);
+                reactor.dispose();
+                reactor.isDisposed.should.be(true);
             });
 
             it("should call an unsubscribe function", function (done) {
-                var Reactor = new Reactor({
+                var reactor = new Reactor({
                     subscribe: function (fn) {},
                     unsubscribe: function (fn) done()
                 }, function (emit, x) {});
 
-                Reactor.dispose();
+                reactor.dispose();
             });
 
             it("should dispose all children when it is disposed", {
@@ -198,15 +198,15 @@ class ReactorTest extends BuddySuite {
 
             it("should not send a message", function (done) {
                 var send: Int -> Void;
-                var Reactor = new Reactor({
+                var reactor = new Reactor({
                     subscribe: function (fn) {
                         send = fn;
                     },
                     unsubscribe: function (fn) {}
                 }, function (emit, x) {});
 
-                Reactor.subscribe(function (_) fail());
-                Reactor.dispose();
+                reactor.subscribe(function (_) fail());
+                reactor.dispose();
                 send(10);
 
                 wait(10, done);
