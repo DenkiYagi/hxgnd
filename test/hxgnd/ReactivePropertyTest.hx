@@ -76,16 +76,6 @@ class ReactivePropertyTest extends BuddySuite {
                         done();
                     });
                 });
-
-                it("should remove subscriber", function (done) {
-                    var property = new ReactiveProperty(10);
-                    var unscribe = property.subscribe(function (x) {
-                        fail();
-                    });
-                    unscribe();
-                    property.set(-5);
-                    wait(5, done);
-                });
             });
 
             describe("multi subscribers", {
@@ -158,43 +148,6 @@ class ReactivePropertyTest extends BuddySuite {
                         done();
                     });
                 });
-
-                it("should remove 1st-subscriber", function (done) {
-                    var count2 = 0;
-
-                    var property = new ReactiveProperty(10);
-                    var unscribe1 = property.subscribe(function (x) {
-                        fail();
-                    });
-                    property.subscribe(function (x) {
-                        count2++;
-                        x.should.be(-5);
-                    });
-
-                    unscribe1();
-                    property.set(-5);
-
-                    wait(5, function () {
-                        count2.should.be(1);
-                        done();
-                    });
-                });
-
-                it("should remove all subscribers", function (done) {
-                    var property = new ReactiveProperty(10);
-                    var unscribe1 = property.subscribe(function (x) {
-                        fail();
-                    });
-                    var unscribe2 = property.subscribe(function (x) {
-                        fail();
-                    });
-
-                    unscribe1();
-                    unscribe2();
-                    property.set(-5);
-
-                    wait(5, done);
-                });
             });
 
             describe("equaler", {
@@ -257,14 +210,63 @@ class ReactivePropertyTest extends BuddySuite {
                     });
                 });
             });
+        });
 
-            describe("unsubscribe()", {
-                it("should pass when it is called 2-times", {
-                    var property = new ReactiveProperty(10);
-                    var unscribe = property.subscribe(function (x) {});
-                    unscribe();
-                    unscribe();
+        describe("ReactiveProperty#unsubscribe()", {
+            it("should not call subscriber", function (done) {
+                var property = new ReactiveProperty(10);
+                function f(x) fail();
+                property.subscribe(f);
+                property.unsubscribe(f);
+                property.set(-5);
+                wait(5, done);
+            });
+
+            it("should not call 1st-subscriber", function (done) {
+                var count2 = 0;
+
+                var property = new ReactiveProperty(10);
+                function f1(x: Int) fail();
+                function f2(x: Int) {
+                    count2++;
+                    x.should.be(-5);
+                }
+
+                property.subscribe(f1);
+                property.subscribe(f2);
+
+                property.unsubscribe(f1);
+                property.set(-5);
+
+                wait(5, function () {
+                    count2.should.be(1);
+                    done();
                 });
+            });
+
+            it("should remove all subscribers", function (done) {
+                var property = new ReactiveProperty(10);
+                function f1(x) fail();
+                function f2(x) fail();
+
+                property.subscribe(f1);
+                property.subscribe(f2);
+
+                property.unsubscribe(f1);
+                property.unsubscribe(f2);
+                property.set(-5);
+
+                wait(5, done);
+            });
+
+            it("should pass when it is called 2-times", {
+                var property = new ReactiveProperty(10);
+                function f(x) {}
+
+                property.subscribe(f);
+
+                property.unsubscribe(f);
+                property.unsubscribe(f);
             });
         });
     }

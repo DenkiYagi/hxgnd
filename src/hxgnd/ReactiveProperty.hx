@@ -27,11 +27,12 @@ class ReactiveProperty<T> {
         subscribers.invoke(x);
     }
 
-    public function subscribe(fn: T -> Void): Void -> Void {
+    public function subscribe(fn: T -> Void): Void {
         subscribers.add(fn);
-        return function unsubscribe() {
-            subscribers.remove(fn);
-        }
+    }
+
+    public function unsubscribe(fn: T -> Void): Void {
+        subscribers.remove(fn);
     }
 
     // public function map<U>(fn: T -> U): Reactable<U> {

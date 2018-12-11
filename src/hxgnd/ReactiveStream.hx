@@ -401,35 +401,38 @@ class ReactiveStream<T> {
         return receiver.state;
     }
 
-    public function subscribe(fn: T -> Void): Void -> Void {
+    public function subscribe(fn: T -> Void): Void {
         receiver.subscribe.callIfNotNull(fn);
         receiver.attach.callIfNotNull();
-        return function unsubscribe() {
-            receiver.unsubscribe.callIfNotNull(fn);
-            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
-        }
     }
 
-    public function subscribeEnd(fn: Void -> Void): Void -> Void {
+    public function unsubscribe(fn: T -> Void): Void {
+        receiver.unsubscribe.callIfNotNull(fn);
+        if (hasNoSubscribers()) receiver.detach.callIfNotNull();
+    }
+
+    public function subscribeEnd(fn: Void -> Void): Void {
         receiver.subscribeEnd.callIfNotNull(fn);
         receiver.attach.callIfNotNull();
-        return function unsubscribeEnd() {
-            receiver.unsubscribeEnd.callIfNotNull(fn);
-            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
-        }
     }
 
-    public function subscribeError(fn: Dynamic -> Void): Void -> Void {
+    public function unsubscribeEnd(fn: Void -> Void): Void {
+        receiver.unsubscribeEnd.callIfNotNull(fn);
+        if (hasNoSubscribers()) receiver.detach.callIfNotNull();
+    }
+
+    public function subscribeError(fn: Dynamic -> Void): Void {
         receiver.subscribeError.callIfNotNull(fn);
         receiver.attach.callIfNotNull();
-        return function unsubscribeError() {
-            receiver.unsubscribeError.callIfNotNull(fn);
-            if (hasNoSubscribers()) receiver.detach.callIfNotNull();
-        }
+    }
+
+    public function unsubscribeError(fn: Dynamic -> Void): Void {
+        receiver.unsubscribeError.callIfNotNull(fn);
+        if (hasNoSubscribers()) receiver.detach.callIfNotNull();
     }
 
     public function subscribeEach(onData: Null<T -> Void>, onEnd: Null<Void -> Void>,
-                                  onError: Null<Dynamic -> Void>, ?finally: Void -> Void): Void -> Void {
+                                    onError: Null<Dynamic -> Void>, ?finally: Void -> Void): Void -> Void {
         if (onData.isNull() && onEnd.isNull() && onError.isNull() && finally.isNull()) {
             return function () {};
         }
@@ -498,6 +501,10 @@ class ReactiveStream<T> {
         receiver.close.callIfNotNull();
     }
 
+    public function map<U>(fn: T -> U): Reaction<U> {
+        return new Reaction(this, function (emit, x) emit(fn(x)));
+    }
+
     // public function pull(): Promise<T> {
     //     return new SyncPromise(function (fulfill, reject) {
     //         var unsubscribes: Array<Void -> Void> = [];
@@ -514,15 +521,6 @@ class ReactiveStream<T> {
     //             reject(e);
     //         }));
     //     });
-    // }
-
-
-    // public function forEach(fn: T -> Void): Void {
-    //     subscribe(fn);
-    // }
-
-    // public function map<U>(fn: T -> U): Reactable<U> {
-    //     return ReactableHelper.map(this, fn);
     // }
 
     // public function flatMap<U>(fn: T -> Reactable<U>): Reactable<U> {

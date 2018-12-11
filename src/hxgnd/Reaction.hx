@@ -9,20 +9,26 @@ class Reaction<T> {
     var disposer: Delegate0;
 
     public function new<U>(subscribable: Subscribable<U>, collector: (T -> Void) -> U -> Void) {
+        function subscriber(x) collector(onEmit, x);
+
         this.isDisposed = false;
         this.subscriber = new Delegate();
         this.disposer = new Delegate0([
-            subscribable.subscribe(function (x) collector(onEmit, x))
+            subscribable.unsubscribe.bind(subscriber)
         ]);
+        subscribable.subscribe(subscriber);
     }
 
     function onEmit(x: T): Void {
         subscriber.invoke(x);
     }
 
-    public function subscribe(fn: T -> Void): Void -> Void {
+    public function subscribe(fn: T -> Void): Void {
         subscriber.add(fn);
-        return subscriber.remove.bind(fn);
+    }
+
+    public function unsubscribe(fn: T -> Void): Void {
+        subscriber.remove(fn);
     }
 
     public function map<U>(fn: T -> U): Reaction<U> {
@@ -39,4 +45,24 @@ class Reaction<T> {
         disposer.removeAll();
         isDisposed = true;
     }
+
+
+    // public static function createFrom
 }
+
+// abstract _Reaction<T>(Dynamic) {
+
+//     @:from public static function fromArray<T>(x: Array<T>) {
+
+//     }
+
+//     @:from public static function fromIntIterator(x: IntIterator) {
+
+//     }
+
+//     @:from public static function fromIterator<T>(x: Iterator<T>) {
+
+//     }
+
+//     @:from public static function fromSubscribable<T>(x: )
+// }

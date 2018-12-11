@@ -312,28 +312,30 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
 
-            describe("subscribe()", {
+            describe("subscribe() and unsubscribe()", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
-                        var unsubscribe = stream.subscribe(function (_) fail());
+                        function f(_) fail();
+                        stream.subscribe(f);
                         stream.state.should.equal(Ended);
 
-                        unsubscribe();
+                        stream.unsubscribe(f);
                         stream.state.should.equal(Ended);
                         done();
                     });
                 });
             });
 
-            describe("subscribeEnd()", {
+            describe("subscribeEnd() and unsubscribeEnd()", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
                         var called = 0;
-                        var unsubscribe = stream.subscribeEnd(function () called++);
+                        function f() called++
+                        stream.subscribeEnd(f);
                         stream.state.should.equal(Ended);
                         called.should.be(1);
 
-                        unsubscribe();
+                        stream.unsubscribeEnd(f);
                         stream.state.should.equal(Ended);
                         called.should.be(1);
                         done();
@@ -341,13 +343,14 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
 
-            describe("subscribeError()", {
+            describe("subscribeError() and unsubscribeError()", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
-                        var unsubscribe = stream.subscribeError(function (_) fail());
+                        function f(_) fail()
+                        stream.subscribeError(f);
                         stream.state.should.equal(Ended);
 
-                        unsubscribe();
+                        stream.unsubscribeError(f);
                         stream.state.should.equal(Ended);
                         done();
                     });
@@ -469,26 +472,30 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
 
-            describe("subscribe()", {
+            describe("subscribe() and unsubscribe()", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
-                        var unsubscribe = stream.subscribe(function (_) fail());
+                        function f(_) fail()
+
+                        stream.subscribe(f);
                         stream.state.should.equal(Never);
 
-                        unsubscribe();
+                        stream.unsubscribe(f);
                         stream.state.should.equal(Never);
                         done();
                     });
                 });
             });
 
-            describe("subscribeEnd()", {
+            describe("subscribeEnd() and unsubscribeEnd()", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
-                        var unsubscribe = stream.subscribeEnd(function () fail());
+                        function f() fail()
+
+                        stream.subscribeEnd(f);
                         stream.state.should.equal(Never);
 
-                        unsubscribe();
+                        stream.unsubscribeEnd(f);
                         stream.state.should.equal(Never);
                         done();
                     });
@@ -498,10 +505,12 @@ class ReactiveStreamTest extends BuddySuite {
             describe("subscribeError()", {
                 it("should pass", function (done) {
                     create().then(function (stream) {
-                        var unsubscribe = stream.subscribeError(function (_) fail());
+                        function f(_) fail()
+
+                        stream.subscribeError(f);
                         stream.state.should.equal(Never);
 
-                        unsubscribe();
+                        stream.unsubscribeError(f);
                         stream.state.should.equal(Never);
                         done();
                     });
@@ -610,41 +619,46 @@ class ReactiveStreamTest extends BuddySuite {
                 });
             });
 
-            describe("subscribe()", {
+            describe("subscribe() and unsubscribe()", {
                 it("should pass", function (done) {
                     create("error").then(function (stream) {
-                        var unsubscribe = stream.subscribe(function (_) fail());
+                        function f(_) fail()
+                        stream.subscribe(f);
                         stream.state.should.equal(Failed("error"));
 
-                        unsubscribe();
+                        stream.unsubscribe(f);
                         stream.state.should.equal(Failed("error"));
                         done();
                     });
                 });
             });
 
-            describe("subscribeEnd()", {
+            describe("subscribeEnd() and unsubscribeEnd()", {
                 it("should pass", function (done) {
                     create("error").then(function (stream) {
-                        var unsubscribe = stream.subscribeEnd(function () fail());
+                        function f() fail()
+
+                        stream.subscribeEnd(f);
                         stream.state.should.equal(Failed("error"));
 
-                        unsubscribe();
+                        stream.unsubscribeEnd(f);
                         stream.state.should.equal(Failed("error"));
                         done();
                     });
                 });
             });
 
-            describe("subscribeError()", {
+            describe("subscribeError() and unsubscribeError()", {
                 it("should pass", function (done) {
                     create("error").then(function (stream) {
                         var called = 0;
-                        var unsubscribe = stream.subscribeError(function (_) called++);
+                        function f(_) called++
+
+                        stream.subscribeError(f);
                         stream.state.should.equal(Failed("error"));
                         called.should.be(1);
 
-                        unsubscribe();
+                        stream.unsubscribeError(f);
                         stream.state.should.equal(Failed("error"));
                         called.should.be(1);
                         done();
@@ -1080,15 +1094,27 @@ class ReactiveStreamTest extends BuddySuite {
             }
 
             describe("subscribe()", {
-                testMiddlewareEvaluation(function (stream) return stream.subscribe(function (_) {}));
+                testMiddlewareEvaluation(function (stream) {
+                    function f(_) {}
+                    stream.subscribe(f);
+                    return stream.unsubscribe.bind(f);
+                });
             });
 
             describe("subscribeEnd()", {
-                testMiddlewareEvaluation(function (stream) return stream.subscribeEnd(function () {}));
+                testMiddlewareEvaluation(function (stream) {
+                    function f() {}
+                    stream.subscribeEnd(f);
+                    return stream.unsubscribeEnd.bind(f);
+                });
             });
 
             describe("subscribeError()", {
-                testMiddlewareEvaluation(function (stream) return stream.subscribeError(function (_) {}));
+                testMiddlewareEvaluation(function (stream) {
+                    function f(_) {}
+                    stream.subscribeError(f);
+                    return stream.unsubscribeError.bind(f);
+                });
             });
 
             describe("finally()", {

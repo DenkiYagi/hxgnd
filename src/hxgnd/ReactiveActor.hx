@@ -72,9 +72,12 @@ class ReactiveActor<TState, TMessage> {
         return promise;
     }
 
-    public function subscribe(onValue: TState -> Void): Void -> Void {
+    public function subscribe(onValue: TState -> Void): Void {
         subscribers.add(onValue);
-        return function unsbscribe() { subscribers.remove(onValue); }
+    }
+
+    public function unsubscribe(onValue: TState -> Void): Void {
+        subscribers.remove(onValue);
     }
 
     public function abort(): Void {
