@@ -8,7 +8,7 @@ class Reaction<T> {
     var subscriber: Delegate<T>;
     var disposer: Delegate0;
 
-    public function new<U>(subscribable: Subscribable<U>, collector: (T -> Void) -> U -> Void) {
+    public function new<S>(subscribable: Subscribable<S>, collector: (T -> Void) -> S -> Void) {
         function subscriber(x) collector(onEmit, x);
 
         this.isDisposed = false;
@@ -32,11 +32,21 @@ class Reaction<T> {
     }
 
     public function map<U>(fn: T -> U): Reaction<U> {
-        var subscription = new Reaction(this, function (emit, x) {
+        var reaction = new Reaction(this, function (emit, x) {
             emit(fn(x));
         });
-        disposer.add(subscription.dispose);
-        return subscription;
+        disposer.add(reaction.dispose);
+        return reaction;
+    }
+
+    public function flatMap<U>(fn: T -> Reaction<U>): Reaction<U> {
+        var reaction = new Reaction(this, function (emit, x) {
+            var ret = fn(x);
+            ret.subscribe(emit);
+            disposer.add(ret.dispose);
+        });
+        disposer.add(reaction.dispose);
+        return reaction;
     }
 
     public function dispose(): Void {
