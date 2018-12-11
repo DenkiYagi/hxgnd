@@ -4,15 +4,15 @@ import buddy.BuddySuite;
 using buddy.Should;
 import TestTools.wait;
 
-class ReactionTest extends BuddySuite {
+class ReactorTest extends BuddySuite {
     public function new() {
-        describe("Reaction#new()", {
+        describe("Reactor#new()", {
             it("should pass", {
                 var publisher = new Publisher();
-                var reaction = new Reaction(publisher, function (emit, x) emit(x));
+                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
 
                 var buff = [];
-                reaction.subscribe(function (x) {
+                Reactor.subscribe(function (x) {
                     buff.push(x);
                 });
 
@@ -25,10 +25,10 @@ class ReactionTest extends BuddySuite {
 
             it("should collect", {
                 var publisher = new Publisher();
-                var reaction = new Reaction(publisher, function (emit, x) if ((x % 2) == 0) emit(x * 10));
+                var Reactor = new Reactor(publisher, function (emit, x) if ((x % 2) == 0) emit(x * 10));
 
                 var buff = [];
-                reaction.subscribe(function (x) {
+                Reactor.subscribe(function (x) {
                     buff.push(x);
                 });
 
@@ -41,18 +41,18 @@ class ReactionTest extends BuddySuite {
             });
         });
 
-        describe("Reaction#subscribe()", {
+        describe("Reactor#subscribe()", {
             it("should pass", {
                 var publisher = new Publisher();
-                var reaction = new Reaction(publisher, function (emit, x) emit(x));
+                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
 
                 var buff = [];
                 function f(x) buff.push(x);
 
-                reaction.subscribe(f);
+                Reactor.subscribe(f);
 
                 publisher.publish(1);
-                reaction.unsubscribe(f);
+                Reactor.unsubscribe(f);
                 publisher.publish(2);
                 publisher.publish(3);
                 publisher.publish(4);
@@ -62,22 +62,22 @@ class ReactionTest extends BuddySuite {
 
             it("should not call callback when it is disposed", {
                 var publisher = new Publisher();
-                var reaction = new Reaction(publisher, function (emit, x) emit(x));
+                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
 
-                reaction.subscribe(function (x) fail());
-                reaction.dispose();
+                Reactor.subscribe(function (x) fail());
+                Reactor.dispose();
 
                 publisher.publish(1);
             });
         });
 
-        // describe("Reaction#forEach()", {
+        // describe("Reactor#forEach()", {
         //     it("should pass", {
         //         var publisher = new Publisher();
-        //         var reaction = new Reaction(publisher, function (emit, x) emit(x));
+        //         var Reactor = new Reactor(publisher, function (emit, x) emit(x));
 
         //         var buff = [];
-        //         reaction.forEach(function (x) {
+        //         Reactor.forEach(function (x) {
         //             buff.push(x);
         //         });
 
@@ -90,22 +90,22 @@ class ReactionTest extends BuddySuite {
 
         //     it("should not call callback when it is disposed", {
         //         var publisher = new Publisher();
-        //         var reaction = new Reaction(publisher, function (emit, x) emit(x));
+        //         var Reactor = new Reactor(publisher, function (emit, x) emit(x));
 
-        //         reaction.forEach(function (x) fail());
-        //         reaction.dispose();
+        //         Reactor.forEach(function (x) fail());
+        //         Reactor.dispose();
 
         //         publisher.publish(1);
         //     });
         // });
 
-        describe("Reaction#map()", {
+        describe("Reactor#map()", {
             it("should apply mapper", {
                 var publisher = new Publisher();
-                var reaction = new Reaction(publisher, function (emit, x) emit(x));
+                var Reactor = new Reactor(publisher, function (emit, x) emit(x));
 
                 var buff = [];
-                reaction.map(function (x) return x * 10).subscribe(function (x) {
+                Reactor.map(function (x) return x * 10).subscribe(function (x) {
                     buff.push(x);
                 });
 
@@ -118,7 +118,7 @@ class ReactionTest extends BuddySuite {
 
             it("should not call callback when it is disposed", {
                 var publisher = new Publisher();
-                var parent = new Reaction(publisher, function (emit, x) emit(x));
+                var parent = new Reactor(publisher, function (emit, x) emit(x));
 
                 var child = parent.map(function (x) return x * 10);
                 child.subscribe(function (_) fail());
@@ -129,13 +129,13 @@ class ReactionTest extends BuddySuite {
         });
 
         // flatMap
-        // describe("Reaction#flatMap()", {
+        // describe("Reactor#flatMap()", {
         //     it("should apply mapper", {
         //         var publisher = new Publisher();
-        //         var reaction = new Reaction(publisher, function (emit, x) emit(x));
+        //         var Reactor = new Reactor(publisher, function (emit, x) emit(x));
 
         //         var buff = [];
-        //         reaction.flatMap(function (x) return new Reaction()  x * 10).subscribe(function (x) {
+        //         Reactor.flatMap(function (x) return new Reactor()  x * 10).subscribe(function (x) {
         //             buff.push(x);
         //         });
 
@@ -148,7 +148,7 @@ class ReactionTest extends BuddySuite {
 
         //     it("should not call callback when it is disposed", {
         //         var publisher = new Publisher();
-        //         var parent = new Reaction(publisher, function (emit, x) emit(x));
+        //         var parent = new Reactor(publisher, function (emit, x) emit(x));
 
         //         var child = parent.map(function (x) return x * 10);
         //         child.subscribe(function (_) fail());
@@ -158,29 +158,29 @@ class ReactionTest extends BuddySuite {
         //     });
         // });
 
-        describe("Reaction#dispose()", {
+        describe("Reactor#dispose()", {
             it("should change true after it is disposed", {
-                var reaction = new Reaction({
+                var Reactor = new Reactor({
                     subscribe: function (fn) {},
                     unsubscribe: function (fn) {}
                 }, function (emit, x) {});
 
-                reaction.isDisposed.should.be(false);
-                reaction.dispose();
-                reaction.isDisposed.should.be(true);
+                Reactor.isDisposed.should.be(false);
+                Reactor.dispose();
+                Reactor.isDisposed.should.be(true);
             });
 
             it("should call an unsubscribe function", function (done) {
-                var reaction = new Reaction({
+                var Reactor = new Reactor({
                     subscribe: function (fn) {},
                     unsubscribe: function (fn) done()
                 }, function (emit, x) {});
 
-                reaction.dispose();
+                Reactor.dispose();
             });
 
             it("should dispose all children when it is disposed", {
-                var parent = new Reaction({
+                var parent = new Reactor({
                     subscribe: function (fn) {},
                     unsubscribe: function (fn) {}
                 }, function (emit, x) {});
@@ -198,15 +198,15 @@ class ReactionTest extends BuddySuite {
 
             it("should not send a message", function (done) {
                 var send: Int -> Void;
-                var reaction = new Reaction({
+                var Reactor = new Reactor({
                     subscribe: function (fn) {
                         send = fn;
                     },
                     unsubscribe: function (fn) {}
                 }, function (emit, x) {});
 
-                reaction.subscribe(function (_) fail());
-                reaction.dispose();
+                Reactor.subscribe(function (_) fail());
+                Reactor.dispose();
                 send(10);
 
                 wait(10, done);

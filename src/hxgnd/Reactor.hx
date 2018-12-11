@@ -2,7 +2,7 @@ package hxgnd;
 
 import hxgnd.Delegate;
 
-class Reaction<T> {
+class Reactor<T> {
     public var isDisposed(default, null): Bool;
 
     var subscriber: Delegate<T>;
@@ -31,22 +31,22 @@ class Reaction<T> {
         subscriber.remove(fn);
     }
 
-    public function map<U>(fn: T -> U): Reaction<U> {
-        var reaction = new Reaction(this, function (emit, x) {
+    public function map<U>(fn: T -> U): Reactor<U> {
+        var Reactor = new Reactor(this, function (emit, x) {
             emit(fn(x));
         });
-        disposer.add(reaction.dispose);
-        return reaction;
+        disposer.add(Reactor.dispose);
+        return Reactor;
     }
 
-    public function flatMap<U>(fn: T -> Reaction<U>): Reaction<U> {
-        var reaction = new Reaction(this, function (emit, x) {
+    public function flatMap<U>(fn: T -> Reactor<U>): Reactor<U> {
+        var Reactor = new Reactor(this, function (emit, x) {
             var ret = fn(x);
             ret.subscribe(emit);
             disposer.add(ret.dispose);
         });
-        disposer.add(reaction.dispose);
-        return reaction;
+        disposer.add(Reactor.dispose);
+        return Reactor;
     }
 
     public function dispose(): Void {
@@ -60,7 +60,7 @@ class Reaction<T> {
     // public static function createFrom
 }
 
-// abstract _Reaction<T>(Dynamic) {
+// abstract _Reactor<T>(Dynamic) {
 
 //     @:from public static function fromArray<T>(x: Array<T>) {
 

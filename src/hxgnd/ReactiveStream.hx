@@ -501,8 +501,8 @@ class ReactiveStream<T> {
         receiver.close.callIfNotNull();
     }
 
-    public function map<U>(fn: T -> U): Reaction<U> {
-        return new Reaction(this, function (emit, x) emit(fn(x)));
+    public function map<U>(fn: T -> U): Reactor<U> {
+        return new Reactor(this, function (emit, x) emit(fn(x)));
     }
 
     // public function pull(): Promise<T> {
