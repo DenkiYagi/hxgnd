@@ -25,7 +25,7 @@ class Enumerator<S, T> {
         return new Enumerator(source, pipeline.chain(fn));
     }
 
-    public function flatMap<U>(fn: T -> EnumeratorSource<U>): Enumerable<U> {
+    public function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
         return new FlattenEnumerator(new Enumerator(source, pipeline.chain(fn)), Pipeline.empty());
     }
 
@@ -73,10 +73,6 @@ class Enumerator<S, T> {
         return [];
     }
 
-    // IntIterator
-    // Iterator
-    // Iterable
-    // ForEachable
     public static inline function from<T>(source: EnumeratorSource<T>): Enumerable<T> {
         return new Enumerator(source, Pipeline.empty());
     }
@@ -89,18 +85,57 @@ typedef ForEachable<T> = {
 
 typedef Enumerable<T> = {>ForEachable<T>,
     function map<U>(fn: T -> U): Enumerable<U>;
-    function flatMap<U>(fn: T -> EnumeratorSource<U>): Enumerable<U>;
+    function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U>;
 }
 
 @:forward
 abstract EnumeratorSource<T>(ForEachable<T>) from ForEachable<T> to ForEachable<T> {
-    @:from public static inline function fromArray<T>(array: Array<T>): EnumeratorSource<T> {
+    @:from public static inline function fromArray<T>(source: Array<T>): EnumeratorSource<T> {
         return {
             forEach: function (fn: T -> Void): Void {
-                for (x in array) fn(x);
+                for (x in source) fn(x);
             },
             forEachWhile: function (fn: T -> Bool): Void {
-                for (x in array) {
+                for (x in source) {
+                    if (!fn(x)) break;
+                }
+            }
+        }
+    }
+
+    @:from public static inline function fromIntIterator<T>(source: IntIterator): EnumeratorSource<Int> {
+        return {
+            forEach: function (fn: Int -> Void): Void {
+                for (x in source) fn(x);
+            },
+            forEachWhile: function (fn: Int -> Bool): Void {
+                for (x in source) {
+                    if (!fn(x)) break;
+                }
+            }
+        }
+    }
+
+    @:from public static inline function fromIterator<T>(source: Iterator<T>): EnumeratorSource<T> {
+        return {
+            forEach: function (fn: T -> Void): Void {
+                for (x in source) fn(x);
+            },
+            forEachWhile: function (fn: T -> Bool): Void {
+                for (x in source) {
+                    if (!fn(x)) break;
+                }
+            }
+        }
+    }
+
+    @:from public static inline function fromIterable<T>(source: Iterable<T>): EnumeratorSource<T> {
+        return {
+            forEach: function (fn: T -> Void): Void {
+                for (x in source) fn(x);
+            },
+            forEachWhile: function (fn: T -> Bool): Void {
+                for (x in source) {
                     if (!fn(x)) break;
                 }
             }
@@ -139,7 +174,7 @@ class FlattenEnumerator<S, T> {
         return new FlattenEnumerator(source, pipeline.chain(fn));
     }
 
-    public function flatMap<U>(fn: T -> EnumeratorSource<U>): Enumerable<U> {
+    public function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
         return new FlattenEnumerator(new FlattenEnumerator(source, pipeline.chain(fn)), Pipeline.empty());
     }
 }
@@ -179,7 +214,7 @@ class FilterEnumerator<T> {
         return new Enumerator(this, Pipeline.from(fn));
     }
 
-    public function flatMap<U>(fn: T -> EnumeratorSource<U>): Enumerable<U> {
+    public function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
         return new FlattenEnumerator(new Enumerator(this, Pipeline.from(fn)), Pipeline.empty());
     }
 }
@@ -212,7 +247,7 @@ class TaskEnumerator<T> {
         return new Enumerator(this, Pipeline.from(fn));
     }
 
-    public function flatMap<U>(fn: T -> EnumeratorSource<U>): Enumerable<U> {
+    public function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
         return new FlattenEnumerator(new Enumerator(this, Pipeline.from(fn)), Pipeline.empty());
     }
 }

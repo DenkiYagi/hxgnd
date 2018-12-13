@@ -26,8 +26,8 @@ class TestMain {
     public static function main() {
         Enumerator.from([1, 2, 3])
             .map(function (x) return x * 10)
-            .flatMap(function (x): EnumeratorSource<Int> return [x, x + 1, x + 2])
-            .flatMap(function (x): EnumeratorSource<Int> return [x, -x])
+            .flatMap(function (x) return Enumerator.from([x, x + 1, x + 2]))
+            .flatMap(function (x) return Enumerator.from([x, -x]))
             .forEach(function (x) trace(x));
     }
 }
