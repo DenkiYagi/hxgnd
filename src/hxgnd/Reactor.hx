@@ -8,26 +8,24 @@ class Reactor<T> {
     var subscriber: Delegate<T>;
     var disposer: Delegate0;
 
-    public function new<S>(subscribable: Subscribable<S>, collector: (T -> Void) -> S -> Void) {
-        function subscriber(x) collector(onEmit, x);
-
+    public function new<S>(source: Subscribable<S>, collector: (T -> Void) -> S -> Void) {
         this.isDisposed = false;
         this.subscriber = new Delegate();
-        this.disposer = new Delegate0([
-            subscribable.unsubscribe.bind(subscriber)
-        ]);
-        subscribable.subscribe(subscriber);
-    }
 
-    function onEmit(x: T): Void {
-        subscriber.invoke(x);
+        function handle(x) collector(subscriber.invoke, x);
+        this.disposer = new Delegate0([
+            source.unsubscribe.bind(handle)
+        ]);
+        source.subscribe(handle);
     }
 
     public function subscribe(fn: T -> Void): Void {
+        if (isDisposed) return;
         subscriber.add(fn);
     }
 
     public function unsubscribe(fn: T -> Void): Void {
+        if (isDisposed) return;
         subscriber.remove(fn);
     }
 
@@ -42,8 +40,8 @@ class Reactor<T> {
     public function flatMap<U>(fn: T -> Reactor<U>): Reactor<U> {
         var reactor = new Reactor(this, function (emit, x) {
             var ret = fn(x);
-            ret.subscribe(emit);
             disposer.add(ret.dispose);
+            ret.subscribe(emit);
         });
         disposer.add(reactor.dispose);
         return reactor;

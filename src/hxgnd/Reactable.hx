@@ -1,7 +1,7 @@
 package hxgnd;
 
 typedef Reactable<T> = {
-    > Observable<T>,
+    > Subscribable<T>,
 
     function next(): Promise<T>;
 
