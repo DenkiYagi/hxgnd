@@ -158,13 +158,13 @@ class ArrayToolsTest extends BuddySuite {
 
             it("should be success", {
                 [1].zip(["foo"])
-                    .same([{value1: 1, value2: "foo"}]).should.be(true);
+                    .same([new Tuple2(1, "foo")]).should.be(true);
 
                 [1,2,3].zip(["foo","bar","baz"])
                     .same([
-                        {value1: 1, value2: "foo"},
-                        {value1: 2, value2: "bar"},
-                        {value1: 3, value2: "baz"}
+                        new Tuple2(1, "foo"),
+                        new Tuple2(2, "bar"),
+                        new Tuple2(3, "baz")
                     ]).should.be(true);
             });
         });

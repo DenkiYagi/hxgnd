@@ -70,12 +70,12 @@ class ArrayTools {
         #end
     }
 
-    public static function zip<A, B>(a: Array<A>, b: Array<B>): Array<{value1: A, value2: B}> {
+    public static function zip<A, B>(a: Array<A>, b: Array<B>): Array<Tuple2<A, B>> {
         if (a.length != b.length) throw new Error("invalid argument");
 
         var array = [];
         for (i in 0...a.length) {
-            array.push({value1: a[i], value2: b[i]});
+            array.push(new Tuple2(a[i], b[i]));
         }
         return array;
     }
