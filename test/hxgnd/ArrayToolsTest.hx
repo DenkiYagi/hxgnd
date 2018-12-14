@@ -1,6 +1,7 @@
 package hxgnd;
 
 import buddy.BuddySuite;
+import extype.Tuple;
 using buddy.Should;
 using hxgnd.ArrayTools;
 using hxgnd.LangTools;
@@ -225,6 +226,69 @@ class ArrayToolsTest extends BuddySuite {
 
             it("should pass when it is given [ [1, 2], [], [3, 4], [5, 6] ]", {
                 [ [1, 2], [], [3, 4], [5, 6] ].flatten().should.containExactly([1, 2, 3, 4, 5, 6]);
+            });
+        });
+
+
+        describe("ArrayTools.toStringMap()", {
+            it("should convert to Map from empty", {
+                var map = [].toStringMap();
+                map.keys().toArray().should.containExactly([]);
+            });
+
+            it("should convert to Map from any", {
+                var map = [new Tuple2("key1", 10), new Tuple2("key2", 20)].toStringMap();
+                map.keys().toArray().should.containAll(["key1", "key2"]);
+                map.get("key1").should.be(10);
+                map.get("key2").should.be(20);
+            });
+        });
+
+        describe("ArrayTools.toIntMap()", {
+            it("should convert to Map from empty", {
+                var map = [].toIntMap();
+                map.keys().toArray().should.containExactly([]);
+            });
+
+            it("should convert to Map from any", {
+                var map = [new Tuple2(1, 10), new Tuple2(2, 20)].toIntMap();
+                map.keys().toArray().should.containAll([1, 2]);
+                map.get(1).should.be(10);
+                map.get(2).should.be(20);
+            });
+        });
+
+        describe("ArrayTools.toObjectMap()", {
+            it("should convert to Map from empty", {
+                var map = [].toObjectMap();
+                map.keys().toArray().should.containExactly([]);
+            });
+
+            it("should convert to Map from any", {
+                var k1 = {name: "k1"};
+                var k2 = {name: "k2"};
+
+                var map = [new Tuple2(k1, 10), new Tuple2(k2, 20)].toObjectMap();
+                map.keys().toArray().should.containAll([k1, k2]);
+                map.get(k1).should.be(10);
+                map.get(k2).should.be(20);
+            });
+        });
+
+        describe("ArrayTools.toHashMap()", {
+            it("should convert to Map from empty", {
+                var map = [].toHashMap();
+                map.keys().toArray().should.containExactly([]);
+            });
+
+            it("should convert to Map from any", {
+                var k1 = {hashCode: function () return 1};
+                var k2 = {hashCode: function () return 2};
+
+                var map = [new Tuple2(k1, 10), new Tuple2(k2, 20)].toHashMap();
+                map.keys().toArray().should.containAll([k1, k2]);
+                map.get(k1).should.be(10);
+                map.get(k2).should.be(20);
             });
         });
     }

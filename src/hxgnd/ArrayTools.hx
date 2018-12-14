@@ -2,6 +2,11 @@ package hxgnd;
 
 import extype.Maybe;
 import extype.Error;
+import extype.Tuple;
+import haxe.ds.StringMap;
+import haxe.ds.IntMap;
+import haxe.ds.ObjectMap;
+import haxe.ds.HashMap;
 using hxgnd.LangTools;
 
 class ArrayTools {
@@ -212,6 +217,38 @@ class ArrayTools {
     //     }
     //     return result;
     // }
+
+    public static function toStringMap<T>(array: Array<Tuple2<String, T>>): StringMap<T> {
+        var map = new StringMap<T>();
+        for (x in array) {
+            map.set(x.value1, x.value2);
+        }
+        return map;
+    }
+
+    public static function toIntMap<T>(array: Array<Tuple2<Int, T>>): IntMap<T> {
+        var map = new IntMap<T>();
+        for (x in array) {
+            map.set(x.value1, x.value2);
+        }
+        return map;
+    }
+
+    public static function toObjectMap<K:{}, T>(array: Array<Tuple2<K, T>>): ObjectMap<K, T> {
+        var map = new ObjectMap<K, T>();
+        for (x in array) {
+            map.set(x.value1, x.value2);
+        }
+        return map;
+    }
+
+    public static function toHashMap<K:{function hashCode():Int;}, T>(array: Array<Tuple2<K, T>>): HashMap<K, T> {
+        var map = new HashMap<K, T>();
+        for (x in array) {
+            map.set(x.value1, x.value2);
+        }
+        return map;
+    }
 }
 
 abstract IteratorOrIterable<T>(Iterator<T>) from Iterator<T> to Iterator<T> {
