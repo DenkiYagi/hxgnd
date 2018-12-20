@@ -1,6 +1,7 @@
 package hxgnd;
 
 import hxgnd.internal.EnumeratorImpl;
+import hxgnd.internal.ForEacherImpl;
 
 class Enumerator {
     public static inline function from<T>(source: EnumeratorSource<T>): Enumerable<T> {
@@ -57,58 +58,21 @@ typedef Enumerable<T> = {>ForEachable<T>,
     // toList
 }
 
-// TODO マクロでビルドする
 @:forward
 abstract EnumeratorSource<T>(ForEachable<T>) from ForEachable<T> to ForEachable<T> {
     @:from public static inline function fromArray<T>(source: Array<T>): EnumeratorSource<T> {
-        return {
-            forEach: function (fn: T -> Void): Void {
-                for (x in source) fn(x);
-            },
-            forEachWhile: function (fn: T -> Bool): Void {
-                for (x in source) {
-                    if (!fn(x)) break;
-                }
-            }
-        }
+        return new ArrayForEacher(source);
     }
 
     @:from public static inline function fromIntIterator<T>(source: IntIterator): EnumeratorSource<Int> {
-        return {
-            forEach: function (fn: Int -> Void): Void {
-                for (x in source) fn(x);
-            },
-            forEachWhile: function (fn: Int -> Bool): Void {
-                for (x in source) {
-                    if (!fn(x)) break;
-                }
-            }
-        }
+        return new IntIteratorForEacher(source);
     }
 
     @:from public static inline function fromIterator<T>(source: Iterator<T>): EnumeratorSource<T> {
-        return {
-            forEach: function (fn: T -> Void): Void {
-                for (x in source) fn(x);
-            },
-            forEachWhile: function (fn: T -> Bool): Void {
-                for (x in source) {
-                    if (!fn(x)) break;
-                }
-            }
-        }
+        return new IteratorForEacher(source);
     }
 
     @:from public static inline function fromIterable<T>(source: Iterable<T>): EnumeratorSource<T> {
-        return {
-            forEach: function (fn: T -> Void): Void {
-                for (x in source) fn(x);
-            },
-            forEachWhile: function (fn: T -> Bool): Void {
-                for (x in source) {
-                    if (!fn(x)) break;
-                }
-            }
-        }
+        return new IterableForEacher(source);
     }
 }

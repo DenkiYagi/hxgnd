@@ -1,15 +1,18 @@
 package hxgnd.internal;
 
 import extype.Tuple;
+import extype.Unit;
+import extype.Maybe;
 import haxe.macro.Context;
 import haxe.macro.Expr;
 using hxgnd.ArrayTools;
 
 class EnumeratorBuilder {
-    static var defaultFields: Map<String, Field>;
+    static var defaultEnumeratorFields: Map<String, Field>;
 
     static function __init__() {
-        defaultFields = toFieldMap([
+        defaultEnumeratorFields = new Map<String, Field>();
+        for (expr in [
             macro function forEach(fn: T -> Void): Void {
                 source.forEach(fn);
             },
@@ -55,35 +58,35 @@ class EnumeratorBuilder {
                 this.forEach(array.push);
                 return array;
             }
-        ]);
+        ]) {
+            toField(expr).forEach(function (f) {
+                defaultEnumeratorFields.set(f.name, f);
+            });
+        };
     }
 
-    static function toFieldMap(exprs: Array<Expr>): Map<String, Field> {
-        var map = new Map<String, Field>();
-
-        for (expr in exprs) {
-            switch (expr.expr) {
-                case EFunction(name, fn):
-                    map.set(name, {
-                        name: name,
-                        access: [APublic],
-                        kind: FFun(fn),
-                        pos: expr.pos
-                    });
-                case _:
-            }
+    static function toField(expr: Expr): Maybe<Field> {
+        return switch (expr.expr) {
+            case EFunction(name, fn):
+                if (name == "__new__") name = "new";
+                Maybe.of({
+                    name: name,
+                    access: [APublic],
+                    kind: FFun(fn),
+                    pos: expr.pos
+                });
+            case _:
+                Maybe.empty();
         }
-
-        return map;
     }
 
     public static function build(): Array<Field> {
         var fields = Context.getBuildFields();
 
         if (Context.getLocalClass().get().superClass == null) {
-            var names = fields.map(function (x) return new Tuple2(x.name, new extype.Unit())).toStringMap();
-            for (name in defaultFields.keys()) {
-                if (!names.exists(name)) fields.push(defaultFields.get(name));
+            var names = fields.map(function (x) return new Tuple2(x.name, new Unit())).toStringMap();
+            for (name in defaultEnumeratorFields.keys()) {
+                if (!names.exists(name)) fields.push(defaultEnumeratorFields.get(name));
             }
         }
 
