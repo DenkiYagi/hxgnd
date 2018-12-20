@@ -4,7 +4,7 @@ import buddy.BuddySuite;
 import hxgnd.internal.ForEacherImpl;
 using buddy.Should;
 
-class ForEacherTest extends BuddySuite {
+class ForEacherImplTest extends BuddySuite {
     public function new() {
         describe("ArrayForEacher", {
             describe("#forEach()", {
