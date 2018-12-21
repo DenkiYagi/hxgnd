@@ -7,11 +7,11 @@ class ArrayForEacher<T> {
         this.source = source;
     }
 
-    public function forEach(fn: T -> Void): Void {
+    public inline function forEach(fn: T -> Void): Void {
         for (x in source) fn(x);
     }
 
-    public function forEachWhile(fn: T -> Bool): Void {
+    public inline function forEachWhile(fn: T -> Bool): Void {
         for (x in source) {
             if (!fn(x)) break;
         }
@@ -25,11 +25,11 @@ class IntIteratorForEacher {
         this.source = source;
     }
 
-    public function forEach(fn: Int -> Void): Void {
+    public inline function forEach(fn: Int -> Void): Void {
         for (x in source) fn(x);
     }
 
-    public function forEachWhile(fn: Int -> Bool): Void {
+    public inline function forEachWhile(fn: Int -> Bool): Void {
         for (x in source) {
             if (!fn(x)) break;
         }
@@ -43,11 +43,11 @@ class IteratorForEacher<T> {
         this.source = source;
     }
 
-    public function forEach(fn: T -> Void): Void {
+    public inline function forEach(fn: T -> Void): Void {
         for (x in source) fn(x);
     }
 
-    public function forEachWhile(fn: T -> Bool): Void {
+    public inline function forEachWhile(fn: T -> Bool): Void {
         for (x in source) {
             if (!fn(x)) break;
         }
@@ -61,11 +61,11 @@ class IterableForEacher<T> {
         this.source = source;
     }
 
-    public function forEach(fn: T -> Void): Void {
+    public inline function forEach(fn: T -> Void): Void {
         for (x in source) fn(x);
     }
 
-    public function forEachWhile(fn: T -> Bool): Void {
+    public inline function forEachWhile(fn: T -> Bool): Void {
         for (x in source) {
             if (!fn(x)) break;
         }
