@@ -8,92 +8,143 @@ class ForEacherImplTest extends BuddySuite {
     public function new() {
         describe("ArrayForEacher", {
             describe("#forEach()", {
-                it("should pass", {
-                    var eacher = new ArrayForEacher([10, 20, 30]);
+                function test(src, expect) {
+                    var eacher = new ArrayForEacher(src);
                     var actual = [];
                     eacher.forEach(actual.push);
-                    actual.should.containExactly([10, 20, 30]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test([], []);
+                    test([10, 20, 30], [10, 20, 30]);
                 });
             });
 
             describe("#forEachWhile()", {
-                it("should pass", {
-                    var eacher = new ArrayForEacher([10, 20, 30, 40, 50]);
+                function test(src, expect) {
+                    var eacher = new ArrayForEacher(src);
                     var actual = [];
                     eacher.forEachWhile(function (x) {
                         actual.push(x);
                         return x < 30;
                     });
-                    actual.should.containExactly([10, 20, 30]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test([], []);
+                    test([10, 20], [10, 20]);
+                    test([10, 20, 30], [10, 20, 30]);
+                    test([10, 20, 30, 40, 50], [10, 20, 30]);
+                    test([10, 20, 30, 29], [10, 20, 30]);
                 });
             });
         });
 
         describe("IntIteratorForEacher", {
             describe("#forEach()", {
-                it("should pass", {
-                    var eacher = new IntIteratorForEacher(1...4);
+                function test(src, expect) {
+                    var eacher = new IntIteratorForEacher(src);
                     var actual = [];
                     eacher.forEach(actual.push);
-                    actual.should.containExactly([1, 2, 3]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test(0...0, []);
+                    test(1...4, [1, 2, 3]);
                 });
             });
 
             describe("#forEachWhile()", {
-                it("should pass", {
-                    var eacher = new IntIteratorForEacher(1...5);
+                function test(src, expect) {
+                    var eacher = new IntIteratorForEacher(src);
                     var actual = [];
                     eacher.forEachWhile(function (x) {
                         actual.push(x);
                         return x < 3;
                     });
-                    actual.should.containExactly([1, 2, 3]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test(0...0, []);
+                    test(1...3, [1, 2]);
+                    test(1...4, [1, 2, 3]);
+                    test(1...6, [1, 2, 3]);
                 });
             });
         });
 
         describe("IteratorForEacher", {
             describe("#forEach()", {
-                it("should pass", {
-                    var eacher = new IteratorForEacher([10, 20, 30].iterator());
+                function test(src, expect) {
+                    var eacher = new IteratorForEacher(src);
                     var actual = [];
                     eacher.forEach(actual.push);
-                    actual.should.containExactly([10, 20, 30]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test([].iterator(), []);
+                    test([1, 2, 3, 4, 5].iterator(), [1, 2, 3, 4, 5]);
                 });
             });
 
             describe("#forEachWhile()", {
-                it("should pass", {
-                    var eacher = new IteratorForEacher([10, 20, 30, 40, 50].iterator());
+                function test(src, expect) {
+                    var eacher = new IteratorForEacher(src);
                     var actual = [];
                     eacher.forEachWhile(function (x) {
                         actual.push(x);
                         return x < 30;
                     });
-                    actual.should.containExactly([10, 20, 30]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test([].iterator(), []);
+                    test([10, 20].iterator(), [10, 20]);
+                    test([10, 20, 30].iterator(), [10, 20, 30]);
+                    test([10, 20, 30, 40, 50].iterator(), [10, 20, 30]);
+                    test([10, 20, 30, 29].iterator(), [10, 20, 30]);
                 });
             });
         });
 
         describe("IterableForEacher", {
             describe("#forEach()", {
-                it("should pass", {
-                    var eacher = new IterableForEacher([10, 20, 30]);
+                function test(src, expect) {
+                    var eacher = new IterableForEacher(src);
                     var actual = [];
                     eacher.forEach(actual.push);
-                    actual.should.containExactly([10, 20, 30]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test([], []);
+                    test([10, 20, 30], [10, 20, 30]);
                 });
             });
 
             describe("#forEachWhile()", {
-                it("should pass", {
-                    var eacher = new IterableForEacher([10, 20, 30, 40, 50]);
+                function test(src, expect) {
+                    var eacher = new IterableForEacher(src);
                     var actual = [];
                     eacher.forEachWhile(function (x) {
                         actual.push(x);
                         return x < 30;
                     });
-                    actual.should.containExactly([10, 20, 30]);
+                    actual.should.containExactly(expect);
+                }
+
+                it("should pass", {
+                    test([], []);
+                    test([10, 20], [10, 20]);
+                    test([10, 20, 30], [10, 20, 30]);
+                    test([10, 20, 30, 40, 50], [10, 20, 30]);
+                    test([10, 20, 30, 29], [10, 20, 30]);
                 });
             });
         });
