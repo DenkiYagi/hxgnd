@@ -25,7 +25,7 @@ class EnumeratorTest extends BuddySuite {
 
             it("should be IterableForEacher", {
                 var src: EnumeratorSource<Int> = ([1, 2, 3]: Iterable<Int>);
-                src.should.beType(IterableForEacher);
+                src.should.beType(IteratorForEacher);
             });
         });
     }

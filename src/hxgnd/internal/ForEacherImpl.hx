@@ -53,21 +53,3 @@ class IteratorForEacher<T> {
         }
     }
 }
-
-class IterableForEacher<T> {
-    var source: Iterable<T>;
-
-    public function new(source: Iterable<T>) {
-        this.source = source;
-    }
-
-    public inline function forEach(fn: T -> Void): Void {
-        for (x in source) fn(x);
-    }
-
-    public inline function forEachWhile(fn: T -> Bool): Void {
-        for (x in source) {
-            if (!fn(x)) break;
-        }
-    }
-}

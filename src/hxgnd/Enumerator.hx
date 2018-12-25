@@ -73,6 +73,6 @@ abstract EnumeratorSource<T>(ForEachable<T>) from ForEachable<T> to ForEachable<
     }
 
     @:from public static inline function fromIterable<T>(source: Iterable<T>): EnumeratorSource<T> {
-        return new IterableForEacher(source);
+        return new IteratorForEacher(source.iterator());
     }
 }

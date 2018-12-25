@@ -112,41 +112,5 @@ class ForEacherImplTest extends BuddySuite {
                 });
             });
         });
-
-        describe("IterableForEacher", {
-            describe("#forEach()", {
-                function test(src, expect) {
-                    var eacher = new IterableForEacher(src);
-                    var actual = [];
-                    eacher.forEach(actual.push);
-                    actual.should.containExactly(expect);
-                }
-
-                it("should pass", {
-                    test([], []);
-                    test([10, 20, 30], [10, 20, 30]);
-                });
-            });
-
-            describe("#forEachWhile()", {
-                function test(src, expect) {
-                    var eacher = new IterableForEacher(src);
-                    var actual = [];
-                    eacher.forEachWhile(function (x) {
-                        actual.push(x);
-                        return x < 30;
-                    });
-                    actual.should.containExactly(expect);
-                }
-
-                it("should pass", {
-                    test([], []);
-                    test([10, 20], [10, 20]);
-                    test([10, 20, 30], [10, 20, 30]);
-                    test([10, 20, 30, 40, 50], [10, 20, 30]);
-                    test([10, 20, 30, 29], [10, 20, 30]);
-                });
-            });
-        });
     }
 }

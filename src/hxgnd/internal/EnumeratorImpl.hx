@@ -19,23 +19,23 @@ class MapEnumerator<S, T> implements IEnumerator {
         this.pipeline = pipeline;
     }
 
-    public function forEach(fn: T -> Void): Void {
+    public inline function forEach(fn: T -> Void): Void {
         source.forEach(function (x) {
             fn(pipeline.call(x));
         });
     }
 
-    public function forEachWhile(fn: T -> Bool): Void {
+    public inline function forEachWhile(fn: T -> Bool): Void {
         source.forEachWhile(function (x) {
             return fn(pipeline.call(x));
         });
     }
 
-    public function map<U>(fn: T -> U): Enumerable<U> {
+    public inline function map<U>(fn: T -> U): Enumerable<U> {
         return new MapEnumerator(source, pipeline.chain(fn));
     }
 
-    public function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
+    public inline function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
         return new FlattenEnumerator(new MapEnumerator(source, pipeline.chain(fn)), Pipeline.empty());
     }
 }
@@ -49,14 +49,14 @@ class FlattenEnumerator<S, T> implements IEnumerator {
         this.pipeline = pipeline;
     }
 
-    public function forEach(fn: T -> Void): Void {
+    public inline function forEach(fn: T -> Void): Void {
         var pl = pipeline.chain(fn);
         source.forEach(function (x) {
             x.forEach(pl.call);
         });
     }
 
-    public function forEachWhile(fn: T -> Bool): Void {
+    public inline function forEachWhile(fn: T -> Bool): Void {
         var next = true;
         source.forEachWhile(function (eachable) {
             eachable.forEachWhile(function (x) {
@@ -67,11 +67,11 @@ class FlattenEnumerator<S, T> implements IEnumerator {
         });
     }
 
-    public function map<U>(fn: T -> U): Enumerable<U> {
+    public inline function map<U>(fn: T -> U): Enumerable<U> {
         return new FlattenEnumerator(source, pipeline.chain(fn));
     }
 
-    public function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
+    public inline function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U> {
         return new FlattenEnumerator(new FlattenEnumerator(source, pipeline.chain(fn)), Pipeline.empty());
     }
 }
@@ -79,18 +79,18 @@ class FlattenEnumerator<S, T> implements IEnumerator {
 class FilterEnumerator<T> extends GenericEnumerator<T> {
     var filters: Array<T -> Bool>;
 
-    public function new(source: EnumeratorSource<T>, filters: Array<T -> Bool>) {
+    public inline function new(source: EnumeratorSource<T>, filters: Array<T -> Bool>) {
         super(source);
         this.filters = filters;
     }
 
-    public override function forEach(fn: T -> Void): Void {
+    public override inline function forEach(fn: T -> Void): Void {
         source.forEach(function (x) {
             if (applyFilter(x)) fn(x);
         });
     }
 
-    public override function forEachWhile(fn: T -> Bool): Void {
+    public override inline function forEachWhile(fn: T -> Bool): Void {
         source.forEachWhile(function (x) {
             if (applyFilter(x)) {
                 if (!fn(x)) return false;
@@ -115,7 +115,7 @@ class TaskEnumerator<T> extends GenericEnumerator<T> {
         this.count = count;
     }
 
-    public override function forEach(fn: T -> Void): Void {
+    public override inline function forEach(fn: T -> Void): Void {
         var i = count;
         source.forEachWhile(function (x) {
             return if (i-- >= 0) {
@@ -127,7 +127,7 @@ class TaskEnumerator<T> extends GenericEnumerator<T> {
         });
     }
 
-    public override function forEachWhile(fn: T -> Bool): Void {
+    public override inline function forEachWhile(fn: T -> Bool): Void {
         var i = count;
         source.forEachWhile(function (x) {
             return (i-- >= count) && fn(x);
@@ -143,7 +143,7 @@ class TaskWhileEnumerator<T> extends GenericEnumerator<T> {
         this.predicate = predicate;
     }
 
-    public override function forEach(fn: T -> Void): Void {
+    public override inline function forEach(fn: T -> Void): Void {
         source.forEachWhile(function (x) {
             return if (predicate(x)) {
                 fn(x);
@@ -154,7 +154,7 @@ class TaskWhileEnumerator<T> extends GenericEnumerator<T> {
         });
     }
 
-    public override function forEachWhile(fn: T -> Bool): Void {
+    public override inline function forEachWhile(fn: T -> Bool): Void {
         source.forEachWhile(function (x) {
             return predicate(x) && fn(x);
         });
@@ -169,7 +169,7 @@ class SkipEnumerator<T> extends GenericEnumerator<T> {
         this.count = count;
     }
 
-    public override function forEach(fn: T -> Void): Void {
+    public override inline function forEach(fn: T -> Void): Void {
         var i = count;
         source.forEach(function (x) {
             if (i <= 0) {
@@ -180,7 +180,7 @@ class SkipEnumerator<T> extends GenericEnumerator<T> {
         });
     }
 
-    public override function forEachWhile(fn: T -> Bool): Void {
+    public override inline function forEachWhile(fn: T -> Bool): Void {
         var i = count;
         source.forEachWhile(function (x) {
             return if (i <= 0) {
@@ -201,7 +201,7 @@ class SkipWhileEnumerator<T> extends GenericEnumerator<T> {
         this.predicate = predicate;
     }
 
-    public override function forEach(fn: T -> Void): Void {
+    public override inline function forEach(fn: T -> Void): Void {
         var skipping = true;
         source.forEach(function (x) {
             if (skipping) {
@@ -213,7 +213,7 @@ class SkipWhileEnumerator<T> extends GenericEnumerator<T> {
         });
     }
 
-    public override function forEachWhile(fn: T -> Bool): Void {
+    public override inline function forEachWhile(fn: T -> Bool): Void {
         var skipping = true;
         source.forEachWhile(function (x) {
             return if (skipping) {
