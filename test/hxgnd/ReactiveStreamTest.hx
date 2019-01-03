@@ -23,7 +23,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 stream.subscribe(
                                     function (x) data.push(x)
                                 );
-                                wait(10, function () {
+                                wait(20, function () {
                                     data.should.containExactly(expectation.data);
                                     done();
                                 });
@@ -36,7 +36,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 stream.subscribeEnd(
                                     function () countEnd++
                                 );
-                                wait(10, function () {
+                                wait(20, function () {
                                     countEnd.should.be(expectation.end);
                                     done();
                                 });
@@ -49,7 +49,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 stream.subscribeError(
                                     function (e) errors.push(e)
                                 );
-                                wait(10, function () {
+                                wait(20, function () {
                                     errors.should.containExactly(expectation.error);
                                     done();
                                 });
@@ -62,7 +62,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 stream.finally(
                                     function () countFinally++
                                 );
-                                wait(10, function () {
+                                wait(20, function () {
                                     countFinally.should.be(expectation.finally);
                                     done();
                                 });
@@ -81,7 +81,7 @@ class ReactiveStreamTest extends BuddySuite {
                                     function (e) errors.push(e),
                                     function () countFinally++
                                 );
-                                wait(10, function () {
+                                wait(20, function () {
                                     data.should.containExactly(expectation.data);
                                     countEnd.should.be(expectation.end);
                                     errors.should.containExactly(expectation.error);
@@ -223,7 +223,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         called1.should.be(0);
                         called2.should.be(0);
-                        wait(10, function () {
+                        wait(20, function () {
                             called1.should.be(1);
                             called2.should.be(1);
                             done();
@@ -246,7 +246,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         called1.should.be(0);
                         called2.should.be(0);
-                        wait(10, function () {
+                        wait(20, function () {
                             called1.should.be(1);
                             called2.should.be(1);
                             done();
@@ -269,7 +269,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         called1.should.be(0);
                         called2.should.be(0);
-                        wait(10, function () {
+                        wait(20, function () {
                             called1.should.be(1);
                             called2.should.be(1);
                             done();
@@ -292,7 +292,7 @@ class ReactiveStreamTest extends BuddySuite {
                         });
                         called1.should.be(0);
                         called2.should.be(0);
-                        wait(10, function () {
+                        wait(20, function () {
                             called1.should.be(1);
                             called2.should.be(1);
                             done();
@@ -433,7 +433,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.state.should.equal(Ended);
 
                                 child.finally(function () {});
-                                wait(10, function () {
+                                wait(20, function () {
                                     child.state.should.equal(Ended);
                                     done();
                                 });
@@ -448,7 +448,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.state.should.equal(Ended);
 
                                 child.finally(function () {});
-                                wait(10, function () {
+                                wait(20, function () {
                                     child.state.should.equal(Ended);
                                     done();
                                 });
@@ -589,7 +589,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 parent.close();
                                 parent.close();
                                 child.state.should.equal(Ended);
-                                wait(10, function () {
+                                wait(20, function () {
                                     called.should.be(1);
                                     done();
                                 });
@@ -739,7 +739,7 @@ class ReactiveStreamTest extends BuddySuite {
                             throw e;
                         });
                         next.finally(function () {});
-                        wait(10, function () {
+                        wait(20, function () {
                             called.should.be(true);
                             stream.state.should.equal(Failed("error"));
                             next.state.should.not.equal(Init);
@@ -757,7 +757,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.state.should.equal(Init);
 
                                 child.finally(function () {});
-                                wait(10, function () {
+                                wait(20, function () {
                                     child.state.should.equal(state);
                                     done();
                                 });
@@ -772,7 +772,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.state.should.equal(Init);
 
                                 child.finally(function () {});
-                                wait(10, function () {
+                                wait(20, function () {
                                     child.state.should.equal(state);
                                     done();
                                 });
@@ -799,7 +799,7 @@ class ReactiveStreamTest extends BuddySuite {
                             var next = stream.catchError(function (e) return ReactiveStream.never());
                             next.state.should.equal(Init);
                             next.finally(function () {});
-                            return new SyncPromise(function (f, _) wait(10, f.bind(next)));
+                            return new SyncPromise(function (f, _) wait(20, f.bind(next)));
                         });
                     }, true);
 
@@ -812,7 +812,7 @@ class ReactiveStreamTest extends BuddySuite {
                             var child = stream.catchError(function (e) return ReactiveStream.empty());
                             child.state.should.equal(Init);
                             child.finally(function () {});
-                            return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                            return new SyncPromise(function (f, _) wait(20, f.bind(child)));
                         });
                     }, true);
 
@@ -827,7 +827,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.state.should.equal(Init);
                                 child.finally(function () {});
                                 child.state.should.equal(Running);
-                                wait(10, function () {
+                                wait(20, function () {
                                     child.state.should.equal(Failed("error"));
                                     done();
                                 });
@@ -839,7 +839,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 var child = stream.catchError(function (e) return ReactiveStream.fail(error));
                                 child.state.should.equal(Init);
                                 child.finally(function () {});
-                                return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                                return new SyncPromise(function (f, _) wait(20, f.bind(child)));
                             });
                         }, true);
 
@@ -855,7 +855,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 child.state.should.equal(Init);
                                 child.finally(function () {});
                                 child.state.should.equal(Running);
-                                wait(10, function () {
+                                wait(20, function () {
                                     child.state.should.equal(Failed("error"));
                                     done();
                                 });
@@ -867,7 +867,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 var child = stream.catchError(function (e) throw error);
                                 child.state.should.equal(Init);
                                 child.finally(function () {});
-                                return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                                return new SyncPromise(function (f, _) wait(20, f.bind(child)));
                             });
                         }, true);
 
@@ -909,7 +909,7 @@ class ReactiveStreamTest extends BuddySuite {
                             trigger(stream);
                             stream.state.should.equal(Running);
                             called.should.be(0);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Running);
                                 called.should.be(1);
                                 done();
@@ -925,7 +925,7 @@ class ReactiveStreamTest extends BuddySuite {
                             stream.close();
                             trigger(stream);
                             stream.state.should.equal(Ended);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -940,7 +940,7 @@ class ReactiveStreamTest extends BuddySuite {
                             trigger(stream);
                             stream.close();
                             stream.state.should.equal(Ended);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -957,7 +957,7 @@ class ReactiveStreamTest extends BuddySuite {
                             un();
                             stream.state.should.equal(Running);
                             called.should.be(0);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Suspended);
                                 called.should.be(1);
                                 done();
@@ -972,7 +972,7 @@ class ReactiveStreamTest extends BuddySuite {
                             return { attach: function () {}, detach: function () {}, close: function () {} }
                         }).then(function (stream) {
                             var unsubscribe = trigger(stream);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Running);
                                 called.should.be(1);
 
@@ -983,7 +983,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 stream.state.should.equal(Running);
 
                                 stream.subscribe(function (_) fail());
-                                wait(5, function () {
+                                wait(10, function () {
                                     called.should.be(1);
                                     done();
                                 });
@@ -1011,7 +1011,7 @@ class ReactiveStreamTest extends BuddySuite {
                             detachCalled.should.be(0);
                             closeCalled.should.be(0);
 
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Running);
                                 attachCalled.should.be(1);
                                 detachCalled.should.be(0);
@@ -1023,7 +1023,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 detachCalled.should.be(0);
                                 closeCalled.should.be(0);
 
-                                wait(5, function () {
+                                wait(10, function () {
                                     stream.state.should.equal(Suspended);
                                     attachCalled.should.be(1);
                                     detachCalled.should.be(1);
@@ -1040,7 +1040,7 @@ class ReactiveStreamTest extends BuddySuite {
                             return { attach: function () {}, detach: function () {}, close: function () called++ }
                         }).then(function (stream) {
                             trigger(stream);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.close();
                                 stream.state.should.equal(Ended);
                                 called.should.be(1);
@@ -1056,7 +1056,7 @@ class ReactiveStreamTest extends BuddySuite {
                         }).then(function (stream) {
                             stream.close();
                             stream.state.should.equal(Ended);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -1070,7 +1070,7 @@ class ReactiveStreamTest extends BuddySuite {
                             trigger(stream);
                             stream.close();
                             stream.state.should.equal(Ended);
-                            wait(10, function () {
+                            wait(20, function () {
                                 stream.state.should.equal(Ended);
                                 done();
                             });
@@ -1140,7 +1140,7 @@ class ReactiveStreamTest extends BuddySuite {
                                     recovered.state.should.equal(Ended);
 
                                     recovered.finally(function () {});
-                                    wait(5, function () {
+                                    wait(10, function () {
                                         recovered.state.should.equal(Ended);
                                         done();
                                     });
@@ -1160,7 +1160,7 @@ class ReactiveStreamTest extends BuddySuite {
                             }).then(function (base) {
                                 return new SyncPromise(function (f, _) {
                                     base.finally(function () {});
-                                    wait(5, f.bind(base));
+                                    wait(10, f.bind(base));
                                 });
                             });
                         });
@@ -1172,7 +1172,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 return new SyncPromise(function (f, _) {
                                     var un = base.finally(function () {});
                                     un();
-                                    wait(5, f.bind(base));
+                                    wait(10, f.bind(base));
                                 });
                             });
                         });
@@ -1187,7 +1187,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countFinally = 0;
                         var caughtErrors = [];
                         create(function (ctx) {
-                            wait(5, function () {
+                            wait(10, function () {
                                 ctx.emit(10);
                                 ctx.emit(20);
                             });
@@ -1211,7 +1211,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 throw e;
                             });
 
-                            wait(10, function () {
+                            wait(20, function () {
                                 values.should.containExactly([10, 20]);
                                 countEnd.should.be(0);
                                 errors.should.containExactly([]);
@@ -1229,7 +1229,7 @@ class ReactiveStreamTest extends BuddySuite {
                         var countFinally = 0;
                         var caughtErrors = [];
                         create(function (ctx) {
-                            wait(5, function () {
+                            wait(10, function () {
                                 ctx.emit(10);
                                 ctx.emitEnd();
                             });
@@ -1253,7 +1253,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 throw e;
                             });
 
-                            wait(10, function () {
+                            wait(20, function () {
                                 values.should.containExactly([10]);
                                 countEnd.should.be(1);
                                 errors.should.containExactly([]);
@@ -1276,7 +1276,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                             child.finally(function () {});
                             child.state.should.equal(Running);
-                            wait(5, function () {
+                            wait(10, function () {
                                 child.state.should.equal(Never);
                                 done();
                             });
@@ -1290,7 +1290,7 @@ class ReactiveStreamTest extends BuddySuite {
                         }).then(function (stream) {
                             var child = stream.catchError(function (e) return ReactiveStream.never());
                             child.finally(function () {});
-                            return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                            return new SyncPromise(function (f, _) wait(20, f.bind(child)));
                         });
                     }, true);
 
@@ -1308,7 +1308,7 @@ class ReactiveStreamTest extends BuddySuite {
 
                             child.finally(function () {});
                             child.state.should.equal(Running);
-                            wait(5, function () {
+                            wait(10, function () {
                                 child.state.should.equal(Ended);
                                 done();
                             });
@@ -1322,7 +1322,7 @@ class ReactiveStreamTest extends BuddySuite {
                         }).then(function (stream) {
                             var child = stream.catchError(function (e) return ReactiveStream.empty());
                             child.finally(function () {});
-                            return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                            return new SyncPromise(function (f, _) wait(20, f.bind(child)));
                         });
                     }, true);
 
@@ -1339,7 +1339,7 @@ class ReactiveStreamTest extends BuddySuite {
                                 var next = stream.catchError(function (_) return recover("error"));
                                 next.state.should.equal(Init);
                                 next.finally(function () {});
-                                wait(5, function () {
+                                wait(10, function () {
                                     next.state.should.equal(Failed("error"));
                                     done();
                                 });
@@ -1353,7 +1353,7 @@ class ReactiveStreamTest extends BuddySuite {
                             }).then(function (stream) {
                                 var child = stream.catchError(function (_) return recover(error));
                                 child.finally(function () {});
-                                return new SyncPromise(function (f, _) wait(10, f.bind(child)));
+                                return new SyncPromise(function (f, _) wait(20, f.bind(child)));
                             });
                         }, true);
 
