@@ -294,9 +294,11 @@ class LangTools {
                 }
             } else if (isIterator(a)) {
                 if (!isIterator(b)) return false;
+                var aIt: Iterator<Dynamic> = cast a;
+                var bIt: Iterator<Dynamic> = cast b;
                 while (a.hasNext()) {
                     if (!b.hasNext()) return false;
-                    stack.push(new Tuple2(a.next(), b.next()));
+                    stack.push(new Tuple2(aIt.next(), bIt.next()));
                 }
                 ignoreKeys = ["hasNext", "next"];
             }

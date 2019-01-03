@@ -377,11 +377,11 @@ private class ComputationBlock<T, M> {
             fragments.push({
                 preExprs: [],
                 cexpr: expr,
-                binding: {name: name, type: type},
+                binding: {name: Maybe.from(name), type: Maybe.from(type)},
             });
         } else {
             fragment.cexpr = expr;
-            fragment.binding = {name: name, type: type};
+            fragment.binding = {name: Maybe.from(name), type: Maybe.from(type)};
         }
 
         fragments.push({
