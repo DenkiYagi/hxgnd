@@ -8,6 +8,7 @@ class TestMain implements Buddy<[
     hxgnd.OptionToolsTest,
     hxgnd.LazyTest,
     hxgnd.DelegateTest,
+    hxgnd.TraverserTest,
     hxgnd.ComputationTest,
     hxgnd.PromiseTest,
     hxgnd.SyncPromiseTest,
@@ -17,7 +18,7 @@ class TestMain implements Buddy<[
     hxgnd.ReactorTest,
     hxgnd.ReactivePropertyTest,
     hxgnd.ReactiveActorTest,
-    hxgnd.ReactiveStreamTest
+    // hxgnd.ReactiveStreamTest
 ]> {}
 
 /*

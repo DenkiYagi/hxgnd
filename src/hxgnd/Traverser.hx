@@ -4,19 +4,27 @@ import hxgnd.internal.traverser.*;
 
 @:forward
 abstract Traverser<T>(ITraverser<T>) from ITraverser<T> {
-    @:from @:extern public static inline function fromArray<T>(array: Array<T>): Traverser<T> {
+    public static function from<T>(source: TraverserSource<T>): Traverser<T> {
+        return source;
+    }
+}
+
+abstract TraverserSource<T>(ITraverser<T>) from ITraverser<T> to Traverser<T> {
+    // public function create()
+
+    @:extern @:from static inline function fromArray<T>(array: Array<T>): TraverserSource<T> {
         return new ArrayTraverser(array);
     }
 
-    @:from @:extern public static inline function fromIntIterator(iterator: IntIterator): Traverser<Int> {
+    @:extern @:from static inline function fromIntIterator(iterator: IntIterator): TraverserSource<Int> {
         return new IntIteratorTraverser(iterator);
     }
 
-    @:from @:extern public static inline function fromIterator<T>(iterator: Iterator<T>): Traverser<T> {
+    @:extern @:from static inline function fromIterator<T>(iterator: Iterator<T>): TraverserSource<T> {
         return new IteratorTraverser(iterator);
     }
 
-    @:from @:extern public static inline function formIterable<T>(iterable: Iterable<T>): Traverser<T> {
+    @:extern @:from static inline function formIterable<T>(iterable: Iterable<T>): TraverserSource<T> {
         return new IteratorTraverser(iterable.iterator());
     }
 }
