@@ -42,7 +42,7 @@ class AbortablePromise<T> implements IPromise<T> {
     function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
         if (result.isEmpty()) {
             try {
-                abortCallback = Maybe.from(executor(onFulfilled, onRejected));
+                abortCallback = Maybe.ofNullable(executor(onFulfilled, onRejected));
             } catch (e: Dynamic) {
                 onRejected(e);
             }

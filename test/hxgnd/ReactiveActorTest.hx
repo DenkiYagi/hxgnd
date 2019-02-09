@@ -141,24 +141,23 @@ class ReactiveActorTest extends BuddySuite {
 
         describe("ReactiveActor#unsubscribe()", {
             it("should not call subscriber when it is unsubscribed", {
-                var emit;
                 var actor = new ReactiveActor(10, function (ctx, message) {
-                    emit = ctx.emit;
+                    ctx.emit(11);
                     return function () {};
                 });
-                function f(x) { fail() }
+                function f(x) { fail(); }
 
                 actor.subscribe(f);
                 actor.unsubscribe(f);
 
-                emit(10);
+                actor.dispatch(Increment);
             });
 
             it("should pass when it is called 2-times", {
                 var actor = new ReactiveActor(10, function (ctx, message) {
                     return function () {};
                 });
-                function f(x) { fail() }
+                function f(x) { fail(); }
 
                 actor.subscribe(f);
                 actor.unsubscribe(f);

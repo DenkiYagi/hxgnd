@@ -2,27 +2,25 @@ package;
 
 import buddy.*;
 
-// class TestMain implements Buddy<[
-//     // hxgnd.LangToolsTest,
-//     // hxgnd.ArrayToolsTest,
-//     // hxgnd.OptionToolsTest,
-//     // hxgnd.LazyTest,
-//     // hxgnd.DelegateTest,
-//     // hxgnd.ComputationTest,
-//     hxgnd.PromiseTest,
-//     hxgnd.SyncPromiseTest,
-//     hxgnd.AbortablePromiseTest,
-//     // hxgnd.CallbackFlowTest,
-//     // hxgnd.NodebackFlowTest,
-//     // hxgnd.EnumeratorTest,
-//     // hxgnd.internal.ForEacherImplTest,
-//     // hxgnd.internal.EnumeratorImplTest,
-//     // hxgnd.ReactorTest,
-//     // hxgnd.ReactivePropertyTest,
-//     // hxgnd.ReactiveActorTest,
-//     // hxgnd.ReactiveStreamTest
-// ]> {}
+class TestMain implements Buddy<[
+    hxgnd.LangToolsTest,
+    hxgnd.ArrayToolsTest,
+    hxgnd.OptionToolsTest,
+    hxgnd.LazyTest,
+    hxgnd.DelegateTest,
+    hxgnd.ComputationTest,
+    hxgnd.PromiseTest,
+    hxgnd.SyncPromiseTest,
+    hxgnd.AbortablePromiseTest,
+    hxgnd.CallbackFlowTest,
+    hxgnd.NodebackFlowTest,
+    hxgnd.ReactorTest,
+    hxgnd.ReactivePropertyTest,
+    hxgnd.ReactiveActorTest,
+    hxgnd.ReactiveStreamTest
+]> {}
 
+/*
 import hxgnd.Enumerator;
 import hxgnd.Traverser;
 import hxgnd.internal.enumerator.Pipeline;
@@ -120,4 +118,4 @@ class TestMain {
         trace(time() - s);
         trace(sum);    }
 }
-
+*/

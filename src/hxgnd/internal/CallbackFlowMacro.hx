@@ -85,7 +85,7 @@ class CallbackFlowMacro {
             fn: ExprOf<haxe.Constraints.Function>, params: Array<Expr>): ExprOf<hxgnd.SyncPromise<T>> {
         var placeholder = findPlaceholder(params);
 
-        var arguments = MacroTools.getArguments(Context.typeof(fn), fn.pos);
+        var arguments = MacroTools.getArguments(fn);
         if (arguments.length <= 0) {
             return Context.error('${fn.toString()} does not have a callback argument.' , fn.pos);
         }
