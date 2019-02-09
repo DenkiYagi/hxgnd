@@ -1,27 +1,46 @@
 package hxgnd;
 
-import hxgnd.internal.EnumeratorImpl;
-import hxgnd.internal.ForEacherImpl;
+import hxgnd.Traverser;
+import hxgnd.internal.enumerator.Pipeline;
+import hxgnd.internal.traverser.FlattenTraverser;
 
-class Enumerator {
-    public static inline function from<T>(source: EnumeratorSource<T>): Enumerable<T> {
-        return new GenericEnumerator(source);
+class Enumerator<T> {
+    var source: Traverser<Dynamic>;
+    var pipeline: Pipeline<Dynamic, T>;
+
+    function new<S>(source: Traverser<S>, pipeline: Pipeline<S, T>) {
+        this.source = source;
+        this.pipeline = pipeline;
     }
-}
 
-typedef ForEachable<T> = {
-    function forEach(fn: T -> Void): Void;
-    function forEachWhile(fn: T -> Bool): Void;
-}
+    public function traverser(): Traverser<T> {
+        return pipeline.createTraverser(source);
+    }
 
-typedef Enumerable<T> = {>ForEachable<T>,
-    function map<U>(fn: T -> U): Enumerable<U>;
-    function flatMap<U>(fn: T -> Enumerable<U>): Enumerable<U>;
-    function filter(fn: T -> Bool): Enumerable<T>;
-    function take(count: Int): Enumerable<T>;
-    function takeWhile(fn: T -> Bool): Enumerable<T>;
-    function skip(count: Int): Enumerable<T>;
-    function skipWhile(fn: T -> Bool): Enumerable<T>;
+    public inline function forEach(fn: T -> Void): Void {
+        var traverser = pipeline.createTraverser(source);
+        while (traverser.next()) {
+            fn(traverser.current.get());
+        }
+    }
+
+    public function map<U>(fn: T -> U): Enumerator<U> {
+        return new Enumerator(source, pipeline.map(fn));
+    }
+
+    public function flatMap<U>(fn: T -> Traverser<U>): Enumerator<U> {
+        return new Enumerator(
+            new FlattenTraverser(pipeline.map(fn).createTraverser(source)),
+            new Pipeline<U, U>()
+        );
+    }
+
+    // function flatMap<U>(fn: T -> Traverser<U>): Enumerable<U>;
+    // function filter(fn: T -> Bool): Enumerable<T>;
+    // function take(count: Int): Enumerable<T>;
+    // function takeWhile(fn: T -> Bool): Enumerable<T>;
+    // function skip(count: Int): Enumerable<T>;
+    // function skipWhile(fn: T -> Bool): Enumerable<T>;
 
     // slice
 
@@ -53,26 +72,30 @@ typedef Enumerable<T> = {>ForEachable<T>,
 
 
 
-    function toArray(): Array<T>;
+    // function toArray(): Array<T>;
     // toIterator
     // toList
+
+
+    public static function from<T>(source: EnumeratorSource<T>): Enumerator<T> {
+        return new Enumerator(source, new Pipeline());
+    }
 }
 
-@:forward
-abstract EnumeratorSource<T>(ForEachable<T>) from ForEachable<T> to ForEachable<T> {
-    @:from public static inline function fromArray<T>(source: Array<T>): EnumeratorSource<T> {
-        return new ArrayForEacher(source);
+abstract EnumeratorSource<T>(Traverser<T>) from Traverser<T> to Traverser<T> {
+    @:extern @:from static inline function fromArray<T>(array: Array<T>): EnumeratorSource<T> {
+        return Traverser.fromArray(array);
     }
 
-    @:from public static inline function fromIntIterator<T>(source: IntIterator): EnumeratorSource<Int> {
-        return new IntIteratorForEacher(source);
+    @:extern @:from static inline function fromIntIterator(iterator: IntIterator): EnumeratorSource<Int> {
+        return Traverser.fromIntIterator(iterator);
     }
 
-    @:from public static inline function fromIterator<T>(source: Iterator<T>): EnumeratorSource<T> {
-        return new IteratorForEacher(source);
+    @:extern @:from static inline function fromIterator<T>(iterator: Iterator<T>): EnumeratorSource<T> {
+        return Traverser.fromIterator(iterator);
     }
 
-    @:from public static inline function fromIterable<T>(source: Iterable<T>): EnumeratorSource<T> {
-        return new IteratorForEacher(source.iterator());
+    @:extern @:from static inline function fromIterable<T>(iterable: Iterable<T>): EnumeratorSource<T> {
+        return Traverser.formIterable(iterable);
     }
 }

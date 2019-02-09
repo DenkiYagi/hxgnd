@@ -28,6 +28,15 @@ class EnumeratorImplTest extends BuddySuite {
         }
 
         describe("GenericEnumerator", {
+            new hxgnd.internal.EnumeratorImpl.ArrayEnumerator([], Pipeline.empty())
+                .map(function (x) return x + 1)
+                .map(function (x) return x * 10)
+                .forEachWhile(function (x) return true);
+
+
+            new hxgnd.internal.ForEacherImpl.ArrayForEacher([]).forEach(function (x) {
+                trace(x);
+            });
             test(function (src) return new GenericEnumerator(src));
         });
     }
