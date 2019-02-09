@@ -7,5 +7,7 @@
 -D nodejs
 -D buddy-colors
 -D buddy_ignore_passing_specs
--debug
+#-debug
 #-cmd node build/node.js
+-dce full
+-D analyzer-optimize
