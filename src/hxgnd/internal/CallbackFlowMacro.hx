@@ -85,7 +85,7 @@ class CallbackFlowMacro {
             fn: ExprOf<haxe.Constraints.Function>, params: Array<Expr>): ExprOf<hxgnd.SyncPromise<T>> {
         var placeholder = findPlaceholder(params);
 
-        var arguments = getArguments(Context.typeof(fn), fn.pos);
+        var arguments = MacroTools.getArguments(Context.typeof(fn), fn.pos);
         if (arguments.length <= 0) {
             return Context.error('${fn.toString()} does not have a callback argument.' , fn.pos);
         }
@@ -93,7 +93,7 @@ class CallbackFlowMacro {
             return Context.error("Too many arguments", fn.pos);
         }
 
-        var cbArguments = getCallbackArguments(fn, params, fn.pos);
+        var cbArguments = MacroTools.getCallbackArguments(fn, params, fn.pos);
         switch (cbArguments.length) {
             case 0:
                 macro function CallbackFlow_callback() fulfill(new extype.Unit());
@@ -151,33 +151,6 @@ class CallbackFlowMacro {
             case _: Context.error("Many \"_\" found", params[1].pos);
         }
     }
-
-    static function getArguments(type: Type, pos: Position): Array<{name: String, opt: Bool, t: Type}> {
-        while (true) {
-            switch (type) {
-                case TFun(args, ret):
-                    return args;
-                case TType(typeRef, typeParams):
-                    type = typeRef.get().type;
-                case _:
-                    break;
-            }
-        }
-        return Context.error('${type.getName()} is not a function', pos);
-    }
-
-    static function getCallbackArguments(fn: Expr, params: Array<Expr>, pos: Position): Array<{name: String, opt: Bool, t: Type}> {
-        var bindExpr = MacroTools.correctUndefinedVars({expr: ECall(macro ${fn}.bind, params), pos: fn.pos});
-
-        var bindedArgs = getArguments(Context.typeof(macro ${bindExpr}), fn.pos);
-        if (bindedArgs.length <= 0) {
-            return Context.error("Too many arguments", pos);
-        } else if (bindedArgs.length >= 2) {
-            return Context.error("Not enough arguments.", pos);
-        }
-
-        return getArguments(bindedArgs[0].t, fn.pos);
-    }
 }
 
-typedef CallbackBuilder = Int -> String -> String -> haxe.macro.Expr;
+typedef CallbackBuilder = Int -> String -> String -> Expr;

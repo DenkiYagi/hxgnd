@@ -2,6 +2,7 @@ package hxgnd.internal;
 
 import haxe.macro.Expr;
 import haxe.macro.Context;
+import haxe.macro.Type;
 using hxgnd.ArrayTools;
 
 class MacroTools {
@@ -75,5 +76,36 @@ class MacroTools {
 
         outExprs.push(inExpr);
         return macro $b{outExprs};
+    }
+
+    public static function getArguments(expr: Expr): Array<{name: String, opt: Bool, t: Type}> {
+        return _getArguments(Context.typeof(expr), expr.pos);
+    }
+
+    public static function getCallbackArguments(fn: Expr, params: Array<Expr>, pos: Position): Array<{name: String, opt: Bool, t: Type}> {
+        var bindExpr = correctUndefinedVars({expr: ECall(macro ${fn}.bind, params), pos: fn.pos});
+
+        var bindedArgs = _getArguments(Context.typeof(macro ${bindExpr}), fn.pos);
+        if (bindedArgs.length <= 0) {
+            return Context.error("Too many arguments", pos);
+        } else if (bindedArgs.length >= 2) {
+            return Context.error("Not enough arguments.", pos);
+        }
+
+        return _getArguments(bindedArgs[0].t, fn.pos);
+    }
+
+    static function _getArguments(type: Type, pos: Position): Array<{name: String, opt: Bool, t: Type}> {
+        while (true) {
+            switch (type) {
+                case TFun(args, ret):
+                    return args;
+                case TType(typeRef, typeParams):
+                    type = typeRef.get().type;
+                case _:
+                    break;
+            }
+        }
+        return Context.error('${type.getName()} is not a function', pos);
     }
 }

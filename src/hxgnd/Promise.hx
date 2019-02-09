@@ -28,72 +28,70 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         #end
     }
 
-    public inline function then<TOut>(
+    #if js
+    public function then<TOut>(
             fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        #if js
+        // workaround for js__$Boot_HaxeError
         return if (Std.is(this, js.Promise)) {
-            // workaround for js__$Boot_HaxeError
             this.then(
-                if (fulfilled.nonNull()) {
-                    (function (value) {
-                        try {
-                            return (fulfilled: T -> Dynamic)(value);
-                        } catch (e: Dynamic) {
-                            return cast SyncPromise.reject(e);
-                        }
-                    }: PromiseCallback<T, TOut>);
-                } else {
-                    null;
-                },
-                if (rejected.nonNull()) {
-                    function (error) {
-                        try {
-                            return (rejected: Dynamic -> Dynamic)(error);
-                        } catch (e: Dynamic) {
-                            return SyncPromise.reject(e);
-                        }
-                    }
-                } else {
-                    null;
-                }
+                fulfilled.nonNull() ? onFulfilled.bind(fulfilled) : null,
+                rejected.nonNull() ? onRejected.bind(cast rejected) : null
             );
         } else {
             this.then(fulfilled, rejected);
         }
-        #else
-        return this.then(fulfilled, rejected);
-        #end
     }
+    #else
+    public inline function then<TOut>(
+            fulfilled: Null<PromiseCallback<T, TOut>>,
+            ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+        return this.then(fulfilled, rejected);
+    }
+    #end
 
-    public inline function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
-        #if js
-        return if (Std.is(this, js.Promise)) {
-            // workaround for js__$Boot_HaxeError
-            this.then(null, if (rejected.nonNull()) {
-                cast function (error) {
-                    try {
-                        return (rejected: Dynamic -> Dynamic)(error);
-                    } catch (e: Dynamic) {
-                        return SyncPromise.reject(e);
-                    }
-                };
-            } else {
-                null;
-            });
+    #if js
+    public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
+        // workaround for js__$Boot_HaxeError
+        return if (rejected.nonNull() && Std.is(this, js.Promise)) {
+            this.then(null, onRejected.bind(cast rejected));
         } else {
             this.catchError(rejected);
         }
-        #else
+    }
+    #else
+    public inline function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         return this.catchError(rejected);
-        #end
+    }
+    #end
+
+    #if js
+    static function onFulfilled<T, TOut>(fulfilled: T -> Dynamic, value: T): Promise<TOut> {
+        try {
+            return fulfilled(value);
+        } catch (e: Dynamic) {
+            return cast SyncPromise.reject(e);
+        }
     }
 
-    public function finally(onFinally: Void -> Void): Promise<T> {
+    static function onRejected<TOut>(rejected: Dynamic -> Dynamic, error: Dynamic): Promise<TOut> {
+        try {
+            return rejected(error);
+        } catch (e: Dynamic) {
+            return SyncPromise.reject(e);
+        }
+    }
+    #end
+
+    public inline function finally(onFinally: Void -> Void): Promise<T> {
+        #if js
         return then(
             function (x) { onFinally(); return x; },
             function (e) { onFinally(); return reject(e); }
         );
+        #else
+        return this.finally(onFinally);
+        #end
     }
 
     public static inline function resolve<T>(?value: T): Promise<T> {
@@ -156,12 +154,12 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     #end
 
     #if js
-    @:from
+    @:from @:extern
     public static inline function fromJsPromise<T>(promise: js.Promise<T>): Promise<T> {
         return cast promise;
     }
 
-    @:to
+    @:to @:extern
     public inline function toJsPromise(): js.Promise<T> {
         return cast this;
     }
@@ -182,7 +180,6 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
         // trace(haxe.macro.ExprTools.toString(expr));
         return expr;
     }
-
     #if macro
     static function buildReturn(expr: Expr): Expr {
         var promise = macro new hxgnd.SyncPromise(function (f, _) f(${expr}));
