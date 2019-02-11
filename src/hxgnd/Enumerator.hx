@@ -82,20 +82,4 @@ class Enumerator<T> {
     }
 }
 
-abstract EnumeratorSource<T>(Traverser<T>) from Traverser<T> to Traverser<T> {
-    @:extern @:from static inline function fromArray<T>(array: Array<T>): EnumeratorSource<T> {
-        return Traverser.fromArray(array);
-    }
-
-    @:extern @:from static inline function fromIntIterator(iterator: IntIterator): EnumeratorSource<Int> {
-        return Traverser.fromIntIterator(iterator);
-    }
-
-    @:extern @:from static inline function fromIterator<T>(iterator: Iterator<T>): EnumeratorSource<T> {
-        return Traverser.fromIterator(iterator);
-    }
-
-    @:extern @:from static inline function fromIterable<T>(iterable: Iterable<T>): EnumeratorSource<T> {
-        return Traverser.formIterable(iterable);
-    }
-}
+typedef EnumeratorSource<T> = Traverser.TraverserSource<T>;

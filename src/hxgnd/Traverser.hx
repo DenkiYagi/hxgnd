@@ -10,8 +10,6 @@ abstract Traverser<T>(ITraverser<T>) from ITraverser<T> {
 }
 
 abstract TraverserSource<T>(ITraverser<T>) from ITraverser<T> to Traverser<T> {
-    // public function create()
-
     @:extern @:from static inline function fromArray<T>(array: Array<T>): TraverserSource<T> {
         return new ArrayTraverser(array);
     }
