@@ -41,15 +41,17 @@ abstract Pipeline<T, U>(Array<EffectType>) from Array<EffectType> to Array<Effec
         return effects;
     }
 
-    // public function pipeSkip(length: Int): Pipeline<T, U> {
-    //     addFilter(Skip(length));
-    //     return this;
-    // }
+    public function skip(length: Int): Pipeline<T, U> {
+        var effects = this.copy();
+        effects.push(Skip(length));
+        return effects;
+    }
 
-    // public function pipeSkipWhile(fn: U -> Bool): Pipeline<T, U> {
-    //     addFilter(SkipWhile(fn));
-    //     return this;
-    // }
+    public function skipWhile(fn: U -> Bool): Pipeline<T, U> {
+        var effects = this.copy();
+        effects.push(SkipWhile(fn));
+        return effects;
+    }
 
     public function take(length: Int): Pipeline<T, U> {
         var effects = this.copy();
@@ -280,6 +282,8 @@ abstract Pipeline<T, U>(Array<EffectType>) from Array<EffectType> to Array<Effec
                 switch (e) {
                     case Map(fns): MapEffect.factory(fns);
                     case Filter(fns): FilterEffect.factory(fns);
+                    case Skip(length): new SkipEffect(length);
+                    case SkipWhile(fn): new SkipWhileEffect(fn);
                     case Take(length): new TakeEffect(length);
                     case TakeWhile(fn): new TakeWhileEffect(fn);
                 }
@@ -291,6 +295,8 @@ abstract Pipeline<T, U>(Array<EffectType>) from Array<EffectType> to Array<Effec
 private enum EffectType {
     Map(fns: Array<Dynamic -> Dynamic>);
     Filter(fns: Array<Dynamic -> Bool>);
+    Skip(length: Int);
+    SkipWhile(fn: Dynamic -> Bool);
     Take(length: Int);
     TakeWhile(fn: Dynamic -> Bool);
 }

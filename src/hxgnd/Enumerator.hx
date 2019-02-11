@@ -35,12 +35,25 @@ class Enumerator<T> {
         );
     }
 
-    // function flatMap<U>(fn: T -> Traverser<U>): Enumerable<U>;
-    // function filter(fn: T -> Bool): Enumerable<T>;
-    // function take(count: Int): Enumerable<T>;
-    // function takeWhile(fn: T -> Bool): Enumerable<T>;
-    // function skip(count: Int): Enumerable<T>;
-    // function skipWhile(fn: T -> Bool): Enumerable<T>;
+    public function filter(fn: T -> Bool): Enumerator<T> {
+        return new Enumerator(source, pipeline.filter(fn));
+    }
+
+    public function skip(count: Int): Enumerator<T> {
+        return new Enumerator(source, pipeline.skip(count));
+    }
+
+    public function skipWhile(fn: T -> Bool): Enumerator<T> {
+        return new Enumerator(source, pipeline.skipWhile(fn));
+    }
+
+    public function take(count: Int): Enumerator<T> {
+        return new Enumerator(source, pipeline.take(count));
+    }
+
+    public function takeWhile(fn: T -> Bool): Enumerator<T> {
+        return new Enumerator(source, pipeline.takeWhile(fn));
+    }
 
     // slice
 
