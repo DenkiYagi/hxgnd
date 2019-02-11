@@ -7,6 +7,12 @@ abstract Traverser<T>(ITraverser<T>) from ITraverser<T> {
     public static function from<T>(source: TraverserSource<T>): Traverser<T> {
         return source;
     }
+
+    public inline function forEach(fn: T -> Void): Void {
+        while (this.next()) {
+            fn(this.current.get());
+        }
+    }
 }
 
 abstract TraverserSource<T>(ITraverser<T>) from ITraverser<T> to Traverser<T> {

@@ -6,78 +6,62 @@ using buddy.Should;
 
 class TraverserTest extends BuddySuite {
     public function new() {
-        function testEmpty<T>(factory: Void -> Traverser<T>) {
-            it("should pass", {
-                var traverser = factory();
+        function test<T>(factory: Void -> Traverser<T>, expect: Array<T>) {
+            describe("core", {
+                it("should pass", {
+                    var traverser = factory();
 
-                // before next()
-                traverser.current.isEmpty().should.be(true);
+                    // before next()
+                    traverser.current.isEmpty().should.be(true);
 
-                // over eof
-                traverser.next().should.be(false);
-                traverser.current.isEmpty().should.be(true);
+                    // loop
+                    var actual = [];
+                    while (traverser.next()) {
+                        actual.push(traverser.current.get());
+                    }
+                    actual.should.containExactly(expect);
 
-                traverser.next().should.be(false);
-                traverser.current.isEmpty().should.be(true);
+                    // over eof
+                    traverser.next().should.be(false);
+                    traverser.current.isEmpty().should.be(true);
+                    traverser.next().should.be(false);
+                    traverser.current.isEmpty().should.be(true);
+                });
             });
-        }
 
-        function testOne<T>(factory: Void -> Traverser<T>, v1: T) {
-            it("should pass", {
-                var traverser = factory();
+            describe("forEach()", {
+                it("should pass", {
+                    var traverser = factory();
 
-                // before next()
-                traverser.current.isEmpty().should.be(true);
-
-                // 1st
-                traverser.next().should.be(true);
-                traverser.current.get().should.be(v1);
-
-                // over eof
-                traverser.next().should.be(false);
-                traverser.current.isEmpty().should.be(true);
-            });
-        }
-
-        function testMany<T>(factory: Void -> Traverser<T>, v1: T, v2: T) {
-            it("should pass", {
-                var traverser = factory();
-
-                // before next()
-                traverser.current.isEmpty().should.be(true);
-
-                // 1st
-                traverser.next().should.be(true);
-                traverser.current.get().should.be(v1);
-
-                // 2nd
-                traverser.next().should.be(true);
-                traverser.current.nonEmpty().should.be(true);
+                    var actual = [];
+                    traverser.forEach(function (x) actual.push(x));
+                    actual.should.containExactly(expect);
+                });
             });
         }
 
         describe("Traverser/Array", {
-            testEmpty(function () return Traverser.from([]));
-            testOne(function () return Traverser.from([1]), 1);
-            testMany(function () return Traverser.from([1, 2, 3]), 1, 2);
+            test(function () return Traverser.from([]), []);
+            test(function () return Traverser.from([1]), [1]);
+            test(function () return Traverser.from([1, 2, 3]), [1, 2, 3]);
         });
 
         describe("Traverser/IntIterator", {
-            testEmpty(function () return Traverser.from(0...0));
-            testOne(function () return Traverser.from(0...1), 0);
-            testMany(function () return Traverser.from(0...10), 0, 1);
+            test(function () return Traverser.from(0...0), []);
+            test(function () return Traverser.from(0...1), [0]);
+            test(function () return Traverser.from(0...5), [0, 1, 2, 3, 4]);
         });
 
         describe("Traverser/Iterator", {
-            testEmpty(function () return Traverser.from([].iterator()));
-            testOne(function () return Traverser.from([1].iterator()), 1);
-            testMany(function () return Traverser.from([1, 2, 3].iterator()), 1, 2);
+            test(function () return Traverser.from([].iterator()), []);
+            test(function () return Traverser.from([1].iterator()), [1]);
+            test(function () return Traverser.from([1, 2, 3].iterator()), [1, 2, 3]);
         });
 
         describe("Traverser/Iterable", {
-            testEmpty(function () return Traverser.from(([]: Iterable<Int>)));
-            testOne(function () return Traverser.from(([1]: Iterable<Int>)), 1);
-            testMany(function () return Traverser.from(([1, 2, 3]: Iterable<Int>)), 1, 2);
+            test(function () return Traverser.from(([]: Iterable<Int>)), []);
+            test(function () return Traverser.from(([1]: Iterable<Int>)), [1]);
+            test(function () return Traverser.from(([1, 2, 3]: Iterable<Int>)), [1, 2, 3]);
         });
     }
 }
