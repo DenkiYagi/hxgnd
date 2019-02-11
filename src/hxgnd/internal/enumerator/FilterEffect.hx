@@ -1,10 +1,12 @@
 package hxgnd.internal.enumerator;
 
 import extype.Maybe;
+using hxgnd.LangTools;
 
-abstract FilterEffect(Void) {
-    public static function factory(fns: Array<Dynamic -> Bool>): Effect {
-        return switch (fns.length) {
+@:forward
+abstract FilterEffect(Effect) to Effect {
+    public function new(fns: Array<Dynamic -> Bool>) {
+        this = switch (fns.length) {
             case 1: new FilterEffect1(fns);
             case 2: new FilterEffect2(fns);
             case 3: new FilterEffect3(fns);
@@ -21,7 +23,7 @@ private class FilterEffect1 {
     }
 
     public function apply(ctx: EffectContext): Void {
-        if (!fn1(ctx.acc)) ctx.control = Continue;
+        if (fn1(ctx.acc).neq(true)) ctx.control = Continue;
     }
 }
 
@@ -36,7 +38,7 @@ private class FilterEffect2 {
 
     public function apply(ctx: EffectContext): Void {
         var acc = ctx.acc;
-        if (!fn1(acc) || !fn2(acc)) ctx.control = Continue;
+        if (fn1(acc).neq(true) || fn2(acc).neq(true)) ctx.control = Continue;
     }
 }
 
@@ -53,7 +55,7 @@ private class FilterEffect3 {
 
     public function apply(ctx: EffectContext): Void {
         var acc = ctx.acc;
-        if (!fn1(acc) || !fn2(acc) || !fn3(acc)) ctx.control = Continue;
+        if (fn1(acc).neq(true) || fn2(acc).neq(true) || fn3(acc).neq(true)) ctx.control = Continue;
     }
 }
 
@@ -74,10 +76,10 @@ private class FilterEffectMany {
 
     public function apply(ctx: EffectContext): Void {
         var acc = ctx.acc;
-        if (fn1(acc) && fn2(acc) && fn3(acc) && fn4(acc)) {
+        if (fn1(acc).eq(true) && fn2(acc).eq(true) && fn3(acc).eq(true) && fn4(acc).eq(true)) {
             if (fnRest.nonEmpty()) {
                 for (f in fnRest.get()) {
-                    if (!f(acc)) {
+                    if (f(acc).neq(true)) {
                         ctx.control = Continue;
                         return;
                     }

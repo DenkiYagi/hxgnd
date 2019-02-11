@@ -11,8 +11,11 @@ class SkipEffect {
 
     public function apply(ctx: EffectContext): Void {
         if (active) {
-            active = (--counter <= 0);
-            if (active) ctx.control = Continue;
+            if (counter-- > 0) {
+                ctx.control = Continue;
+            } else {
+                active = false;
+            }
         }
     }
 }

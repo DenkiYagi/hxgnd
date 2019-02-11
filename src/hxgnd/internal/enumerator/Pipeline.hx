@@ -280,8 +280,8 @@ abstract Pipeline<T, U>(Array<EffectType>) from Array<EffectType> to Array<Effec
         return [
             for (e in this) {
                 switch (e) {
-                    case Map(fns): MapEffect.factory(fns);
-                    case Filter(fns): FilterEffect.factory(fns);
+                    case Map(fns): new MapEffect(fns);
+                    case Filter(fns): new FilterEffect(fns);
                     case Skip(length): new SkipEffect(length);
                     case SkipWhile(fn): new SkipWhileEffect(fn);
                     case Take(length): new TakeEffect(length);

@@ -2,9 +2,10 @@ package hxgnd.internal.enumerator;
 
 import extype.Maybe;
 
-abstract MapEffect(Void) {
-    public static function factory(fns: Array<Dynamic -> Dynamic>): Effect {
-        return switch (fns.length) {
+@:forward
+abstract MapEffect(Effect) to Effect {
+    public function new(fns: Array<Dynamic -> Dynamic>) {
+        this = switch (fns.length) {
             case 1: new MapEffect1(fns);
             case 2: new MapEffect2(fns);
             case 3: new MapEffect3(fns);

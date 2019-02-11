@@ -1,7 +1,6 @@
 package hxgnd;
 
 import buddy.BuddySuite;
-import extype.Maybe;
 using buddy.Should;
 
 class TraverserTest extends BuddySuite {
