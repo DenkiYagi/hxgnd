@@ -9,6 +9,7 @@ class TestMain implements Buddy<[
     hxgnd.LazyTest,
     hxgnd.DelegateTest,
     hxgnd.TraverserTest,
+    hxgnd.EnumeratorTest,
     hxgnd.internal.enumerator.MapEffectTest,
     hxgnd.internal.enumerator.FilterEffectTest,
     hxgnd.internal.enumerator.SkipEffectTest,
