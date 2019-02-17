@@ -6,6 +6,10 @@ using buddy.Should;
 
 class EnumeratorTest extends BuddySuite {
     public function new() {
+        describe("Enumerator.from()", {
+
+        });
+
         describe("Enumerator#traverser()", {
             it("should pass when it is given empty source", {
                 var actual = [];
@@ -53,6 +57,24 @@ class EnumeratorTest extends BuddySuite {
                     .forEach(actual.push);
                 actual.should.containExactly([11, 21, 31, 41, 51]);
             });
+        });
+
+        describe("Enumerator#flatMap()", {
+        });
+
+        describe("Enumerator#filter()", {
+        });
+
+        describe("Enumerator#skip()", {
+        });
+
+        describe("Enumerator#skipWhile()", {
+        });
+
+        describe("Enumerator#take()", {
+        });
+
+        describe("Enumerator#takeWhile()", {
         });
     }
 }
