@@ -39,28 +39,30 @@ class TraverserTest extends BuddySuite {
             });
         }
 
-        describe("Traverser/Array", {
-            test(function () return Traverser.from([]), []);
-            test(function () return Traverser.from([1]), [1]);
-            test(function () return Traverser.from([1, 2, 3]), [1, 2, 3]);
-        });
+        describe("Traverser.from()", {
+            describe("Array", {
+                test(function () return Traverser.from([]), []);
+                test(function () return Traverser.from([1]), [1]);
+                test(function () return Traverser.from([1, 2, 3]), [1, 2, 3]);
+            });
 
-        describe("Traverser/IntIterator", {
-            test(function () return Traverser.from(0...0), []);
-            test(function () return Traverser.from(0...1), [0]);
-            test(function () return Traverser.from(0...5), [0, 1, 2, 3, 4]);
-        });
+            describe("IntIterator", {
+                test(function () return Traverser.from(0...0), []);
+                test(function () return Traverser.from(0...1), [0]);
+                test(function () return Traverser.from(0...5), [0, 1, 2, 3, 4]);
+            });
 
-        describe("Traverser/Iterator", {
-            test(function () return Traverser.from([].iterator()), []);
-            test(function () return Traverser.from([1].iterator()), [1]);
-            test(function () return Traverser.from([1, 2, 3].iterator()), [1, 2, 3]);
-        });
+            describe("Iterator", {
+                test(function () return Traverser.from([].iterator()), []);
+                test(function () return Traverser.from([1].iterator()), [1]);
+                test(function () return Traverser.from([1, 2, 3].iterator()), [1, 2, 3]);
+            });
 
-        describe("Traverser/Iterable", {
-            test(function () return Traverser.from(([]: Iterable<Int>)), []);
-            test(function () return Traverser.from(([1]: Iterable<Int>)), [1]);
-            test(function () return Traverser.from(([1, 2, 3]: Iterable<Int>)), [1, 2, 3]);
+            describe("Iterable", {
+                test(function () return Traverser.from(([]: Iterable<Int>)), []);
+                test(function () return Traverser.from(([1]: Iterable<Int>)), [1]);
+                test(function () return Traverser.from(([1, 2, 3]: Iterable<Int>)), [1, 2, 3]);
+            });
         });
     }
 }
