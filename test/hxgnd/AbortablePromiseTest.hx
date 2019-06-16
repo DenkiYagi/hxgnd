@@ -245,11 +245,11 @@ class AbortablePromiseTest extends BuddySuite {
 
             #if js
             describe("JavaScript compatibility", {
-                it("should be js.Promise", {
+                it("should be js.lib.Promise", {
                     var AbortablePromise = new AbortablePromise(function (_, _) {
                         return function () {};
                     });
-                    AbortablePromise.should.beType(js.Promise);
+                    AbortablePromise.should.beType(js.lib.Promise);
                 });
             });
             #end
@@ -454,20 +454,20 @@ class AbortablePromiseTest extends BuddySuite {
                     });
 
                     #if js
-                    it("should chain using resolved js.Promise", function (done) {
+                    it("should chain using resolved js.lib.Promise", function (done) {
                         AbortablePromise.resolve(1)
                         .then(function (x) {
-                            return js.Promise.resolve("hello");
+                            return js.lib.Promise.resolve("hello");
                         }).then(function (x) {
                             x.should.be("hello");
                             done();
                         });
                     });
 
-                    it("should chain using rejected js.Promise", function (done) {
+                    it("should chain using rejected js.lib.Promise", function (done) {
                         AbortablePromise.resolve(1)
                         .then(function (x) {
-                            return js.Promise.reject("error");
+                            return js.lib.Promise.reject("error");
                         }).then(null, function (e) {
                             (e: String).should.be("error");
                             done();
@@ -571,20 +571,20 @@ class AbortablePromiseTest extends BuddySuite {
                     });
 
                     #if js
-                    it("should chain using resolved js.Promise", function (done) {
+                    it("should chain using resolved js.lib.Promise", function (done) {
                         AbortablePromise.reject("error")
                         .then(null, function (x) {
-                            return js.Promise.resolve("hello");
+                            return js.lib.Promise.resolve("hello");
                         }).then(function (x) {
                             x.should.be("hello");
                             done();
                         });
                     });
 
-                    it("should chain using rejected js.Promise", function (done) {
+                    it("should chain using rejected js.lib.Promise", function (done) {
                         AbortablePromise.reject("error")
                         .then(null, function (x) {
-                            return js.Promise.reject("rewrited error");
+                            return js.lib.Promise.reject("rewrited error");
                         }).then(null, function (e) {
                             (e: String).should.be("rewrited error");
                             done();
@@ -745,20 +745,20 @@ class AbortablePromiseTest extends BuddySuite {
                     });
 
                     #if js
-                    it("should chain using resolved js.Promise", function (done) {
+                    it("should chain using resolved js.lib.Promise", function (done) {
                         AbortablePromise.reject("error")
                         .catchError(function (e) {
-                            return js.Promise.resolve(1);
+                            return js.lib.Promise.resolve(1);
                         }).then(function (x) {
                             x.should.be(1);
                             done();
                         });
                     });
 
-                    it("should chain using rejected js.Promise", function (done) {
+                    it("should chain using rejected js.lib.Promise", function (done) {
                         AbortablePromise.reject("error")
                         .catchError(function (e) {
-                            return js.Promise.reject("rewrited error");
+                            return js.lib.Promise.reject("rewrited error");
                         }).then(null, function (e) {
                             (e: String).should.be("rewrited error");
                             done();

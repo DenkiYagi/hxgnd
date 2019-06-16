@@ -105,18 +105,18 @@ class LangToolsTest extends BuddySuite {
             });
         });
 
-        describe("LangTools.toMaybe()", {
-            it("should be some", {
-                var a: Null<Int> = 1;
-                a.toMaybe().nonEmpty().should.be(true);
-                a.toMaybe().isEmpty().should.be(false);
-            });
-            it("should be empty", {
-                var b: Null<Int> = null;
-                b.toMaybe().isEmpty().should.be(true);
-                b.toMaybe().nonEmpty().should.be(false);
-            });
-        });
+        // describe("LangTools.toMaybe()", {
+        //     it("should be some", {
+        //         var a: Null<Int> = 1;
+        //         a.toMaybe().nonEmpty().should.be(true);
+        //         a.toMaybe().isEmpty().should.be(false);
+        //     });
+        //     it("should be empty", {
+        //         var b: Null<Int> = null;
+        //         b.toMaybe().isEmpty().should.be(true);
+        //         b.toMaybe().nonEmpty().should.be(false);
+        //     });
+        // });
 
         describe("LangTools.isEmpty()", {
             it("should be true", {
@@ -532,7 +532,7 @@ class LangToolsTest extends BuddySuite {
                     msg: "hello",
                     sub: {
                         iters: [new ValidIterator(2, "iter", 0, 5)],
-                        enums: [Some(1), None, Some(new ValidIterator(3, "enum", 2, 3))],
+                        enums: ([Some(1), None, Some(new ValidIterator(3, "enum", 2, 3))]: Array<Dynamic>),
                         array: [1, 2, 3]
                     },
                     nullValue: null
@@ -541,7 +541,7 @@ class LangToolsTest extends BuddySuite {
                     msg: "hello",
                     sub: {
                         iters: [new ValidIterator(2, "iter", 0, 5)],
-                        enums: [Some(1), None, Some(new ValidIterator(3, "enum", 2, 3))],
+                        enums: ([Some(1), None, Some(new ValidIterator(3, "enum", 2, 3))]: Array<Dynamic>),
                         array: [1, 2, 3]
                     },
                     nullValue: null

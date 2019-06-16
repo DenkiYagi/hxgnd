@@ -139,9 +139,9 @@ class PromiseTest extends BuddySuite {
 
             #if js
             describe("JavaScript compatibility", {
-                it("should be js.Promise", {
+                it("should be js.lib.Promise", {
                     var promise = new Promise(function (_, _) {});
-                    promise.should.beType(js.Promise);
+                    promise.should.beType(js.lib.Promise);
                 });
             });
             #end
@@ -287,20 +287,20 @@ class PromiseTest extends BuddySuite {
                     });
 
                     #if js
-                    it("should chain using resolved js.Promise", function (done) {
+                    it("should chain using resolved js.lib.Promise", function (done) {
                         Promise.resolve(1)
                         .then(function (x) {
-                            return js.Promise.resolve("hello");
+                            return js.lib.Promise.resolve("hello");
                         }).then(function (x) {
                             x.should.be("hello");
                             done();
                         });
                     });
 
-                    it("should chain using rejected js.Promise", function (done) {
+                    it("should chain using rejected js.lib.Promise", function (done) {
                         Promise.resolve(1)
                         .then(function (x) {
-                            return js.Promise.reject("error");
+                            return js.lib.Promise.reject("error");
                         }).then(null, function (e) {
                             (e: String).should.be("error");
                             done();
@@ -404,20 +404,20 @@ class PromiseTest extends BuddySuite {
                     });
 
                     #if js
-                    it("should chain using resolved js.Promise", function (done) {
+                    it("should chain using resolved js.lib.Promise", function (done) {
                         Promise.reject("error")
                         .then(null, function (x) {
-                            return js.Promise.resolve("hello");
+                            return js.lib.Promise.resolve("hello");
                         }).then(function (x) {
                             x.should.be("hello");
                             done();
                         });
                     });
 
-                    it("should chain using rejected js.Promise", function (done) {
+                    it("should chain using rejected js.lib.Promise", function (done) {
                         Promise.reject("error")
                         .then(null, function (x) {
-                            return js.Promise.reject("rewrited error");
+                            return js.lib.Promise.reject("rewrited error");
                         }).then(null, function (e) {
                             (e: String).should.be("rewrited error");
                             done();
@@ -545,20 +545,20 @@ class PromiseTest extends BuddySuite {
                     });
 
                     #if js
-                    it("should chain using resolved js.Promise", function (done) {
+                    it("should chain using resolved js.lib.Promise", function (done) {
                         Promise.reject("error")
                         .catchError(function (e) {
-                            return js.Promise.resolve(1);
+                            return js.lib.Promise.resolve(1);
                         }).then(function (x) {
                             x.should.be(1);
                             done();
                         });
                     });
 
-                    it("should chain using rejected js.Promise", function (done) {
+                    it("should chain using rejected js.lib.Promise", function (done) {
                         Promise.reject("error")
                         .catchError(function (e) {
-                            return js.Promise.reject("rewrited error");
+                            return js.lib.Promise.reject("rewrited error");
                         }).then(null, function (e) {
                             (e: String).should.be("rewrited error");
                             done();
@@ -648,8 +648,8 @@ class PromiseTest extends BuddySuite {
 
         #if js
         describe("Promise cast", {
-            it("should cast from js.Promise", function (done) {
-                var jsPromise = js.Promise.resolve(1);
+            it("should cast from js.lib.Promise", function (done) {
+                var jsPromise = js.lib.Promise.resolve(1);
                 var promise: Promise<Int> = jsPromise;
                 promise.then(function (v) {
                     v.should.be(1);
@@ -657,9 +657,9 @@ class PromiseTest extends BuddySuite {
                 });
             });
 
-            it("should cast to js.Promise", function (done) {
+            it("should cast to js.lib.Promise", function (done) {
                 var promise = Promise.resolve(1);
-                var jsPromise: js.Promise<Int> = promise;
+                var jsPromise: js.lib.Promise<Int> = promise;
                 jsPromise.then(function (v) {
                     LangTools.same(v, 1).should.be(true);
                     done();
@@ -1194,10 +1194,10 @@ class PromiseTest extends BuddySuite {
             });
 
             #if js
-            describe("using js.Promise and SyncPromise", {
+            describe("using js.lib.Promise and SyncPromise", {
                 it("should pass", function (done) {
                     Promise.compute({
-                        @var a = js.Promise.resolve(1);
+                        @var a = js.lib.Promise.resolve(1);
                         @var b = Promise.resolve(2);
                         @var c = SyncPromise.resolve(3);
                         return a + b + c;

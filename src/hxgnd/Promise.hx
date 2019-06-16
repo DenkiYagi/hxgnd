@@ -33,7 +33,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
             fulfilled: Null<PromiseCallback<T, TOut>>,
             ?rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         // workaround for js__$Boot_HaxeError
-        return if (Std.is(this, js.Promise)) {
+        return if (Std.is(this, js.lib.Promise)) {
             this.then(
                 fulfilled.nonNull() ? onFulfilled.bind(fulfilled) : null,
                 rejected.nonNull() ? onRejected.bind(cast rejected) : null
@@ -53,7 +53,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     #if js
     public function catchError<TOut>(rejected: Mixed2<Dynamic -> Void, PromiseCallback<Dynamic, TOut>>): Promise<TOut> {
         // workaround for js__$Boot_HaxeError
-        return if (rejected.nonNull() && Std.is(this, js.Promise)) {
+        return if (rejected.nonNull() && Std.is(this, js.lib.Promise)) {
             this.then(null, onRejected.bind(cast rejected));
         } else {
             this.catchError(rejected);
@@ -155,12 +155,12 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
 
     #if js
     @:from @:extern
-    public static inline function fromJsPromise<T>(promise: js.Promise<T>): Promise<T> {
+    public static inline function fromJsPromise<T>(promise: js.lib.Promise<T>): Promise<T> {
         return cast promise;
     }
 
     @:to @:extern
-    public inline function toJsPromise(): js.Promise<T> {
+    public inline function toJsPromise(): js.lib.Promise<T> {
         return cast this;
     }
     #end
@@ -191,23 +191,23 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     }
 
     static function buildWhile(cond: Expr, body: Expr): Expr {
-        return macro function _while(cond: Void -> Bool, body: Void -> Promise<extype.Unit>): Promise<extype.Unit> {
+        return macro (function _while(cond: Void -> Bool, body: Void -> Promise<extype.Unit>): Promise<extype.Unit> {
             return if (cond()) {
                 body().then(function (_) return _while(cond, body));
             } else {
                 ${buildZero()};
             }
-        }(${cond}, ${body});
+        })(${cond}, ${body});
     }
 
     static function buildFor(iter: Expr, body: Expr): Expr {
-        return macro function _for(iter, body: Int -> Promise<extype.Unit>): Promise<extype.Unit> {
+        return macro (function _for(iter, body: Int -> Promise<extype.Unit>): Promise<extype.Unit> {
             return if (iter.hasNext()) {
                 body(iter.next()).then(function (_) return _for(iter, body));
             } else {
                 ${buildZero()};
             }
-        }(${iter}, ${body});
+        })(${iter}, ${body});
     }
 
     static function buildBind(m: Expr, fn: Expr): Expr {

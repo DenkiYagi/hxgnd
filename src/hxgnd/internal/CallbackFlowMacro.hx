@@ -51,23 +51,23 @@ class CallbackFlowMacro {
     }
 
     static function buildWhile(cond: Expr, body: Expr): Expr {
-        return macro function _while(cond: Void -> Bool, body: Void -> hxgnd.SyncPromise<extype.Unit>): hxgnd.SyncPromise<extype.Unit> {
+        return macro (function _while(cond: Void -> Bool, body: Void -> hxgnd.SyncPromise<extype.Unit>): hxgnd.SyncPromise<extype.Unit> {
             return if (cond()) {
                 body().then(function (_) return _while(cond, body));
             } else {
                 ${buildZero()};
             }
-        }(${cond}, ${body});
+        })(${cond}, ${body});
     }
 
     static function buildFor(iter: Expr, body: Expr): Expr {
-        return macro function _for(iter, body: Int -> hxgnd.SyncPromise<extype.Unit>): hxgnd.SyncPromise<extype.Unit> {
+        return macro (function _for(iter, body: Int -> hxgnd.SyncPromise<extype.Unit>): hxgnd.SyncPromise<extype.Unit> {
             return if (iter.hasNext()) {
                 body(iter.next()).then(function (_) return _for(iter, body));
             } else {
                 ${buildZero()};
             }
-        }(${iter}, ${body});
+        })(${iter}, ${body});
     }
 
     static function buildCombine(expr1: Expr, expr2: Expr): Expr {

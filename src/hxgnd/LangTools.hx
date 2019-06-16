@@ -5,6 +5,7 @@ import haxe.Constraints.IMap;
 import extype.Tuple;
 import extype.Maybe;
 #if js
+import js.Syntax;
 import hxgnd.js.JsNative;
 import hxgnd.js.JsObject;
 import hxgnd.js.JsArray;
@@ -21,7 +22,7 @@ class LangTools {
 
     @:extern public static inline function eq<T>(a: Null<T>, b: Null<T>): Bool {
         #if js
-        return JsNative.strictEq(a, b);
+        return Syntax.strictEq(a, b);
         #else
         return a == b;
         #end
@@ -29,7 +30,7 @@ class LangTools {
 
     @:extern public static inline function neq<T>(a: Null<T>, b: Null<T>): Bool {
         #if js
-        return JsNative.strictNeq(a, b);
+        return Syntax.strictNeq(a, b);
         #else
         return a != b;
         #end
@@ -45,7 +46,7 @@ class LangTools {
 
     #if js
     @:extern public static inline function isUndefined<T>(a: Null<T>): Bool {
-        return JsNative.strictEq(a, js.Lib.undefined);
+        return Syntax.strictEq(a, js.Lib.undefined);
     }
     #end
 
@@ -54,7 +55,7 @@ class LangTools {
     }
 
     @:extern public static inline function toMaybe<T>(a: Null<T>): Maybe<T> {
-        return a;
+        return (a: Maybe<T>);
     }
 
     @:extern public static inline function isEmpty(x: Null<String>): Bool {
@@ -319,7 +320,7 @@ class LangTools {
 
     #if js
     @:extern static inline function nonJsObject(x: Dynamic): Bool {
-        return JsNative.strictEq(x, null) || JsNative.strictNeq(JsNative.typeof(x), "object");
+        return Syntax.strictEq(x, null) || Syntax.strictNeq(Syntax.typeof(x), "object");
     }
     #end
 

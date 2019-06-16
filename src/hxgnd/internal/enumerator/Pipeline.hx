@@ -429,7 +429,7 @@ private class EffectedTraverserMany<T, U> implements ITraverser<U> {
         this.effect1 = effects[1];
         this.effect2 = effects[2];
         this.effect3 = effects[3];
-        this.effectRest = (effects.length >= 4) ? Maybe.ofNullable(effects.slice(4)) : Maybe.empty();
+        this.effectRest = (effects.length >= 4) ? Maybe.of(effects.slice(4)) : Maybe.empty();
     }
 
     public function next(): Bool {

@@ -6,7 +6,7 @@ import hxgnd.internal.IPromise;
 abstract PromiseCallback<T, TOut>(T -> Dynamic)
     #if js
     from Mixed6<
-        T -> js.Promise<TOut>,
+        T -> js.lib.Promise<TOut>,
         T -> SyncPromise<TOut>,
         T -> AbortablePromise<TOut>,
         T -> Promise<TOut>,

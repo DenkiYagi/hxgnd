@@ -301,33 +301,33 @@ class ComputationTest extends BuddySuite {
                 });
             });
 
-            describe("{| while (cond) expr |}", {
-                it("should pass", {
-                    ComputationTest_while.perform().should.equal(Some(3));
-                });
+            // describe("{| while (cond) expr |}", {
+            //     it("should pass", {
+            //         ComputationTest_while.perform().should.equal(Some(3));
+            //     });
 
-                it("should not evaluate expr when it doesn't have buildWhile", {
-                    ComputationTest_while.perform_no_builder().should.equal(Some(0));
-                });
+            //     it("should not evaluate expr when it doesn't have buildWhile", {
+            //         ComputationTest_while.perform_no_builder().should.equal(Some(0));
+            //     });
 
-                it("should pass when it has @var inside while", {
-                    ComputationTest_while.perform_inside_bind().should.equal(Some(6));
-                });
-            });
+            //     it("should pass when it has @var inside while", {
+            //         ComputationTest_while.perform_inside_bind().should.equal(Some(6));
+            //     });
+            // });
 
-            describe("{| for (cond) expr |}", {
-                it("should pass", {
-                    ComputationTest_for.perform().should.equal(Some(6));
-                });
+            // describe("{| for (cond) expr |}", {
+            //     it("should pass", {
+            //         ComputationTest_for.perform().should.equal(Some(6));
+            //     });
 
-                it("should not evaluate expr when it doesn't have buildFor", {
-                    ComputationTest_for.perform_no_builder().should.equal(Some(0));
-                });
+            //     it("should not evaluate expr when it doesn't have buildFor", {
+            //         ComputationTest_for.perform_no_builder().should.equal(Some(0));
+            //     });
 
-                it("should pass when it has @var inside while", {
-                    ComputationTest_for.perform_inside_bind().should.equal(Some(6));
-                });
-            });
+            //     it("should pass when it has @var inside while", {
+            //         ComputationTest_for.perform_inside_bind().should.equal(Some(6));
+            //     });
+            // });
 
             describe("{| try cexpr catch (e) expr |}", {
                 it("should pass", {
@@ -375,19 +375,19 @@ class ComputationTest extends BuddySuite {
                 });
             });
 
-            describe("builder.combine()", {
-                it("should pass", {
-                    ComputationTest_buildCombine.perform().should.be(60);
-                });
+            // describe("builder.combine()", {
+            //     it("should pass", {
+            //         ComputationTest_buildCombine.perform().should.be(60);
+            //     });
 
-                it("should pass when it doesn't have buildCombine", {
-                    ComputationTest_buildCombine.perform_default().should.be(6);
-                });
+            //     it("should pass when it doesn't have buildCombine", {
+            //         ComputationTest_buildCombine.perform_default().should.be(6);
+            //     });
 
-                it("should pass when it has post expr", {
-                    ComputationTest_buildCombine.perform_with_post_expr().should.be(3);
-                });
-            });
+            //     it("should pass when it has post expr", {
+            //         ComputationTest_buildCombine.perform_with_post_expr().should.be(3);
+            //     });
+            // });
         });
     }
 }

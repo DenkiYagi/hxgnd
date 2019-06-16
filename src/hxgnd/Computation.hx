@@ -10,7 +10,7 @@ using hxgnd.ArrayTools;
 
 class Computation {
     public static function perform<T, M>(builder: ComputationExprBuilder<T, M>, blockExpr: Expr): Expr {
-        var transformer = new VirtualExprTransformer(builder);
+        final transformer = new VirtualExprTransformer(builder);
 
         var nodes = [Untraversed(blockExpr)];
         while (nodes.nonEmpty()) {
@@ -69,7 +69,7 @@ class Computation {
                             nodes = tmp.concat(nodes);
                         case EWhile(econd, e, true):
                             nodes = [Virtual(While(econd)), Untraversed(e), Virtual(End)].concat(nodes);
-                        case EFor({expr: EIn({expr: EConst(CIdent(ident))}, iter)}, e):
+                        case EFor({expr: EBinop(OpIn, {expr: EConst(CIdent(ident))}, iter)}, e):
                             nodes = [Virtual(For(iter, ident)), Untraversed(e), Virtual(End)].concat(nodes);
                         case ETry(e, catches):
                             var tmp = [Virtual(Try), Untraversed(e)];
@@ -94,8 +94,8 @@ class Computation {
 }
 
 private class VirtualExprTransformer<T, M> {
-    var builder: ComputationExprBuilder<T, M>;
-    var blockStack: Array<ComputationBlock<T, M>>;
+    final builder: ComputationExprBuilder<T, M>;
+    final blockStack: Array<ComputationBlock<T, M>>;
     var currentBlock: ComputationBlock<T, M>;
 
     public function new(builder: ComputationExprBuilder<T, M>) {
@@ -251,7 +251,7 @@ private class VirtualExprTransformer<T, M> {
                     var body = buildDelay(currentBlock.build());
                     popBlock();
                     currentBlock.emitCexpr({
-                        expr: builder.buildWhile(macro function() return ${cond}, body),
+                        expr: builder.buildWhile(macro function() return ${cond}, ${body}),
                         isReturn: false
                     });
                 } else {
@@ -377,11 +377,11 @@ private class ComputationBlock<T, M> {
             fragments.push({
                 preExprs: [],
                 cexpr: expr,
-                binding: {name: Maybe.ofNullable(name), type: Maybe.ofNullable(type)},
+                binding: {name: Maybe.of(name), type: Maybe.of(type)},
             });
         } else {
             fragment.cexpr = expr;
-            fragment.binding = {name: Maybe.ofNullable(name), type: Maybe.ofNullable(type)};
+            fragment.binding = {name: Maybe.of(name), type: Maybe.of(type)};
         }
 
         fragments.push({
@@ -460,21 +460,21 @@ private class ComputationBlock<T, M> {
         }
     }
 
-    private inline function currentFragment(): CexprFragment {
+    inline function currentFragment(): CexprFragment {
         return fragments.last().get();
     }
 }
 
 typedef ComputationExprBuilder<T, M> = {
-    var buildZero: Void -> ExprOf<M>;
+    var buildZero: () -> ExprOf<M>;
     var buildBind: ExprOf<M> -> ExprOf<T -> M> -> ExprOf<M>;
     var buildReturn: ExprOf<T> -> ExprOf<M>;
-    @:optional var buildReturnFrom: ExprOf<M -> M>;
-    @:optional var buildWhile: ExprOf<Void -> Bool> -> ExprOf<Void -> M> -> ExprOf<M>;
-    @:optional var buildFor: Expr -> ExprOf<Void -> M> -> ExprOf<M>;
-    @:optional var buildRun: ExprOf<Void -> M> -> ExprOf<M>;
-    @:optional var buildDelay: ExprOf<Void -> M> -> ExprOf<Void -> M>;
-    @:optional var buildCombine: ExprOf<M> -> ExprOf<M> -> ExprOf<M>;
+    var ?buildReturnFrom: ExprOf<M -> M>;
+    var ?buildWhile: ExprOf<Void -> Bool> -> ExprOf<Void -> M> -> ExprOf<M>;
+    var ?buildFor: Expr -> ExprOf<Void -> M> -> ExprOf<M>;
+    var ?buildRun: ExprOf<Void -> M> -> ExprOf<M>;
+    var ?buildDelay: ExprOf<Void -> M> -> ExprOf<Void -> M>;
+    var ?buildCombine: ExprOf<M> -> ExprOf<M> -> ExprOf<M>;
 }
 
 private enum TraversingExpr {

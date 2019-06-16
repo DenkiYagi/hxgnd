@@ -25,7 +25,7 @@ class TestMain implements Buddy<[
     hxgnd.ReactorTest,
     hxgnd.ReactivePropertyTest,
     hxgnd.ReactiveActorTest,
-    // hxgnd.ReactiveStreamTest
+    hxgnd.ReactiveStreamTest
 ]> {}
 
 /*

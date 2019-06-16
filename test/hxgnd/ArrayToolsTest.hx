@@ -30,12 +30,12 @@ class ArrayToolsTest extends BuddySuite {
 
         describe("ArrayTools.toArray()", {
             it("can convert empty iterable", {
-                var result = ({ iterator: function () return 0...-1 }).toArray();
+                var result = ArrayTools.toArray({ iterator: function () return 0...-1 });
                 result.same([]).should.be(true);
             });
 
             it("can convert some values iterable", {
-                var result = ({ iterator: function () return 0...3 }).toArray();
+                var result = ArrayTools.toArray({ iterator: function () return 0...3 });
                 result.same([0, 1, 2]).should.be(true);
             });
 

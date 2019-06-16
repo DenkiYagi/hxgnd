@@ -71,7 +71,7 @@ private class FilterEffectMany {
         this.fn2 = fns[1];
         this.fn3 = fns[2];
         this.fn4 = fns[3];
-        this.fnRest = (fns.length > 4) ? Maybe.ofNullable(fns.slice(4)) : Maybe.empty();
+        this.fnRest = (fns.length > 4) ? Maybe.of(fns.slice(4)) : Maybe.empty();
     }
 
     public function apply(ctx: EffectContext): Void {

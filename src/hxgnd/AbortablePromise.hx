@@ -18,8 +18,8 @@ class AbortablePromise<T> implements IPromise<T> {
 
     #if js
     static function __init__() {
-        // Make this class compatible with js.Promise
-        var prototype = JsObject.create(untyped js.Promise.prototype);
+        // Make this class compatible with js.lib.Promise
+        var prototype = JsObject.create(untyped js.lib.Promise.prototype);
         var orignal = untyped AbortablePromise.prototype;
         for (k in JsObject.getOwnPropertyNames(orignal)) {
             Reflect.setField(prototype, k, Reflect.field(orignal, k));
@@ -42,7 +42,7 @@ class AbortablePromise<T> implements IPromise<T> {
     function execute(executor: (?T -> Void) -> (?Dynamic -> Void) -> (Void ->Void)): Void {
         if (result.isEmpty()) {
             try {
-                abortCallback = Maybe.ofNullable(executor(onFulfilled, onRejected));
+                abortCallback = Maybe.of(executor(onFulfilled, onRejected));
             } catch (e: Dynamic) {
                 onRejected(e);
             }
@@ -78,7 +78,7 @@ class AbortablePromise<T> implements IPromise<T> {
                 function chain(value: T) {
                     try {
                         var next = (fulfilled: T -> Dynamic)(value);
-                        if (#if js JsNative.instanceof(next, js.Promise) || #end Std.is(next, IPromise)) {
+                        if (#if js Std.is(next, js.lib.Promise) || #end Std.is(next, IPromise)) {
                             var nextPromise: Promise<TOut> = cast next;
                             nextPromise.then(_fulfill, _reject);
                         } else {
@@ -98,7 +98,7 @@ class AbortablePromise<T> implements IPromise<T> {
                 function rescue(error: Dynamic) {
                     try {
                         var next = (rejected: Dynamic -> Dynamic)(error);
-                        if (#if js JsNative.instanceof(next, js.Promise) || #end Std.is(next, IPromise)) {
+                        if (#if js Std.is(next, js.lib.Promise) || #end Std.is(next, IPromise)) {
                             var nextPromise: Promise<TOut> = cast next;
                             nextPromise.then(_fulfill, _reject);
                         } else {

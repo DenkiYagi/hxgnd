@@ -1016,14 +1016,14 @@ class ComputationTest_while {
             buildReturn: function (value) return macro Some(${value}),
             buildZero: function () return macro None,
             buildWhile: function (cond, body) {
-                return macro function _while(cond, body) {
+                return macro (function _while(cond, body) {
                     return if (cond()) {
                         body();
                         _while(cond, body);
                     } else {
                         Some(new extype.Unit());
                     }
-                }(${cond}, ${body});
+                })(${cond}, ${body});
             },
         }, macro {
             var i = 0;
@@ -1058,14 +1058,14 @@ class ComputationTest_while {
             buildReturn: function (value) return macro Some(${value}),
             buildZero: function () return macro None,
             buildWhile: function (cond, body) {
-                return macro function _while(cond, body) {
+                return macro (function _while(cond, body) {
                     return if (cond()) {
                         body();
                         _while(cond, body);
                     } else {
                         Some(new extype.Unit());
                     }
-                }(${cond}, ${body});
+                })(${cond}, ${body});
             },
         }, macro {
             var i = 0;
@@ -1092,14 +1092,14 @@ class ComputationTest_for {
             buildReturn: function (value) return macro Some(${value}),
             buildZero: function () return macro None,
             buildFor: function (iter, body) {
-                return macro function _for(iter, body) {
+                return macro (function _for(iter, body) {
                     return if (iter.hasNext()) {
                         var x = body(iter.next());
                         _for(iter, body);
                     } else {
                         Some(new extype.Unit());
                     }
-                }(${iter}, ${body});
+                })(${iter}, ${body});
             },
         }, macro {
             var x = 0;
@@ -1134,14 +1134,14 @@ class ComputationTest_for {
             buildReturn: function (value) return macro Some(${value}),
             buildZero: function () return macro None,
             buildFor: function (iter, body) {
-                return macro function _for(iter, body) {
+                return macro (function _for(iter, body) {
                     return if (iter.hasNext()) {
                         var x = body(iter.next());
                         _for(iter, body);
                     } else {
                         Some(new extype.Unit());
                     }
-                }(${iter}, ${body});
+                })(${iter}, ${body});
             },
         }, macro {
             var acc = 0;
@@ -1309,14 +1309,14 @@ class ComputationTest_buildCombine {
             buildReturn: function (value) return value,
             buildZero: function () return macro 0,
             buildWhile: function (cond, body) {
-                return macro function sum(acc, cond, body) {
+                return macro (function sum(acc, cond, body) {
                     return if (cond()) {
                         var x = acc + body();
                         sum(x, cond, body);
                     } else {
                         acc;
                     }
-                }(0, ${cond}, ${body});
+                })(0, ${cond}, ${body});
             },
             buildCombine: function (expr1, expr2) return macro ${expr1} * ${expr2},
         }, macro {
@@ -1343,14 +1343,14 @@ class ComputationTest_buildCombine {
             buildReturn: function (value) return value,
             buildZero: function () return macro 0,
             buildWhile: function (cond, body) {
-                return macro function sum(acc, cond, body) {
+                return macro (function sum(acc, cond, body) {
                     return if (cond()) {
                         var x = acc + body();
                         sum(x, cond, body);
                     } else {
                         acc;
                     }
-                }(0, ${cond}, ${body});
+                })(0, ${cond}, ${body});
             },
         }, macro {
             return {

@@ -4,23 +4,14 @@ package hxgnd.js;
 import haxe.macro.Expr;
 #end
 import haxe.Constraints.Function;
+import js.Syntax;
 
 class JsNative {
     static inline var IMMEDIATE_QUEUE_SIZE = 65536; //2^16
 
-    public static var nativeThis(get, never): Dynamic;
-    @:extern inline static function get_nativeThis(): Dynamic {
-        return untyped __js__("this");
-    }
-
     public static var nativeArguments(get, never): Arguments;
     @:extern inline static function get_nativeArguments(): Arguments {
         return untyped __js__("arguments");
-    }
-
-    public static var undefined(get, never): Dynamic;
-    @:extern inline static function get_undefined(): Dynamic {
-        return untyped __js__("void 0");
     }
 
     public static inline function encodeURI(x: String): String {
@@ -41,22 +32,6 @@ class JsNative {
 
     public static inline function toString(object: Dynamic): String {
         return untyped __js__("{0}.toString()", object);
-    }
-
-    public static inline function strictEq<T>(a: T, b: T): Bool {
-        return untyped __strict_eq__(a, b);
-    }
-
-    public static inline function strictNeq<T>(a: T, b: T): Bool {
-        return untyped __strict_neq__(a, b);
-    }
-
-    public static inline function typeof(x: Dynamic): String {
-        return untyped __typeof__(x);
-    }
-
-    public static inline function instanceof(a: Dynamic, b: Dynamic): Bool {
-        return untyped __js__("{0} instanceof {1}", a, b);
     }
 
     public static var setImmediate(default, null): (Void -> Void) -> Int;
@@ -94,9 +69,9 @@ class JsNative {
             }
 
             JsNative.setImmediate = function setImmediatePromise(fn) {
-                if (strictEq(index, IMMEDIATE_QUEUE_SIZE)) index = 0;
+                if (Syntax.strictEq(index, IMMEDIATE_QUEUE_SIZE)) index = 0;
                 functions[index] = fn;
-                js.Promise.resolve(index).then(invoke);
+                js.lib.Promise.resolve(index).then(invoke);
                 return index++;
             };
             JsNative.clearImmediate = function clearImmediatePromise(id) {
@@ -119,7 +94,7 @@ class JsNative {
             channel.port2.start();
 
             JsNative.setImmediate = function setImmediateMessageChannel(fn) {
-                if (strictEq(index, IMMEDIATE_QUEUE_SIZE)) index = 0;
+                if (Syntax.strictEq(index, IMMEDIATE_QUEUE_SIZE)) index = 0;
                 functions[index] = fn;
                 channel.port2.postMessage(index);
                 return index++;
