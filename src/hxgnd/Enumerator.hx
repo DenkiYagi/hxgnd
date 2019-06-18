@@ -5,8 +5,8 @@ import hxgnd.internal.enumerator.Pipeline;
 import hxgnd.internal.traverser.FlattenTraverser;
 
 class Enumerator<T> {
-    var source: Traverser<Dynamic>;
-    var pipeline: Pipeline<Dynamic, T>;
+    final source: Traverser<Dynamic>;
+    final pipeline: Pipeline<Dynamic, T>;
 
     function new<S>(source: Traverser<S>, pipeline: Pipeline<S, T>) {
         this.source = source;
@@ -18,7 +18,7 @@ class Enumerator<T> {
     }
 
     public inline function forEach(fn: T -> Void): Void {
-        var traverser = pipeline.createTraverser(source);
+        final traverser = pipeline.createTraverser(source);
         while (traverser.next()) {
             fn(traverser.current.get());
         }
@@ -90,9 +90,9 @@ class Enumerator<T> {
     // toList
 
 
-    public static function from<T>(source: EnumeratorSource<T>): Enumerator<T> {
+    public static function from<T>(source: Traverser<T>): Enumerator<T> {
         return new Enumerator(source, new Pipeline());
     }
 }
 
-typedef EnumeratorSource<T> = Traverser.TraverserSource<T>;
+//typedef EnumeratorSource<T> = Traverser.TraverserSource<T>;
