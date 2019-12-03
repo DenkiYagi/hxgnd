@@ -73,7 +73,7 @@ private class MapEffectMany {
 
     public function apply(ctx: EffectContext): Void {
         var acc = fn4(fn3(fn2(fn1(ctx.acc))));
-        fnRest.each(function (fns) for (f in fns) acc = f(acc));
+        fnRest.iter(function (fns) for (f in fns) acc = f(acc));
         ctx.acc = acc;
     }
 }

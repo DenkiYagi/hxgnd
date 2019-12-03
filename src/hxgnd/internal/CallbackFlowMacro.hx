@@ -115,7 +115,7 @@ class CallbackFlowMacro {
                 };
 
                 {
-                    expr: EFunction("CallbackFlow_callback", {
+                    expr: EFunction(FNamed("CallbackFlow_callback"), {
                         args: args,
                         ret: null,
                         expr: macro fulfill(${tuple}),

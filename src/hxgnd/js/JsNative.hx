@@ -38,18 +38,6 @@ class JsNative {
 
     public static var clearImmediate(default, null): Int -> Void;
 
-    public static macro function debugger(): ExprOf<Void> {
-        return macro untyped __js__("debugger");
-    }
-
-    public static macro function delete(expression: Expr): ExprOf<Void> {
-        return macro untyped __js__("delete {0}", ${expression});
-    }
-
-    public static inline function getPrototype(x: Dynamic): Dynamic {
-        return untyped __js__("{0}.prototype", x);
-    }
-
     static var functions = [];
     static var index = 0;
 
