@@ -16,7 +16,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
     public inline function new(executor: (?T -> Void) -> (?Dynamic -> Void) -> Void) {
         #if js
         // workaround for js__$Boot_HaxeError
-        this = untyped __js__("new Promise({0})", function (fulfill, reject) {
+        this = js.Syntax.code("new Promise({0})", function (fulfill, reject) {
             try {
                 executor(fulfill, reject);
             } catch (e: Dynamic) {
@@ -96,7 +96,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
 
     public static inline function resolve<T>(?value: T): Promise<T> {
         #if js
-        return untyped __js__("Promise.resolve({0})", value);
+        return js.Syntax.code("Promise.resolve({0})", value);
         #else
         return DelayedPromise.resolve(value);
         #end
@@ -104,7 +104,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
 
     public static inline function reject<T>(?error: Dynamic): Promise<T> {
         #if js
-        return untyped __js__("Promise.reject({0})", error);
+        return js.Syntax.code("Promise.reject({0})", error);
         #else
         return DelayedPromise.reject(error);
         #end
@@ -112,7 +112,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
 
     #if js
     public static inline function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
-        return untyped __js__("Promise.all({0})", iterable);
+        return js.Syntax.code("Promise.all({0})", iterable);
     }
     #else
     public static function all<T>(iterable: Array<Promise<T>>): Promise<Array<T>> {
@@ -137,7 +137,7 @@ abstract Promise<T>(IPromise<T>) from IPromise<T> {
 
     #if js
     public static inline function race<T>(iterable: Array<Promise<T>>): Promise<T> {
-        return untyped __js__("Promise.race({0})", iterable);
+        return js.Syntax.code("Promise.race({0})", iterable);
     }
     #else
     public static function race<T>(iterable: Array<Promise<T>>): Promise<T> {

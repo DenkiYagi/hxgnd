@@ -14,10 +14,10 @@ class PromiseTest extends BuddySuite {
         function suppress(error: Dynamic) {}
 
         beforeAll({
-            untyped __js__("process.on('unhandledRejection', {0})", suppress);
+            js.Syntax.code("process.on('unhandledRejection', {0})", suppress);
         });
         afterAll({
-            untyped __js__("process.removeListener('unhandledRejection', {0})", suppress);
+            js.Syntax.code("process.removeListener('unhandledRejection', {0})", suppress);
         });
         #end
 

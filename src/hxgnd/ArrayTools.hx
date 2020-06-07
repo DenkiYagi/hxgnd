@@ -64,7 +64,7 @@ class ArrayTools {
 
     public static inline function mapWithIndex<T, U>(array: Array<T>, fn: T -> Int -> U): Array<U> {
         #if js
-        return untyped __js__("{0}.map({1})", array, fn);
+        return js.Syntax.code("{0}.map({1})", array, fn);
         #else
         return [for (i in 0...array.length) fn(array[i], i)];
         #end

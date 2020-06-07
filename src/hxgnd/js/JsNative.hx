@@ -11,27 +11,27 @@ class JsNative {
 
     public static var nativeArguments(get, never): Arguments;
     @:extern inline static function get_nativeArguments(): Arguments {
-        return untyped __js__("arguments");
+        return js.Syntax.code("arguments");
     }
 
     public static inline function encodeURI(x: String): String {
-        return untyped __js__("encodeURI")(x);
+        return js.Syntax.code("encodeURI")(x);
     }
 
     public static inline function encodeURIComponent(x: String): String {
-        return untyped __js__("encodeURIComponent")(x);
+        return js.Syntax.code("encodeURIComponent")(x);
     }
 
     public static inline function decodeURI(x: String): String {
-        return untyped __js__("decodeURI")(x);
+        return js.Syntax.code("decodeURI")(x);
     }
 
     public static inline function decodeURIComponent(x: String): String {
-        return untyped __js__("decodeURIComponent")(x);
+        return js.Syntax.code("decodeURIComponent")(x);
     }
 
     public static inline function toString(object: Dynamic): String {
-        return untyped __js__("{0}.toString()", object);
+        return js.Syntax.code("{0}.toString()", object);
     }
 
     public static var setImmediate(default, null): (Void -> Void) -> Int;
@@ -45,13 +45,13 @@ class JsNative {
         // NOTE setImmediate() of Edge/IE11 is very slow.
         // https://jsfiddle.net/terurou/Lsxrjmpd/3/
         if (!js.Lib.global.navigator && js.Lib.global.setImmediate) {
-            JsNative.setImmediate = untyped __js__("setImmediate");
-            JsNative.clearImmediate = untyped __js__("clearImmediate");
+            JsNative.setImmediate = js.Syntax.code("setImmediate");
+            JsNative.clearImmediate = js.Syntax.code("clearImmediate");
         } else if  (untyped js.Lib.global.Promise) {
             function invoke(id) {
                 var fn = functions[id];
                 if (untyped fn) {
-                    untyped __js__("delete {0}", functions[id]);
+                    js.Syntax.code("delete {0}", functions[id]);
                     fn();
                 }
             }
@@ -63,7 +63,7 @@ class JsNative {
                 return index++;
             };
             JsNative.clearImmediate = function clearImmediatePromise(id) {
-                untyped __js__("delete {0}", functions[id]);
+                js.Syntax.code("delete {0}", functions[id]);
             };
         } else if (untyped js.Lib.global.MessageChannel) {
             var channel = new js.html.MessageChannel();
@@ -74,7 +74,7 @@ class JsNative {
                 var id = e.data;
                 var fn = functions[id];
                 if (untyped fn) {
-                    untyped __js__("delete {0}", functions[id]);
+                    js.Syntax.code("delete {0}", functions[id]);
                     fn();
                 }
             }
@@ -88,14 +88,14 @@ class JsNative {
                 return index++;
             }
             JsNative.clearImmediate = function clearImmediateMessageChannel(i) {
-                untyped __js__("delete {0}", functions[i]);
+                js.Syntax.code("delete {0}", functions[i]);
             }
         } else {
             JsNative.setImmediate = function setImmediateTimeout(fn) {
-                return untyped __js__("setTimeout({0}, {1})", fn, 0);
+                return js.Syntax.code("setTimeout({0}, {1})", fn, 0);
             }
             JsNative.clearImmediate = function clearImmediateTimeout(i) {
-                untyped __js__("clearTimeout({0})", i);
+                js.Syntax.code("clearTimeout({0})", i);
             }
         }
         js.Lib.global._test = JsNative;

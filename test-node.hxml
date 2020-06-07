@@ -3,6 +3,7 @@
 -cp test
 -lib extype
 -lib buddy
+-lib hxnodejs
 -js build/node.js
 -D nodejs
 -D buddy-colors
